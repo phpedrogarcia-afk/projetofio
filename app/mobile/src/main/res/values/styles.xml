@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Fio.Base" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:windowActionModeOverlay">true</item>
+        <item name="android:windowBackground">@color/fio_warm_paper</item>
+        <item name="android:colorAccent">#667A66</item>
+        <item name="android:statusBarColor">@color/fio_warm_paper</item>
+        <item name="android:navigationBarColor">@color/fio_warm_paper</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+
+    <style name="Theme.Fio" parent="Theme.Fio.Base" />
+</resources>

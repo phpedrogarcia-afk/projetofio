@@ -1,0 +1,72 @@
+# macOS and editor state
+.DS_Store
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Android/Gradle user state and build products
+.gradle/
+local.properties
+**/build/
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+
+# Xcode historical user state and build products
+DerivedData/
+*.xcuserstate
+*.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+*.xccheckout
+*.xcscmblueprint
+*.xcarchive
+*.dSYM
+*.dSYM.zip
+*.ipa
+
+# Swift Package Manager
+.build/
+.swiftpm/
+Packages/
+Package.resolved.backup
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+*.p12
+*.p8
+*.cer
+*.mobileprovision
+*.provisionprofile
+Secrets.*
+secrets.*
+
+# Local databases, exports, and private fixtures
+*.sqlite
+*.sqlite3
+*.db
+exports/
+private-fixtures/
+user-data/
+
+# Generated release archives stay local unless explicitly published elsewhere
+releases/**/*.zip
+
+# Test and coverage output
+coverage/
+test-results/
+*.profraw
+*.profdata
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Kotlin local state
+**/.kotlin/
