@@ -16,6 +16,8 @@ android {
         versionName = "0.1.0-dev"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField("boolean", "TIME_RETURNS_ENGINEERING_ENABLED", "false")
+        buildConfigField("boolean", "LOCAL_IMPORT_ENGINEERING_ENABLED", "false")
     }
 
     buildTypes {
@@ -24,6 +26,8 @@ android {
             applicationIdSuffix = ".validation"
             versionNameSuffix = "-validation"
             matchingFallbacks += listOf("debug")
+            buildConfigField("boolean", "TIME_RETURNS_ENGINEERING_ENABLED", "true")
+            buildConfigField("boolean", "LOCAL_IMPORT_ENGINEERING_ENABLED", "true")
         }
         release {
             isMinifyEnabled = false
@@ -41,6 +45,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     packaging {
@@ -81,6 +86,7 @@ dependencies {
     implementation(libs.room.ktx)
     implementation(libs.biometric)
     implementation(libs.fragment)
+    implementation(libs.work.runtime.ktx)
     ksp(libs.room.compiler)
 
     debugImplementation(libs.compose.ui.tooling)
@@ -97,4 +103,5 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
     androidTestImplementation(libs.compose.ui.test.junit4)
     androidTestImplementation(libs.room.testing)
+    androidTestImplementation(libs.work.testing)
 }

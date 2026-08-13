@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "corpus": "m4_pairs_v1.jsonl",
+  "sha256": "72a702510cc0ed3e9f72595a8e0df9ed379278b64e223dd1b1a36b30ed73ccef",
+  "recordCount": 300,
+  "developmentCount": 240,
+  "heldoutCount": 60,
+  "scenarioFamilyCount": 20,
+  "groupCount": 60,
+  "annotationPackets": [
+    "annotator-a.csv",
+    "annotator-b.csv"
+  ],
+  "annotationInterfaces": [
+    "annotator-a.html",
+    "annotator-b.html"
+  ],
+  "labels": "synthetic-authoring-targets-only",
+  "humanGate": "open"
+}

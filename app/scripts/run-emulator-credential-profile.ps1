@@ -204,7 +204,7 @@ try {
             }
         }
     }
-    Write-Host "M1 emulator credential profiles completed successfully."
+    Write-Host "M1+M2+M3 emulator credential profiles completed successfully."
 } finally {
     Pop-Location
 }

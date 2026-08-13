@@ -12,6 +12,8 @@ phase must both permit the requested work.
 - **Planned** — accepted direction, but implementation waits for that phase and
   its prerequisites.
 - **Research** — investigate and document; do not ship.
+- **Deferred** — intentionally postponed after evidence or a stop decision;
+  reopening requires a new approved decision.
 - **Frozen** — retain the concept but do not design or implement it now.
 - **Rejected** — do not implement.
 
@@ -46,8 +48,8 @@ Phases are sequencing labels, not release dates:
 | Dismiss a return | Approved | V0 | No explanation required |
 | Pilot resonance question | Experimental | V0 | Separate, skippable sheet after return closes |
 | Anonymous content-free pilot telemetry | Experimental | V0 | Must follow `09-ANALYTICS-EXPERIMENTS.md` |
-| Semantic Resonance return | Experimental | V0 | On-device, flagged, removable, compared with Time |
-| On-device embedding model bake-off | Research | V0 | Do not choose a model by reputation |
+| Semantic Resonance return | Deferred | Future | ADR-041 retains Time-only V0; reopening requires a new decision |
+| On-device embedding model bake-off | Deferred | Future | M4 evidence retained; no V0 model selected |
 | Let an entry rest until a boundary | Approved | V1 | Eligibility resumes later; no immediate guarantee |
 | Remember later once | Approved | V1 | One requested window, never recurring habit logic |
 | Sealed entry | Approved | V1 | Extra local authentication, independent of return policy |
@@ -65,8 +67,12 @@ Phases are sequencing labels, not release dates:
 | Bridge: two entries across time | Research | V2 | Show excerpts without claiming change or growth |
 | Long Thread: several recurrences | Research | V2 | No generated story or inferred theme label |
 | OCR for handwritten imports | Research | Future | Private/on-device feasibility first |
+| Keep inaccessible until a chosen boundary (`Guardar até…`) | Planned | Future | Exact UI-lock versus cryptographic-release promise requires a new security/recovery decision |
+| Future letter to oneself | Planned | Future | One chosen release/return; never recurring productivity logic |
+| Reopen a decision, question, or promise | Planned | Future | Present the person's exact earlier words; do not judge outcomes |
+| Scheduled private delivery to another living person | Frozen | Future | Separate recipient identity, consent, revocation, key, delivery, and abuse-prevention system |
 | Book generated from the archive | Frozen | Future | Separate product and consent problem |
-| Legacy / “after me” transfer | Frozen | Future | Separate legal, identity, key, and consent system |
+| Posthumous message / Legacy transfer | Frozen | Future | Explicit founder goal; ADR-019 still blocks design until legal, identity, key, consent, and safety gates close |
 | AI chat or companion | Rejected | Never | Conflicts with selection-without-interpretation |
 | AI-written insights or life summary | Rejected | Never | User retains interpretive authority |
 | Psychological or mood profiling | Rejected | Never | Sensitive inference and product conflict |
@@ -76,6 +82,14 @@ Phases are sequencing labels, not release dates:
 | Tasks and calendar productivity | Rejected | Never | Different user job |
 | Engagement reminders and red badges | Rejected | Never | Ignored return ends the notification attempt |
 | Server-side plaintext matching | Rejected | Never | Server must not read journal content or embeddings |
+
+## Long-term preservation rule
+
+`11-FOUNDER-VISION.md` records the complete intended family of memory, time,
+private-correspondence, and Legacy capabilities. **Frozen** means preserved for
+possible future approval, not rejected and not authorized now. The founder may
+later remove or narrow a capability through a new decision. Rejected features
+remain outside Fio even when nearby note applications provide them.
 
 ## V0 frozen scope
 
@@ -93,10 +107,10 @@ Required V0 user outcomes:
 4. An eligible entry can return once through a quiet local notification.
 5. The person can dismiss it, prevent it from returning, or pause all returns.
 6. The person can export and delete their data.
-7. A pilot build can compare Time and Resonance without changing the visible
-   return experience or collecting content.
 
 Not required for V0:
+
+- Semantic Resonance, embedding models, or a comparative semantic pilot;
 
 - account creation or a production backend;
 - cross-device sync;

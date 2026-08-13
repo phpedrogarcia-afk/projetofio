@@ -1,10 +1,10 @@
 # Milestone 2 — Android Time Returns
 
-Status: Draft — waits for M2-R1 owner approval
+Status: Engineering complete — M2-R1 approved; pre-pilot gates retained
 Owner: Project owner with Codex implementation support
 Related milestone: Milestone 2 — Time Returns
 Relevant decisions: ADR-003, ADR-006–ADR-008, ADR-010, ADR-012,
-ADR-017, ADR-021, ADR-027, ADR-033–ADR-037; proposed M2-R1/ADR-038
+ADR-017, ADR-021, ADR-027, ADR-033–ADR-038
 
 ## Outcome
 
@@ -57,11 +57,11 @@ Verified:
   the existing Android baseline, and is recommended for persistent deferrable
   work. Android 13+ requires runtime `POST_NOTIFICATIONS` permission.
 
-Open approval gate:
+Closed approval gate:
 
-- `plans/2026-08-12-m2-decision-packet.md` must be explicitly approved before
-  recording ADR-038, changing Gradle dependencies, migrating the database, or
-  implementing M2.
+- `plans/2026-08-12-m2-decision-packet.md` was explicitly approved on
+  2026-08-13. ADR-038, dependency resolution, Room migration, validation-only
+  implementation, and proportional automated tests are authorized.
 
 ## Implementation sequence
 
@@ -199,7 +199,28 @@ Final checks:
   documents, M1 persistence/application/UI code, Gradle dependencies, and
   official Android scheduling/notification guidance. No app code, dependency,
   schema, permission, Return, notification, or primary-device data changed.
+- 2026-08-13 — The project owner explicitly approved Android M2-R1. This plan
+  moved to In progress and implementation became authorized within its stated
+  validation-only, synthetic-data boundary.
+- 2026-08-13 — Implemented ADR-038 end to end: pure Time engine, Room schema 2
+  and additive migration, transactional application service, unique one-time
+  WorkManager adapter, private generic notification adapter, validation-only
+  consent/settings/Return UI, and rollback gate. Dependency locks and SHA-256
+  verification metadata include WorkManager 2.11.2.
+- 2026-08-13 — Final verification passed 37 JVM tests; lint; debug, validation,
+  release, and Android-test assembly; 21 instrumented tests on each API 26/API
+  36 endpoint; API 36 notification grant/revoke; both adverse profiles; and
+  both credential profiles. Manifest/log/work-payload scans found no Internet,
+  storage, exact-alarm, foreground-service, main-source logging, or content-
+  bearing WorkData surface. Evidence is recorded in
+  `plans/evidence/2026-08-13-m2-time-returns.md`.
 
 ## Final report
 
-Pending owner approval of M2-R1. Implementation has not started.
+The bounded M2 engineering checkpoint is complete in the isolated validation
+variant. Debug-primary and release cannot activate Time Returns. Physical M2
+flow, TalkBack/manual accessibility, notification-dialog dismissal/channel-
+disable, second-OEM/provider interoperability, API 26 credential interaction,
+and independent review remain mandatory pre-pilot evidence. No participant
+pilot, Git operation, signing, publication, release, or production claim was
+performed or inferred.

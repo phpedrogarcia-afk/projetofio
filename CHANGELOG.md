@@ -5,6 +5,81 @@ changes. Application changes will be added when implementation begins.
 
 ## Unreleased
 
+- 2026-08-13 — Recovered and preserved the founding multi-screen visual
+  reference under `docs/assets/`. Added an Android-first v2 review candidate
+  that retains the warm editorial and botanical identity while removing the
+  iPhone shell, in-Return pilot question, notification subtitle, and Archive
+  floating action button. Added Settings and kept the notification at the
+  canonical `Algo seu voltou.`. The v2 image remains non-canonical pending
+  founder review; specifications and Accepted decisions still control the app.
+- 2026-08-13 — Fixed the Devoluções black/static-screen regression. A transient
+  Android permission surface could activate the privacy cover through
+  `onPause()` and return through `onResume()` without the `onStart()` path that
+  removed it. The foreground access gate now safely handles both lifecycle
+  paths without exposing content before lock resolution. A synthetic API 36
+  import/Return flow passed manually, and the expanded suite passes 25/25
+  instrumented tests on API 26 and API 36. The corrected APK was installed over
+  the validation package on the POCO without clearing its data and reached the
+  device-owner authentication prompt on a cold launch. Evidence:
+  `plans/evidence/2026-08-13-return-privacy-cover-regression.md`.
+- 2026-08-13 — ADR-042 recorded the founder's complete long-term Fio direction,
+  including time-bound keeping, future-self letters, exact-word decision/
+  promise revisiting, future private correspondence, Book, and posthumous
+  messages/Legacy. Added `11-FOUNDER-VISION.md` and catalogue/roadmap/agent
+  links. Legacy remains Frozen under ADR-019; this records intent without
+  authorizing schemas, flows, APIs, or implementation. Also preserved the known
+  earlier mockup direction and its approved no-cursive/no-dominant-lock changes;
+  at that point, the original image asset had not yet been recovered.
+- 2026-08-13 — ADR-041 closed the V0 semantic path with no model selected. The
+  sole-owner workflow does not fabricate two human annotators: MiniLM is
+  rejected at the development safety/resource gate, M5 is deferred, and the M6
+  outcome is Remove / do not introduce. Time Returns remains the complete V0
+  mechanism; the human/physical gates remain required if semantics are reopened.
+- 2026-08-13 — The owner approved M4-R2 and froze corpus/rubric v1. Added a
+  six-wheel, hash-locked, ignored Python 3.14 research environment with no hub,
+  requests, or HTTP client; verified MiniLM/model tokenizer hashes and ran only
+  the 240-pair development split twice offline.
+- 2026-08-13 — MiniLM development aggregates were stable but did not clear the
+  safety boundary: Spearman 0.345850, mean nDCG@5 0.483447, unsafe top-1 1.0,
+  about 521 MB additional Windows working set, and a 118 MB model. It was not
+  advanced to Android or held-out evaluation. Added two self-contained offline
+  annotation pages; 13 M4 tests pass. ADR-024 remains Deferred.
+- 2026-08-13 — The owner approved M4-R1/ADR-040. Added an isolated, removable
+  offline research boundary with a deterministic 300-pair synthetic PT-BR
+  corpus, family-isolated 240/60 split, 0–3 rubric, two blind annotation
+  packets, strict corpus/privacy/hash validation, and a non-semantic lexical
+  control. Eleven research tests pass without external dependencies or network.
+- 2026-08-13 — Recorded the current Android/model inventory without downloading
+  artifacts: MediaPipe `tasks-text:1.0.0` is runtime-compatible with minSdk 26,
+  two large multilingual candidates require later Android artifact/runtime
+  proof, and BERTimbau Base is excluded as a direct sentence encoder. Proposed
+  M4-R2 freezes corpus/rubric before any model integration; ADR-024 remains
+  Deferred.
+- 2026-08-13 — The owner approved M3-R1/ADR-039. Implemented validation-only
+  local TXT/Markdown import with bounded strict parsing, memory-only preview,
+  exact local deduplication, additive Room `2 → 3` migration, atomic encrypted
+  batch commit, protected rollback of only unchanged imported Entries, pending
+  Return cancellation, and exact Fio export round-trip including named zones.
+- 2026-08-13 — M3 verification passes 51 JVM tests, lint, offline debug/
+  validation/release assembly, 23 instrumented tests on each API 26/API 36
+  endpoint, a validation-only SAF profile on both endpoints, and the retained
+  adverse/credential profiles. Release/debug import flags remain false; the
+  release manifest has no Internet or storage permission. No POCO install,
+  personal-file import, participant pilot, Git, signing, or publication occurred.
+- 2026-08-13 — Prepared Proposed M4-R1 and its Draft research plan. This records
+  a human-approved benchmark/measurement gate only; it adds no model,
+  dependency, semantic index, or product integration.
+- 2026-08-13 — The owner approved M2-R1/ADR-038. Implemented validation-only
+  Android Time Returns with a pure deterministic engine, additive Room `1 → 2`
+  migration, unique one-time WorkManager 2.11.2 scheduling, generic private
+  notifications, explicit consent/pause/quiet-hour/Never Return controls, and a
+  fail-closed Return screen. Debug-primary and release activation remain false.
+- 2026-08-13 — M2 verification passes 37 JVM tests, lint, debug/validation/
+  release assembly, 21 instrumented tests on each API 26/API 36 endpoint, API
+  36 notification grant/revoke, adverse process/font/rotation/animation
+  profiles, and credential regressions. The merged release manifest has no
+  `INTERNET`, storage, exact-alarm, or foreground-service permission. Retained
+  ADR-037 pre-pilot gates and all Git/signing/publication boundaries remain.
 - Added the Draft execution plan for Milestone 1 — Trusted Local Core.
 - Added recommendation packet M1-R1 for persistence, cryptography, Return
   consent, draft, export, app-lock, Apple environment, and Git boundaries.

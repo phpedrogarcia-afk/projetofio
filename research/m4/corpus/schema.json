@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://projetofio.local/research/m4/pair-v1.schema.json",
+  "title": "Fio M4 synthetic PT-BR pair",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "pairId",
+    "split",
+    "scenarioFamily",
+    "groupId",
+    "category",
+    "anchor",
+    "candidate",
+    "authoringTargetRating",
+    "expectedNearDuplicate",
+    "humanRatings",
+    "goldRating",
+    "provenance"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "pairId": { "type": "string", "pattern": "^m4-[a-z0-9-]+-[abc]-[1-5]$" },
+    "split": { "enum": ["development", "heldout"] },
+    "scenarioFamily": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "groupId": { "type": "string", "pattern": "^[a-z0-9-]+-[abc]$" },
+    "category": {
+      "enum": ["indirect_relation", "near_duplicate", "lexical_trap", "negation", "unrelated"]
+    },
+    "anchor": { "type": "string", "minLength": 20, "maxLength": 500 },
+    "candidate": { "type": "string", "minLength": 20, "maxLength": 500 },
+    "authoringTargetRating": { "type": "integer", "minimum": 0, "maximum": 3 },
+    "expectedNearDuplicate": { "type": "boolean" },
+    "humanRatings": {
+      "type": "array",
+      "maxItems": 2,
+      "items": { "type": "integer", "minimum": 0, "maximum": 3 }
+    },
+    "goldRating": { "type": ["number", "null"], "minimum": 0, "maximum": 3 },
+    "provenance": { "const": "purpose-written-synthetic-m4-v1" }
+  }
+}

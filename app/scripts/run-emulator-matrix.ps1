@@ -22,6 +22,8 @@ $adb = Join-Path $androidSdk "platform-tools\adb.exe"
 $emulator = Join-Path $androidSdk "emulator\emulator.exe"
 $gradleRoot = Split-Path -Parent $PSScriptRoot
 $gradle = Join-Path $gradleRoot "gradlew.bat"
+$debugApk = Join-Path $gradleRoot "mobile\build\outputs\apk\debug\mobile-debug.apk"
+$packageName = "com.projetofio.app"
 
 foreach ($required in @($adb, $emulator, $gradle)) {
     if (-not (Test-Path -LiteralPath $required)) {
@@ -114,6 +116,32 @@ function Wait-ForDocumentProvider {
     throw "AVD '$AvdName' has no working ACTION_CREATE_DOCUMENT provider. Recreate or provision the AVD before testing Fio."
 }
 
+function Assert-NotificationPermissionRoundTrip {
+    param(
+        [Parameter(Mandatory = $true)][string]$Serial,
+        [Parameter(Mandatory = $true)][int]$Api
+    )
+
+    if ($Api -lt 33) { return }
+    if (-not (Test-Path -LiteralPath $debugApk)) { throw "Debug APK not found: $debugApk" }
+    Invoke-Checked -FilePath $adb -Arguments @("-s", $Serial, "install", "-r", $debugApk)
+    Invoke-Checked -FilePath $adb -Arguments @(
+        "-s", $Serial, "shell", "pm", "grant", $packageName, "android.permission.POST_NOTIFICATIONS"
+    )
+    $granted = (& $adb -s $Serial shell dumpsys package $packageName) -join "`n"
+    if ($granted -notmatch 'android\.permission\.POST_NOTIFICATIONS: granted=true') {
+        throw "POST_NOTIFICATIONS grant was not observed in package state."
+    }
+    Invoke-Checked -FilePath $adb -Arguments @(
+        "-s", $Serial, "shell", "pm", "revoke", $packageName, "android.permission.POST_NOTIFICATIONS"
+    )
+    $denied = (& $adb -s $Serial shell dumpsys package $packageName) -join "`n"
+    if ($denied -notmatch 'android\.permission\.POST_NOTIFICATIONS: granted=false') {
+        throw "POST_NOTIFICATIONS revocation was not observed in package state."
+    }
+    Write-Host "PASS: API 33+ notification permission grant and process-killing revocation"
+}
+
 Push-Location $gradleRoot
 try {
     if (-not $SkipBuild) {
@@ -158,6 +186,7 @@ try {
                 "--no-daemon",
                 ":mobile:connectedDebugAndroidTest"
             )
+            Assert-NotificationPermissionRoundTrip -Serial $serial -Api ([int]$api)
         } finally {
             Remove-Item Env:ANDROID_SERIAL -ErrorAction SilentlyContinue
             if ($startedHere -and -not $KeepEmulators -and $serial) {
@@ -167,7 +196,7 @@ try {
         }
     }
 
-    Write-Host "M1 emulator matrix completed successfully."
+    Write-Host "M1+M2+M3 emulator matrix completed successfully."
 } finally {
     Pop-Location
 }

@@ -1,6 +1,6 @@
 # 05 — Architecture
 
-Status: Accepted Android direction for V0; M1 implementation checkpoint present
+Status: Accepted Android direction for V0; M1 baseline and M2 engineering checkpoint present
 
 ## Binding platform-transition notice
 
@@ -62,6 +62,20 @@ generates Room integration; KAPT is excluded.
   policy, and removal path.
 - Destructive migration fallback, Paging, FTS, SQLCipher, and a second database
   wrapper remain outside M1.
+
+### M2 local scheduling checkpoint
+
+ADR-038 implements Time Returns behind Fio-owned domain/application boundaries.
+The pure engine accepts an injected clock, zone, and random source; Room schema
+2 persists content-free Return lifecycle metadata; and WorkManager 2.11.2 owns
+one uniquely named, deferrable, one-time opportunity. Work input/output/progress
+is empty and no exact alarm, network constraint, foreground work, server, push,
+or analytics path exists.
+
+Activation is immutable by variant: `validation=true`, while debug-primary and
+release remain `false` until ADR-037 pre-pilot gates close. The Android adapter
+posts only `Algo seu voltou.` with an opaque local Return ID. Entry content is
+resolved and decrypted only after the app is foregrounded and policy is checked.
 
 ## Trust boundaries
 
@@ -206,6 +220,13 @@ benchmark. The application never depends directly on a single model API.
 
 Deleting or disabling the adapter must leave Time returns fully functional.
 
+ADR-040's M4 harness lives under `research/m4/`, outside the Android application
+and Room schema. It uses only purpose-written synthetic PT-BR pairs and a
+standard-library lexical control until the corpus/rubric gate closes. Model
+artifacts and human annotation responses are local ignored files. No M4
+runtime, dependency, adapter, vector, or score is linked into product source;
+that absence is tested. ADR-024 remains Deferred.
+
 ### Import/export
 
 Import uses a staging area:
@@ -216,6 +237,15 @@ select file → parse locally → preview → validate/deduplicate → commit tr
 
 A failed or cancelled import leaves the canonical store unchanged. Import
 provenance is retained without storing unnecessary copies of source files.
+
+ADR-039 implements this boundary for M3: the Activity receives one SAF URI,
+streams at most 5 MiB into memory, and passes bytes to a pure bounded parser.
+Preview state is memory-only. Room schema 3 atomically commits ImportBatch,
+ImportBatchItem, encrypted provenance, and encrypted Entries. Rollback compares
+the imported `updatedAt` snapshot and tombstones only unchanged batch-created
+Entries. No private staging file, archive traversal, linked resource, storage
+permission, network, or new dependency exists. Activation is true only in the
+validation variant.
 
 Export decrypts locally into a user-selected destination only after explicit
 action. Temporary plaintext files must be protected and removed after success,

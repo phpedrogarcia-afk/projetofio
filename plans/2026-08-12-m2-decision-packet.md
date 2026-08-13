@@ -1,9 +1,9 @@
 # M2-R1 — Android Time Returns decision packet
 
-Status: Proposed — explicit owner approval required
+Status: Accepted — approved by project owner on 2026-08-13
 Date: 2026-08-12
 Related milestone: Milestone 2 — Time Returns
-Would become: ADR-038
+Recorded as: ADR-038
 
 ## Decision requested
 
@@ -86,13 +86,13 @@ owner's primary journal data.
 - **Immediate M2 enablement in the primary app:** conflicts with the retained
   ADR-037 pre-pilot gate.
 
-## Approval phrase
+## Approval record
 
-To accept this package, the owner can state:
+The project owner stated on 2026-08-13:
 
 > Aprovo o pacote Android M2-R1 — Time Returns.
 
-Approval authorizes ADR-038, the M2 execution plan, dependency resolution, Room
+This approval authorizes ADR-038, the M2 execution plan, dependency resolution, Room
 migration, validation-only implementation, and proportional automated tests. It
 does not authorize a participant pilot, use with non-synthetic content, Git,
 signing, publication, release, analytics transport, import, or semantic work.

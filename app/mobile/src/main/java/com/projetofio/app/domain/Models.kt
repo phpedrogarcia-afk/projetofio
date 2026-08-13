@@ -2,16 +2,39 @@ package com.projetofio.app.domain
 
 import java.time.Instant
 
-const val CURRENT_RECORD_SCHEMA_VERSION = 1
+const val CURRENT_RECORD_SCHEMA_VERSION = 3
 const val RECENTLY_DELETED_RETENTION_DAYS = 30L
 
 enum class ContentFormat { PLAIN_TEXT }
 
-enum class EntrySource { NATIVE }
+enum class EntrySource { NATIVE, IMPORT_MARKDOWN, IMPORT_TEXT }
+
+enum class ImportSource { MARKDOWN, TEXT }
+
+enum class ImportBatchStatus { COMMITTED, ROLLED_BACK }
+
+enum class ImportItemStatus { IMPORTED, ROLLED_BACK, EDITED_EXCLUDED }
 
 enum class ReturnMode { ELIGIBLE, NEVER }
 
 enum class ReturnConsentState { NOT_CONFIGURED, ENABLED, PAUSED }
+
+enum class NotificationPermissionObserved { UNKNOWN, GRANTED, DENIED }
+
+enum class ReturnAlgorithm { TIME }
+
+enum class ReturnState { SELECTED, SCHEDULED, NOTIFIED, OPENED, DISMISSED, EXPIRED, CANCELLED }
+
+enum class ReturnCancelReason { PAUSED, ENTRY_DELETED, ENTRY_NEVER, SUPERSEDED, INELIGIBLE, IMPORT_ROLLBACK }
+
+enum class AgeBucket {
+    DAYS_7_29,
+    DAYS_30_89,
+    DAYS_90_179,
+    DAYS_180_364,
+    DAYS_365_729,
+    DAYS_730_PLUS,
+}
 
 enum class AppLockMode { OFF, IMMEDIATE, ONE_MINUTE, FIVE_MINUTES }
 
@@ -25,6 +48,10 @@ data class Entry(
     val content: String,
     val contentFormat: ContentFormat = ContentFormat.PLAIN_TEXT,
     val returnMode: ReturnMode = ReturnMode.ELIGIBLE,
+    val lastReturnedAt: Instant? = null,
+    val returnCount: Int = 0,
+    val importBatchId: String? = null,
+    val importFingerprint: String? = null,
     val deletedAt: Instant? = null,
     val purgeAfter: Instant? = null,
     val schemaVersion: Int = CURRENT_RECORD_SCHEMA_VERSION,
@@ -33,8 +60,36 @@ data class Entry(
         require(id.isNotBlank())
         require(content.isNotBlank())
         require((deletedAt == null) == (purgeAfter == null))
+        require(returnCount >= 0)
+        require((source == EntrySource.NATIVE) == (importBatchId == null && importFingerprint == null))
     }
 }
+
+data class ImportBatch(
+    val id: String,
+    val source: ImportSource,
+    val startedAt: Instant,
+    val committedAt: Instant,
+    val status: ImportBatchStatus,
+    val sourceFileName: String?,
+    val parsedCount: Int,
+    val importedCount: Int,
+    val duplicateCount: Int,
+    val failedCount: Int,
+    val parserVersion: String,
+    val schemaVersion: Int = CURRENT_RECORD_SCHEMA_VERSION,
+)
+
+data class ImportCommit(
+    val batch: ImportBatch,
+    val entries: List<Entry>,
+)
+
+data class ImportRollbackResult(
+    val rolledBackEntryIds: List<String>,
+    val cancelledReturnIds: List<String>,
+    val editedExcludedCount: Int,
+)
 
 data class Draft(
     val id: String,
@@ -55,10 +110,43 @@ data class AppSettings(
     val appLockMode: AppLockMode = AppLockMode.OFF,
     val privacyCoverEnabled: Boolean = true,
     val analyticsEnabled: Boolean = false,
+    val quietHoursStartMinute: Int = 21 * 60,
+    val quietHoursEndMinute: Int = 8 * 60,
+    val notificationPermissionObserved: NotificationPermissionObserved = NotificationPermissionObserved.UNKNOWN,
     val schemaVersion: Int = CURRENT_RECORD_SCHEMA_VERSION,
 ) {
     init {
         require(!analyticsEnabled) { "M1 does not enable analytics" }
         require(returnConsentState != ReturnConsentState.PAUSED || returnsPausedAt != null)
+        require(quietHoursStartMinute in 0 until 24 * 60)
+        require(quietHoursEndMinute in 0 until 24 * 60)
+        require(quietHoursStartMinute != quietHoursEndMinute)
+    }
+}
+
+data class ReturnAttempt(
+    val id: String,
+    val entryId: String,
+    val algorithm: ReturnAlgorithm = ReturnAlgorithm.TIME,
+    val algorithmVersion: String = "time-v1",
+    val state: ReturnState,
+    val createdAt: Instant,
+    val windowStart: Instant,
+    val windowEnd: Instant,
+    val scheduledAt: Instant? = null,
+    val notifiedAt: Instant? = null,
+    val openedAt: Instant? = null,
+    val dismissedAt: Instant? = null,
+    val expiredAt: Instant? = null,
+    val cancelledAt: Instant? = null,
+    val cancelReason: ReturnCancelReason? = null,
+    val ageBucket: AgeBucket,
+    val schemaVersion: Int = CURRENT_RECORD_SCHEMA_VERSION,
+) {
+    init {
+        require(id.isNotBlank())
+        require(entryId.isNotBlank())
+        require(windowStart < windowEnd)
+        require((cancelledAt == null) == (cancelReason == null))
     }
 }

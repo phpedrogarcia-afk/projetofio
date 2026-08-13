@@ -54,6 +54,13 @@ exports/
 private-fixtures/
 user-data/
 
+# M4 research-only downloaded models and human annotation responses
+research/m4/artifacts/
+research/m4/annotations/responses/
+research/m4/results/raw/
+research/m4/.venv/
+research/m4/dependency-plan.json
+
 # Generated release archives stay local unless explicitly published elsewhere
 releases/**/*.zip
 
@@ -62,6 +69,10 @@ coverage/
 test-results/
 *.profraw
 *.profdata
+
+# Python local bytecode
+__pycache__/
+*.py[cod]
 
 # Temporary files
 tmp/

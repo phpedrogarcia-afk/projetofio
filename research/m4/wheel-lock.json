@@ -1,0 +1,38 @@
+﻿{
+    "schemaVersion":  1,
+    "python":  "Python 3.14.2",
+    "platform":  "win_amd64",
+    "installMode":  "no-index-no-deps",
+    "wheels":  [
+                   {
+                       "filename":  "flatbuffers-25.12.19-py2.py3-none-any.whl",
+                       "size":  26661,
+                       "sha256":  "7634f50c427838bb021c2d66a3d1168e9d199b0607e6329399f04846d42e20b4"
+                   },
+                   {
+                       "filename":  "numpy-2.5.2-cp314-cp314-win_amd64.whl",
+                       "size":  12597627,
+                       "sha256":  "7587f53dfbd5edc0f7b87c6217b4c6d2d1f2ef9c3da70bc1315e7db5f8d7ec9d"
+                   },
+                   {
+                       "filename":  "onnxruntime-1.28.0-cp314-cp314-win_amd64.whl",
+                       "size":  14093738,
+                       "sha256":  "f2a3b9e30ce880d4ca54999cb313569e36da4f62eefe25f87be18f43e9a3a4d5"
+                   },
+                   {
+                       "filename":  "packaging-26.3-py3-none-any.whl",
+                       "size":  129956,
+                       "sha256":  "d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c"
+                   },
+                   {
+                       "filename":  "protobuf-7.35.1-cp310-abi3-win_amd64.whl",
+                       "size":  439996,
+                       "sha256":  "230a75ddfc2de4806e56696ce9640c1cdfdb6543b7cfce98d42a4c0a0e7bdb87"
+                   },
+                   {
+                       "filename":  "tokenizers-0.23.1-cp310-abi3-win_amd64.whl",
+                       "size":  2798223,
+                       "sha256":  "e7bfaf995c1bdbbd21d13539decb6650967013759318627d85daeb7881af16b7"
+                   }
+               ]
+}

@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'none'; img-src 'none'; font-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Fio M4 — Avaliador __PACKET_LABEL__</title>
+  <style>
+    :root { color-scheme: light; font-family: system-ui, sans-serif; background: #f7f4ed; color: #24322b; }
+    body { margin: 0; }
+    main { width: min(760px, calc(100% - 32px)); margin: 0 auto; padding: 28px 0 52px; }
+    h1 { font-family: Georgia, serif; font-size: 1.7rem; font-weight: 500; }
+    .quiet { color: #56655d; line-height: 1.55; }
+    .progress { margin: 24px 0 10px; font-variant-numeric: tabular-nums; }
+    progress { width: 100%; height: 12px; accent-color: #738b79; }
+    article { background: #fffdf7; border: 1px solid #d9ded7; border-radius: 18px; padding: 22px; margin-top: 24px; }
+    .label { color: #65736c; font-size: .85rem; text-transform: uppercase; letter-spacing: .06em; }
+    .text { font-size: 1.08rem; line-height: 1.65; white-space: pre-wrap; }
+    fieldset { border: 0; padding: 0; margin: 24px 0 0; }
+    legend { font-weight: 650; margin-bottom: 10px; }
+    .choices { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    label.choice, label.check { display: flex; gap: 8px; align-items: center; min-height: 48px; border: 1px solid #cfd8d1; border-radius: 12px; padding: 0 12px; background: white; }
+    label.choice:has(input:checked), label.check:has(input:checked) { border-color: #607a68; background: #edf3ed; }
+    .checks { display: grid; gap: 8px; }
+    nav { display: flex; justify-content: space-between; gap: 12px; margin-top: 22px; }
+    button { min-height: 48px; border-radius: 12px; padding: 0 18px; border: 1px solid #607a68; background: #607a68; color: white; font-weight: 650; }
+    button.secondary { background: transparent; color: #42594a; }
+    button:disabled { opacity: .45; }
+    .export { margin-top: 28px; padding-top: 22px; border-top: 1px solid #d9ded7; }
+    .status { min-height: 24px; color: #42594a; }
+    @media (max-width: 520px) { .choices { grid-template-columns: repeat(2, 1fr); } nav { flex-direction: column-reverse; } button { width: 100%; } }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Avaliação independente — pacote __PACKET_LABEL__</h1>
+  <p class="quiet">Leia cada par sem consultar outra pessoa, pesquisa ou IA. Avalie apenas a relação entre os dois trechos. O progresso fica somente neste navegador.</p>
+  <p><a id="rubric" href="../RUBRIC.md">Abrir rubrica 0–3</a></p>
+  <div class="progress"><span id="progressText"></span><progress id="progressBar" max="300"></progress></div>
+  <article>
+    <p class="label">Trecho anterior</p><p class="text" id="anchor"></p>
+    <p class="label">Possível relação</p><p class="text" id="candidate"></p>
+    <fieldset><legend>Quanto os trechos se relacionam?</legend><div class="choices" id="ratings"></div></fieldset>
+    <fieldset><legend>Controle separado</legend><div class="checks">
+      <label class="check"><input type="checkbox" id="near"> É quase uma repetição do primeiro trecho</label>
+      <label class="check"><input type="checkbox" id="ambiguous"> A redação está ambígua</label>
+    </div></fieldset>
+    <nav><button class="secondary" id="previous">Anterior</button><button id="next">Salvar e avançar</button></nav>
+  </article>
+  <section class="export">
+    <p class="status" id="status" aria-live="polite"></p>
+    <button id="export" disabled>Exportar respostas completas</button>
+    <button class="secondary" id="reset" type="button">Limpar progresso deste pacote</button>
+  </section>
+</main>
+<script>
+const packetLabel = "__PACKET_LABEL__";
+const rows = __PACKET_JSON__;
+const storageKey = `fio-m4-v1-${packetLabel}`;
+let answers = JSON.parse(localStorage.getItem(storageKey) || "{}");
+let index = Math.min(Number(localStorage.getItem(`${storageKey}-index`) || 0), rows.length - 1);
+const ratings = document.getElementById("ratings");
+for (let value = 0; value <= 3; value++) {
+  const label = document.createElement("label"); label.className = "choice";
+  label.innerHTML = `<input type="radio" name="rating" value="${value}"> ${value}`;
+  ratings.appendChild(label);
+}
+function selectedRating() { const chosen = document.querySelector('input[name="rating"]:checked'); return chosen ? Number(chosen.value) : null; }
+function completedCount() { return Object.values(answers).filter(answer => Number.isInteger(answer.rating)).length; }
+function persistCurrent(requireRating) {
+  const rating = selectedRating();
+  if (requireRating && rating === null) { document.getElementById("status").textContent = "Escolha uma nota de 0 a 3 antes de avançar."; return false; }
+  if (rating !== null) answers[rows[index].pair_id] = { rating, near_duplicate: document.getElementById("near").checked, reason_code: document.getElementById("ambiguous").checked ? "ambiguous_wording" : "" };
+  localStorage.setItem(storageKey, JSON.stringify(answers)); localStorage.setItem(`${storageKey}-index`, String(index)); return true;
+}
+function render() {
+  const row = rows[index], answer = answers[row.pair_id] || {};
+  document.getElementById("anchor").textContent = row.anchor; document.getElementById("candidate").textContent = row.candidate;
+  document.querySelectorAll('input[name="rating"]').forEach(input => input.checked = Number(input.value) === answer.rating);
+  document.getElementById("near").checked = Boolean(answer.near_duplicate); document.getElementById("ambiguous").checked = answer.reason_code === "ambiguous_wording";
+  const done = completedCount(); document.getElementById("progressText").textContent = `${done} de ${rows.length} concluídos — item ${index + 1}`;
+  document.getElementById("progressBar").value = done; document.getElementById("previous").disabled = index === 0;
+  document.getElementById("next").textContent = index === rows.length - 1 ? "Salvar" : "Salvar e avançar";
+  document.getElementById("export").disabled = done !== rows.length; document.getElementById("status").textContent = done === rows.length ? "Pacote completo. Exporte o arquivo e mantenha-o privado." : "";
+}
+document.getElementById("previous").onclick = () => { persistCurrent(false); if (index > 0) index--; render(); };
+document.getElementById("next").onclick = () => { if (!persistCurrent(true)) return; if (index < rows.length - 1) index++; render(); };
+document.getElementById("export").onclick = () => {
+  if (!persistCurrent(true) || completedCount() !== rows.length) return;
+  const escape = value => `"${String(value).replaceAll('"', '""')}"`;
+  const lines = ["packet_row,pair_id,anchor,candidate,rating,near_duplicate,reason_code"];
+  rows.forEach((row, i) => { const answer = answers[row.pair_id]; lines.push([i + 1, row.pair_id, row.anchor, row.candidate, answer.rating, answer.near_duplicate ? "yes" : "no", answer.reason_code].map(escape).join(",")); });
+  const blob = new Blob(["\ufeff" + lines.join("\r\n") + "\r\n"], {type: "text/csv;charset=utf-8"});
+  const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `annotator-${packetLabel.toLowerCase()}-completed.csv`; link.click(); URL.revokeObjectURL(link.href);
+};
+document.getElementById("reset").onclick = () => {
+  if (!confirm("Limpar todas as respostas salvas deste pacote neste navegador?")) return;
+  localStorage.removeItem(storageKey); localStorage.removeItem(`${storageKey}-index`);
+  answers = {}; index = 0; render();
+  document.getElementById("status").textContent = "Progresso deste pacote removido deste navegador.";
+};
+render();
+</script>
+</body>
+</html>

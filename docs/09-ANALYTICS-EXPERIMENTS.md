@@ -201,10 +201,19 @@ Suggested design:
 
 Compare at least:
 
-- an Apple Natural Language sentence-embedding baseline when available for the
-  target OS/language;
+- a deterministic non-semantic lexical control that works offline and makes
+  superficial-overlap/near-duplicate failures visible;
 - a compact multilingual encoder packaged for on-device use;
 - a Portuguese-focused encoder if its license and device profile are suitable.
+
+Under Android ADR-040, corpus construction targets are rehearsal labels only.
+Freeze scenario families across development/held-out splits, require two
+independent human ratings per held-out pair, and report disagreement. A
+PT-focused base language model without a reviewed sentence-level objective is
+not an eligible embedding candidate merely because it was trained in PT-BR.
+ADR-041 uses the permitted early-stop path: no V0 model is selected, so the
+held-out human gate is retained for future reopening rather than fabricated or
+completed merely to reject the current candidate.
 
 Evaluate:
 

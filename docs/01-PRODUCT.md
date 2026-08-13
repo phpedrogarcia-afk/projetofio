@@ -24,6 +24,18 @@ Fio uses time as part of the product. Its value does not come primarily from
 capturing more notes, but from enabling a later encounter with a version of the
 person that would otherwise be forgotten.
 
+## Long-term north star
+
+The current product proves memory through Time Returns. The founder's broader
+direction is to let a person decide what time should do with their own material:
+keep it, return it, hold it until a boundary, deliver it to a future self, and—
+only after separate legal, identity, consent, and security gates—deliver selected
+material to another person or after death.
+
+This direction is preserved in `11-FOUNDER-VISION.md`. It does not expand the
+current milestone or unfreeze Legacy. The complete product must remain useful
+without correspondence, a server, or semantic AI.
+
 ## The problem
 
 People forget not only events, but how they actually thought, felt, doubted,

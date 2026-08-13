@@ -47,6 +47,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.projetofio.app.domain.AppLockMode
 import com.projetofio.app.domain.Entry
+import com.projetofio.app.domain.ImportBatch
+import com.projetofio.app.domain.ImportIssueCode
+import com.projetofio.app.domain.NotificationPermissionObserved
+import com.projetofio.app.domain.ReturnConsentState
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -66,9 +70,21 @@ fun FioApp(
     exportMessage: String?,
     onExportMarkdown: () -> Unit,
     onExportText: () -> Unit,
+    onEnableReturns: () -> Unit,
+    onOpenPendingReturn: (String) -> Unit,
+    onSelectImport: () -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var surface by remember { mutableStateOf(MainSurface.WRITE) }
+
+    state.openedReturn?.let { opened ->
+        ReturnScreen(
+            entry = opened.entry,
+            onClose = viewModel::closeReturn,
+            onNeverReturn = viewModel::neverReturnOpened,
+        )
+        return
+    }
 
     Scaffold(
         bottomBar = {
@@ -96,6 +112,9 @@ fun FioApp(
                 authorizeFresh = authorizeFresh,
                 onExportMarkdown = onExportMarkdown,
                 onExportText = onExportText,
+                onEnableReturns = onEnableReturns,
+                onOpenPendingReturn = onOpenPendingReturn,
+                onSelectImport = onSelectImport,
             )
         }
     }
@@ -277,8 +296,32 @@ private fun SettingsScreen(
     authorizeFresh: (() -> Unit) -> Unit,
     onExportMarkdown: () -> Unit,
     onExportText: () -> Unit,
+    onEnableReturns: () -> Unit,
+    onOpenPendingReturn: (String) -> Unit,
+    onSelectImport: () -> Unit,
 ) {
     var permanentDelete by remember { mutableStateOf<Entry?>(null) }
+    var confirmReturnConsent by remember { mutableStateOf(false) }
+    var rollbackBatch by remember { mutableStateOf<ImportBatch?>(null) }
+    if (confirmReturnConsent) {
+        AlertDialog(
+            onDismissRequest = { confirmReturnConsent = false },
+            title = { Text("Ativar devoluções?") },
+            text = {
+                Text(
+                    "O Fio poderá, de vez em quando, mostrar uma notificação discreta quando uma entrada antiga estiver disponível. " +
+                        "A notificação nunca mostra o texto da entrada. Você poderá pausar quando quiser.",
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    confirmReturnConsent = false
+                    onEnableReturns()
+                }) { Text("Ativar devoluções") }
+            },
+            dismissButton = { TextButton(onClick = { confirmReturnConsent = false }) { Text("Agora não") } },
+        )
+    }
     permanentDelete?.let { entry ->
         AlertDialog(
             onDismissRequest = { permanentDelete = null },
@@ -291,6 +334,20 @@ private fun SettingsScreen(
                 }) { Text("Excluir permanentemente") }
             },
             dismissButton = { TextButton(onClick = { permanentDelete = null }) { Text("Cancelar") } },
+        )
+    }
+    rollbackBatch?.let { batch ->
+        AlertDialog(
+            onDismissRequest = { rollbackBatch = null },
+            title = { Text("Desfazer este lote?") },
+            text = { Text("Entradas importadas e não editadas irão para Excluídos recentemente. Entradas editadas depois da importação serão preservadas.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.rollbackImport(batch.id)
+                    rollbackBatch = null
+                }) { Text("Desfazer lote") }
+            },
+            dismissButton = { TextButton(onClick = { rollbackBatch = null }) { Text("Cancelar") } },
         )
     }
 
@@ -313,6 +370,110 @@ private fun SettingsScreen(
             )
         }
         item { HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp)) }
+        if (state.m2EngineeringEnabled) {
+            item { SectionTitle("Devoluções — validação") }
+            item {
+                Text("Recurso isolado para testes sintéticos. Nenhuma palavra é colocada na notificação.")
+            }
+            when (state.settings.returnConsentState) {
+                ReturnConsentState.NOT_CONFIGURED -> item {
+                    OutlinedButton(
+                        onClick = { confirmReturnConsent = true },
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                    ) { Text("Conhecer e ativar") }
+                }
+                ReturnConsentState.ENABLED -> {
+                    item {
+                        OutlinedButton(
+                            onClick = viewModel::pauseReturns,
+                            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                        ) { Text("Pausar devoluções") }
+                    }
+                    item { Text("Horário silencioso atual: ${quietHoursLabel(state.settings.quietHoursStartMinute, state.settings.quietHoursEndMinute)}") }
+                    item {
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            OutlinedButton(onClick = { viewModel.setQuietHours(21 * 60, 8 * 60) }) { Text("21h–8h") }
+                            OutlinedButton(onClick = { viewModel.setQuietHours(22 * 60, 9 * 60) }) { Text("22h–9h") }
+                        }
+                    }
+                }
+                ReturnConsentState.PAUSED -> item {
+                    OutlinedButton(
+                        onClick = viewModel::resumeReturns,
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                    ) { Text("Retomar devoluções") }
+                }
+            }
+            if (state.settings.notificationPermissionObserved == NotificationPermissionObserved.DENIED) {
+                item { Text("Notificações estão desativadas. O Fio continuará funcionando normalmente e não pedirá novamente aqui.") }
+            }
+            state.pendingReturnId?.let { id ->
+                item {
+                    OutlinedButton(
+                        onClick = { onOpenPendingReturn(id) },
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                    ) { Text("Abrir devolução disponível") }
+                }
+            }
+            state.returnError?.let { error -> item { Text(error, color = MaterialTheme.colorScheme.error) } }
+            item { HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp)) }
+        }
+        if (state.m3EngineeringEnabled) {
+            item { SectionTitle("Importar — validação") }
+            item { Text("Escolha um TXT ou Markdown UTF-8 com blocos e datas explícitos. A prévia não altera o Arquivo.") }
+            item {
+                OutlinedButton(
+                    onClick = onSelectImport,
+                    enabled = !state.importing,
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                ) { Text(if (state.importing) "Preparando…" else "Escolher arquivo") }
+            }
+            state.importPreview?.let { preview ->
+                item {
+                    Text(
+                        "Prévia: ${preview.importableCount} novas, ${preview.duplicateCount} duplicadas, ${preview.issues.size} erros.",
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                }
+                items(preview.items, key = { "preview-${preview.id}-${it.candidate.sourceIndex}" }) { item ->
+                    Card(modifier = Modifier.fillMaxWidth()) {
+                        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Text(displayImportDate(item.candidate.originalCreatedAt, item.candidate.originalTimeZone))
+                            Text(item.candidate.content, maxLines = 4, overflow = TextOverflow.Ellipsis)
+                            if (item.duplicate) Text("Duplicada — não será importada.", color = MaterialTheme.colorScheme.primary)
+                        }
+                    }
+                }
+                items(preview.issues, key = { "issue-${preview.id}-${it.sourceIndex}-${it.code}" }) { issue ->
+                    Text(importIssueLabel(issue.code), color = MaterialTheme.colorScheme.error)
+                }
+                item {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Button(
+                            onClick = viewModel::commitImport,
+                            enabled = preview.canCommit && !state.importing,
+                            modifier = Modifier.heightIn(min = 48.dp),
+                        ) { Text("Importar ${preview.importableCount}") }
+                        TextButton(onClick = viewModel::cancelImportPreview) { Text("Cancelar") }
+                    }
+                }
+            }
+            state.importMessage?.let { message ->
+                item { Text(message, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }) }
+            }
+            items(state.importBatches, key = { "batch-${it.id}" }) { batch ->
+                if (batch.status.name == "COMMITTED") {
+                    Card(modifier = Modifier.fillMaxWidth()) {
+                        Column(Modifier.padding(16.dp)) {
+                            Text("Lote: ${batch.importedCount} entradas", fontWeight = FontWeight.SemiBold)
+                            Text(batch.sourceFileName ?: "Nome do arquivo não mantido")
+                            TextButton(onClick = { rollbackBatch = batch }) { Text("Desfazer este lote") }
+                        }
+                    }
+                }
+            }
+            item { HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp)) }
+        }
         item { SectionTitle("Exportar") }
         item { Text("O arquivo escolhido ficará fora da proteção do Fio. A exportação é local e não envia uma cópia para o Fio.") }
         item {
@@ -340,7 +501,69 @@ private fun SettingsScreen(
             }
         }
         item { Spacer(Modifier.height(18.dp)) }
-        item { Text("M1 local: sem conta, sincronização, analytics ou devoluções ativas.", style = MaterialTheme.typography.bodySmall) }
+        item {
+            Text(
+                if (state.m3EngineeringEnabled) "M3 em validação local: importação sintética, sem conta, sincronização, analytics ou piloto."
+                else if (state.m2EngineeringEnabled) "M2 em validação local: sem conta, sincronização, analytics ou conteúdo real de teste."
+                else "M1 local: sem conta, sincronização, analytics ou devoluções ativas.",
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
+    }
+}
+
+private fun displayImportDate(instant: java.time.Instant, zone: String): String {
+    val zoneId = runCatching { ZoneId.of(zone) }.getOrDefault(ZoneId.of("UTC"))
+    return DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
+        .withLocale(Locale.forLanguageTag("pt-BR"))
+        .format(instant.atZone(zoneId))
+}
+
+private fun importIssueLabel(code: ImportIssueCode): String = when (code) {
+    ImportIssueCode.FILE_TOO_LARGE -> "O arquivo ultrapassa 5 MiB."
+    ImportIssueCode.TOO_MANY_LINES -> "O arquivo ultrapassa 20.000 linhas."
+    ImportIssueCode.TOO_MANY_ENTRIES -> "O arquivo ultrapassa 2.000 entradas."
+    ImportIssueCode.ENTRY_TOO_LARGE -> "Uma entrada ultrapassa 256 KiB."
+    ImportIssueCode.MALFORMED_UTF8 -> "O arquivo não é UTF-8 válido."
+    ImportIssueCode.UNSUPPORTED_CONTAINER -> "Arquivos compactados não são aceitos."
+    ImportIssueCode.ACTIVE_CONTENT -> "Conteúdo HTML ou executável não é aceito."
+    ImportIssueCode.CONTROL_CONTENT -> "O arquivo contém controles não suportados."
+    ImportIssueCode.UNSUPPORTED_STRUCTURE -> "A estrutura de entradas não foi reconhecida."
+    ImportIssueCode.MISSING_DATE -> "Uma entrada não possui data original explícita."
+    ImportIssueCode.INVALID_DATE -> "Uma data original é inválida."
+    ImportIssueCode.INVALID_SIZE -> "O tamanho declarado de uma entrada é inválido."
+    ImportIssueCode.TIME_LIMIT -> "A leitura ultrapassou o limite de segurança."
+}
+
+@Composable
+private fun ReturnScreen(entry: Entry, onClose: () -> Unit, onNeverReturn: () -> Unit) {
+    Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+        LazyColumn(
+            contentPadding = PaddingValues(horizontal = 24.dp, vertical = 32.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp),
+        ) {
+            item {
+                Text(
+                    "Uma palavra sua voltou",
+                    style = MaterialTheme.typography.headlineMedium,
+                    modifier = Modifier.semantics { heading() },
+                )
+            }
+            item { Text(displayDate(entry), color = MaterialTheme.colorScheme.primary) }
+            item { SelectionContainer { Text(entry.content, style = MaterialTheme.typography.bodyLarge) } }
+            item {
+                Button(
+                    onClick = onClose,
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                ) { Text("Fechar") }
+            }
+            item {
+                TextButton(
+                    onClick = onNeverReturn,
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                ) { Text("Não mostrar novamente") }
+            }
+        }
     }
 }
 
@@ -442,3 +665,11 @@ private fun displayDate(entry: Entry): String {
         .withLocale(Locale.forLanguageTag("pt-BR"))
     return formatter.format(entry.originalCreatedAt.atZone(zone))
 }
+
+private fun quietHoursLabel(startMinute: Int, endMinute: Int): String =
+    "%02dh%02d–%02dh%02d".format(
+        startMinute / 60,
+        startMinute % 60,
+        endMinute / 60,
+        endMinute % 60,
+    )

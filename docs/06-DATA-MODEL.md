@@ -1,12 +1,35 @@
 # 06 — Data model
 
-Status: Canonical domain model for specification v0.1; M1 subset mapped to Room
-schema version 1
+Status: Canonical domain model for specification v0.1; M3 subset mapped to Room
+schema version 3
 
 Platform note: `ADR-033` changes the client to Android. Entity and consent
 invariants remain canonical. The Android Keystore/AES-GCM envelope boundary is
-Accepted through `ADR-035`; the M1 Entry/Draft/AppSettings subset is implemented
-as exported Room schema version 1 under the Approved Android M1 execution plan.
+Accepted through `ADR-035`; Entry/Draft/AppSettings plus the content-free V0
+Return lifecycle and bounded import provenance are implemented as exported Room
+schema version 3 under the approved Android M1–M3 plans.
+
+### Implemented Room schema 2 checkpoint
+
+Migration `1 → 2` is additive and tested from a populated schema-1 fixture. It
+preserves encrypted Entry/Draft values and settings exactly, adds Entry return
+counters/timestamps, adds quiet-hour and observed-notification-permission
+settings with privacy-preserving defaults, and creates the one-Entry `returns`
+table and indexes. It does not enable Return consent, create a Return, schedule
+work, decrypt content, or use destructive fallback. The exported ledger is
+`app/mobile/schemas/com.projetofio.app.persistence.FioDatabase/2.json`.
+
+### Implemented Room schema 3 checkpoint
+
+Migration `2 → 3` additively adds nullable encrypted import provenance to Entry
+and creates `import_batches`/`import_batch_items` with indexed foreign-key
+mappings. Existing Entry/Draft/settings/Return rows remain byte-for-byte
+unchanged; no batch, Entry, consent, Return, or work is created. A batch commit
+inserts batch, encrypted Entries, and item mappings in one Room transaction.
+Rollback marks the batch and each mapping while tombstoning only Entries whose
+`updatedAt` still equals the import snapshot; later edits and unrelated/native
+Entries are excluded. The exported ledger is
+`app/mobile/schemas/com.projetofio.app.persistence.FioDatabase/3.json`.
 
 ## Goals
 

@@ -5,9 +5,17 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.projetofio.app.application.ExportFormat
 import com.projetofio.app.application.FioService
+import com.projetofio.app.application.OpenedReturn
+import com.projetofio.app.application.TimeReturnsService
+import com.projetofio.app.application.ImportPreview
+import com.projetofio.app.application.ImportService
 import com.projetofio.app.domain.AppLockMode
 import com.projetofio.app.domain.AppSettings
 import com.projetofio.app.domain.Entry
+import com.projetofio.app.domain.NotificationPermissionObserved
+import com.projetofio.app.domain.ReturnConsentState
+import com.projetofio.app.domain.ImportBatch
+import com.projetofio.app.domain.ImportSource
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -32,13 +40,28 @@ data class FioUiState(
     val savedNotice: Boolean = false,
     val recoverableError: String? = null,
     val archiveError: Boolean = false,
+    val m2EngineeringEnabled: Boolean = false,
+    val pendingReturnId: String? = null,
+    val openedReturn: OpenedReturn? = null,
+    val returnError: String? = null,
+    val m3EngineeringEnabled: Boolean = false,
+    val importPreview: ImportPreview? = null,
+    val importBatches: List<ImportBatch> = emptyList(),
+    val importMessage: String? = null,
+    val importing: Boolean = false,
 )
 
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
 class FioViewModel(
     private val service: FioService,
+    private val timeReturns: TimeReturnsService,
+    private val localImport: ImportService,
+    private val m2EngineeringEnabled: Boolean,
+    private val m3EngineeringEnabled: Boolean,
 ) : ViewModel() {
-    private val mutableState = MutableStateFlow(FioUiState())
+    private val mutableState = MutableStateFlow(
+        FioUiState(m2EngineeringEnabled = m2EngineeringEnabled, m3EngineeringEnabled = m3EngineeringEnabled),
+    )
     val state: StateFlow<FioUiState> = mutableState.asStateFlow()
     private val draftChanges = MutableStateFlow("")
     private val saveInProgress = AtomicBoolean(false)
@@ -52,6 +75,11 @@ class FioViewModel(
                 val text = draft?.content.orEmpty()
                 draftChanges.value = text
                 mutableState.update { it.copy(draftText = text, settings = settings, loading = false) }
+                if (m2EngineeringEnabled) {
+                    timeReturns.reconcile()
+                    refreshPendingReturn()
+                }
+                if (m3EngineeringEnabled) refreshImportBatches()
             }.onFailure(::showDataFailure)
         }
         viewModelScope.launch {
@@ -86,6 +114,10 @@ class FioViewModel(
                 service.saveEntry(content)
                 draftChanges.value = ""
                 mutableState.update { it.copy(draftText = "", saving = false, savedNotice = true) }
+                if (m2EngineeringEnabled) {
+                    timeReturns.reconcile()
+                    refreshPendingReturn()
+                }
             } catch (error: CancellationException) {
                 throw error
             } catch (_: Exception) {
@@ -108,6 +140,10 @@ class FioViewModel(
 
     fun deleteEntry(id: String) = launchAction {
         service.moveToRecentlyDeleted(id)
+        if (m2EngineeringEnabled) {
+            timeReturns.reconcile()
+            refreshPendingReturn()
+        }
     }
 
     fun recoverEntry(id: String) = launchAction {
@@ -124,6 +160,146 @@ class FioViewModel(
     }
 
     suspend fun buildExport(format: ExportFormat): String = service.export(format)
+
+    fun previewImport(bytes: ByteArray, source: ImportSource, sourceFileName: String?) {
+        if (!m3EngineeringEnabled) return
+        mutableState.update { it.copy(importing = true, importMessage = null, importPreview = null) }
+        viewModelScope.launch {
+            runCatching { localImport.preview(bytes, source, sourceFileName) }
+                .onSuccess { preview ->
+                    mutableState.update { it.copy(importing = false, importPreview = preview) }
+                }
+                .onFailure {
+                    mutableState.update {
+                        it.copy(importing = false, importMessage = "Não foi possível preparar esse arquivo. Nada foi importado.")
+                    }
+                }
+        }
+    }
+
+    fun importReadFailed() {
+        mutableState.update {
+            it.copy(importing = false, importPreview = null, importMessage = "Não foi possível abrir esse arquivo. Nada foi importado.")
+        }
+    }
+
+    fun cancelImportPreview() {
+        state.value.importPreview?.let { localImport.cancel(it.id) }
+        mutableState.update { it.copy(importPreview = null, importMessage = null) }
+    }
+
+    fun commitImport() {
+        val preview = state.value.importPreview ?: return
+        mutableState.update { it.copy(importing = true, importMessage = null) }
+        viewModelScope.launch {
+            runCatching { localImport.commit(preview.id) }
+                .onSuccess { batch ->
+                    mutableState.update {
+                        it.copy(
+                            importing = false,
+                            importPreview = null,
+                            importMessage = "${batch.importedCount} entradas importadas.",
+                        )
+                    }
+                    refreshImportBatches()
+                    if (m2EngineeringEnabled) refreshPendingReturn()
+                }
+                .onFailure {
+                    mutableState.update {
+                        it.copy(importing = false, importMessage = "A importação falhou. O Arquivo não foi alterado.")
+                    }
+                }
+        }
+    }
+
+    fun rollbackImport(batchId: String) {
+        mutableState.update { it.copy(importing = true, importMessage = null) }
+        viewModelScope.launch {
+            runCatching { localImport.rollback(batchId) }
+                .onSuccess { result ->
+                    mutableState.update {
+                        it.copy(
+                            importing = false,
+                            importMessage = "${result.rolledBackEntryIds.size} entradas movidas para Excluídos recentemente; ${result.editedExcludedCount} editadas foram preservadas.",
+                        )
+                    }
+                    refreshImportBatches()
+                    if (m2EngineeringEnabled) refreshPendingReturn()
+                }
+                .onFailure {
+                    mutableState.update { it.copy(importing = false, importMessage = "Não foi possível desfazer esse lote. Nada foi apagado.") }
+                }
+        }
+    }
+
+    private suspend fun refreshImportBatches() {
+        mutableState.update { it.copy(importBatches = localImport.loadBatches()) }
+    }
+
+    fun enableReturns(afterConsentStored: () -> Unit) = launchAction {
+        timeReturns.enableReturns()
+        mutableState.update { it.copy(settings = service.loadSettings()) }
+        refreshPendingReturn()
+        afterConsentStored()
+    }
+
+    fun pauseReturns() = launchAction {
+        timeReturns.pauseReturns()
+        mutableState.update { it.copy(settings = service.loadSettings(), pendingReturnId = null) }
+    }
+
+    fun resumeReturns() = launchAction {
+        timeReturns.resumeReturns()
+        mutableState.update { it.copy(settings = service.loadSettings()) }
+        refreshPendingReturn()
+    }
+
+    fun setQuietHours(startMinute: Int, endMinute: Int) = launchAction {
+        timeReturns.setQuietHours(startMinute, endMinute)
+        mutableState.update { it.copy(settings = service.loadSettings()) }
+        refreshPendingReturn()
+    }
+
+    fun observeNotificationPermission(observed: NotificationPermissionObserved) = launchAction {
+        timeReturns.observeNotificationPermission(observed)
+        mutableState.update { it.copy(settings = service.loadSettings()) }
+        timeReturns.reconcile()
+        refreshPendingReturn()
+    }
+
+    fun reconcileReturns() = launchAction {
+        timeReturns.reconcile()
+        refreshPendingReturn()
+    }
+
+    fun openReturn(id: String) = launchAction {
+        val opened = timeReturns.openReturn(id)
+        mutableState.update {
+            it.copy(
+                openedReturn = opened,
+                pendingReturnId = if (opened == null) null else it.pendingReturnId,
+                returnError = if (opened == null) "Esta devolução não está mais disponível." else null,
+            )
+        }
+    }
+
+    fun closeReturn() = launchAction {
+        val opened = state.value.openedReturn ?: return@launchAction
+        timeReturns.dismissReturn(opened.attemptId)
+        mutableState.update { it.copy(openedReturn = null, pendingReturnId = null, returnError = null) }
+        refreshPendingReturn()
+    }
+
+    fun neverReturnOpened() = launchAction {
+        val opened = state.value.openedReturn ?: return@launchAction
+        timeReturns.neverReturn(opened.attemptId)
+        mutableState.update { it.copy(openedReturn = null, pendingReturnId = null, returnError = null) }
+        refreshPendingReturn()
+    }
+
+    private suspend fun refreshPendingReturn() {
+        mutableState.update { it.copy(pendingReturnId = timeReturns.pendingReturnId()) }
+    }
 
     private fun launchAction(action: suspend () -> Unit) {
         viewModelScope.launch {
@@ -142,11 +318,17 @@ class FioViewModel(
         }
     }
 
-    class Factory(private val service: FioService) : ViewModelProvider.Factory {
+    class Factory(
+        private val service: FioService,
+        private val timeReturns: TimeReturnsService,
+        private val localImport: ImportService,
+        private val m2EngineeringEnabled: Boolean,
+        private val m3EngineeringEnabled: Boolean,
+    ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             require(modelClass.isAssignableFrom(FioViewModel::class.java))
-            return FioViewModel(service) as T
+            return FioViewModel(service, timeReturns, localImport, m2EngineeringEnabled, m3EngineeringEnabled) as T
         }
     }
 }

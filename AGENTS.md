@@ -22,6 +22,7 @@ Then read the documents relevant to the task:
 |---|---|
 | Interface, copy, notifications, accessibility | `docs/03-UX.md` |
 | Scope or feature proposals | `docs/04-FEATURES.md`, `docs/10-ROADMAP.md` |
+| Long-term direction, time trust, correspondence, Legacy, or feature removal | `docs/11-FOUNDER-VISION.md` |
 | Modules, storage, sync, platform choices | `docs/05-ARCHITECTURE.md` |
 | Entities, fields, migrations, retention | `docs/06-DATA-MODEL.md` |
 | Eligibility, selection, scheduling, feedback | `docs/07-RETURNS-ENGINE.md` |
@@ -40,6 +41,11 @@ When documents appear to conflict, apply this order:
 3. `docs/01-PRODUCT.md`
 4. The domain specification for the affected area
 5. `docs/10-ROADMAP.md`
+6. `docs/11-FOUNDER-VISION.md`
+
+The founder vision preserves long-term intent but is not implementation
+authorization. A Frozen capability remains blocked until a new Accepted
+decision and roadmap gate permit it.
 
 Do not resolve a real contradiction by silently choosing one side. Stop,
 identify the conflict, and propose the smallest compliant option. Record a new
@@ -63,6 +69,12 @@ decision only after explicit human approval.
 - Fio should feel smaller than the user's life. When choosing between making
   the app more interesting and preserving a quiet autobiographical experience,
   choose the quiet experience.
+
+Current semantic boundary: ADR-041 ends the V0 semantic path with no model
+selected. The M4-R2 corpus/rubric stays frozen, but no annotation is required
+to reject the failed MiniLM candidate. Do not fabricate human labels, run M5,
+or connect semantic research to Android. Reopening model selection requires a
+new decision and the human/device gates retained by ADR-040.
 
 ## Never add without an approved decision
 
@@ -99,6 +111,8 @@ Feature labels have precise meanings:
 - **Experimental**: must be isolated behind a feature flag and removable.
 - **Planned**: direction is accepted, but implementation waits for its phase.
 - **Research**: investigate only; do not ship.
+- **Deferred**: intentionally postponed; reopening requires a new approved
+  decision.
 - **Frozen**: retain the idea, do not design or implement now.
 - **Rejected**: do not implement.
 
@@ -111,12 +125,16 @@ Return:
 
 ## Current implementation state
 
-Version `v0.1` contains the canonical specification package and an Android M1
-engineering baseline accepted by `ADR-037`. Its open physical, accessibility,
-interoperability, second-OEM, and independent-review checks remain mandatory
-before a participant pilot, production release, or security/audit claim; they
-must not be reported as passed. M2 engineering may proceed with synthetic data
-after its execution plan is approved. No sync service, Return delivery,
-analytics transport, or semantic experiment exists. `ADR-033` makes Android
-the current initial-client direction; do not execute the Superseded iOS/Apple
-plan or its dependencies. Follow `docs/10-ROADMAP.md` in order.
+Version `v0.1` contains the canonical specification package, an Android M1
+engineering baseline accepted by `ADR-037`, and validation-only M2 Time/M3
+local-import engineering checkpoints. Open physical, accessibility,
+interoperability, second-OEM, notification-provider, and independent-review
+checks remain mandatory before a participant pilot, production release, or
+security/audit claim; they must not be reported as passed. No sync service,
+analytics transport, participant pilot, or product semantic experiment exists.
+ADR-040 authorizes only isolated M4 synthetic benchmark research; ADR-041
+records the early-stop `no model selected` outcome. ADR-024 remains Deferred
+and no research model may connect to Room or Returns.
+`ADR-033` makes Android the current initial-client direction; do not execute the
+Superseded iOS/Apple plan or its dependencies. Follow `docs/10-ROADMAP.md` in
+order.
