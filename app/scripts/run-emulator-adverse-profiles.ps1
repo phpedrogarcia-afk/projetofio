@@ -158,7 +158,7 @@ try {
             }
         }
     }
-    Write-Host "M1 adverse emulator profiles completed successfully."
+    Write-Host "M1+M2+M3 adverse emulator profiles completed successfully."
 } finally {
     Pop-Location
 }

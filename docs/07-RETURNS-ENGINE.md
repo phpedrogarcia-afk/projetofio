@@ -1,6 +1,6 @@
 # 07 — Returns engine
 
-Status: Canonical V0 behavior; Semantic Resonance remains experimental
+Status: Canonical V0 behavior; Time engineering checkpoint implemented; Semantic Resonance remains experimental
 
 ## Purpose
 
@@ -50,7 +50,7 @@ The engine receives explicit dependencies:
 - typed experiment flags and assignment;
 - deterministic random source;
 - optional embedding/matching adapter;
-- background opportunity constraints supplied by iOS.
+- background opportunity constraints supplied by Android.
 
 It does not read analytics results during selection. Product experiments cannot
 adapt per user to maximize opens.
@@ -282,8 +282,24 @@ Return records or duplicate notifications.
   intended quiet-hour experience.
 - Daylight-saving changes cannot create two notifications.
 - An overdue window is reconciled; do not emit a burst after a long offline gap.
-- Exact delivery time is not promised because iOS background execution is
+- Exact delivery time is not promised because Android background execution is
   opportunistic.
+
+## M2 Android implementation checkpoint
+
+ADR-038 implements the Time-only path with a pure deterministic engine,
+transactional Room schema 2 history, and one unique deferrable WorkManager
+opportunity. The engine enforces explicit consent, bootstrap age thresholds,
+six canonical age buckets, one pending Return, a rolling seven-day cap, no V0
+repeat, quiet hours across midnight/DST, expiration, and fail-closed policy
+rechecks. Permission denial retains at most one quiet in-app pending affordance;
+pause, deletion, Never Return, expiry, and changed quiet hours cancel matching
+work/notification references.
+
+The feature is active only in the isolated validation build. Debug-primary and
+release cannot enable it. This checkpoint is synthetic-data engineering
+evidence, not participant-pilot, OEM-wide, accessibility, signing, publication,
+or production-readiness evidence.
 
 ## Notification and opening
 

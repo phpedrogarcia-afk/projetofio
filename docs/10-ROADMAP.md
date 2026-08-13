@@ -38,6 +38,8 @@ M6 KEEP / REVISE / REMOVE DECISION
 V1 PRIVATE BETA HARDENING (conditional)
       ↓
 V2 LONGITUDINAL MEDIA RESEARCH (conditional)
+      ↓
+LONG-TERM TIME TRUST + CORRESPONDENCE (separately gated)
 ```
 
 ## Milestone 0 — Repository understands Fio
@@ -137,7 +139,7 @@ Gate disposition under ADR-037:
 
 ## Milestone 2 — Time returns
 
-Status: Approved for engineering after the ADR-037 M1 baseline
+Status: Engineering checkpoint complete; validation-only; pre-pilot gates retained
 
 User outcome:
 
@@ -172,9 +174,19 @@ Exit criteria:
 - Return screen exposes no algorithm rationale;
 - notification and logs contain no private content.
 
+Checkpoint evidence: ADR-038 and the approved M2 plan produced Room schema 2,
+the pure Time engine, unique WorkManager scheduling, generic local
+notifications, validation-only consent/settings/Return UI, 37 passing JVM
+tests, 21 passing instrumented tests on each API 26/API 36 endpoint, an API 36
+permission grant/revoke proof, and passing adverse/credential regressions. See
+`plans/evidence/2026-08-13-m2-time-returns.md`. Physical M2 flow,
+TalkBack/manual accessibility, notification-dialog dismissal/channel-disable,
+second-OEM/provider interoperability, and independent review remain pre-pilot
+evidence; no participant, release, or production claim follows.
+
 ## Milestone 3 — Import and Time-only pilot
 
-Status: Approved after Milestone 2
+Status: Engineering checkpoint complete; validation-only; participant pilot blocked
 
 User outcome:
 
@@ -202,9 +214,21 @@ Exit criteria:
 - Time-only pilot confirms basic comprehension and trust before semantic work;
 - event contract tests reject content and arbitrary strings.
 
+Checkpoint evidence: ADR-039 produced the pure bounded TXT/Markdown parser,
+exact local deduplication, Room schema 3, atomic commit/protected rollback,
+encrypted minimal provenance, SAF preview UI, and export round-trip with named
+timezone preservation. The final suite passes 51 JVM tests and 23 instrumented
+tests on each API 26/API 36 endpoint; both endpoints also pass the validation-
+only SAF profile and the retained adverse/credential regressions. See
+`plans/evidence/2026-08-13-m3-local-import.md`. This completes import
+engineering only. The Time-only participant pilot, content-free pilot events,
+personal-file import, TalkBack/manual accessibility, second-OEM/provider
+interoperability, physical authentication, and independent review remain
+blocked gates.
+
 ## Milestone 4 — Portuguese semantic benchmark
 
-Status: Research after reliable local core; no product rollout
+Status: Complete — ADR-041 selected no V0 model after the development gate
 
 Outcome:
 
@@ -223,15 +247,33 @@ Scope:
 
 Exit criteria:
 
-- held-out results and human disagreement are reported;
+- held-out results and human disagreement are reported before selecting a model;
 - all models run on device without journal network calls;
 - device budgets and supported matrix are explicit;
 - license/dependency/security review is complete;
 - if no model clears thresholds, stop semantic work and retain Time.
 
+Current checkpoint: M4-R1/ADR-040 created an isolated standard-library research
+harness, a 300-pair synthetic PT-BR corpus with 20 scenario families/60 ranking
+groups, a family-isolated 240-development/60-held-out split, two differently
+ordered blind annotation packets, and a current-source candidate inventory. The
+corpus hash is
+`72a702510cc0ed3e9f72595a8e0df9ed379278b64e223dd1b1a36b30ed73ccef`.
+Thirteen offline tests pass. The lexical control rehearsal records Spearman
+`0.135344`, mean nDCG@5 `0.498154`, and unsafe top-1 rate `1.0`; these use only
+construction targets and are not human/model selection evidence. M4-R2 froze
+corpus/rubric v1. A hash-verified MiniLM ONNX
+development rehearsal remained outside product/Gradle and did not evaluate the
+held-out split: Spearman `0.345850`, mean nDCG@5 `0.483447`, unsafe top-1 `1.0`,
+about 521 MB extra Windows working set, and about 41.5 ms per unique text on the
+recorded PC run. ADR-041 rejects this candidate before held-out/Android work and
+closes M4 with no model selected. Human packets remain mandatory only if model
+selection is reopened. No semantic dependency or Android integration exists,
+and ADR-024 remains Deferred.
+
 ## Milestone 5 — Controlled Resonance pilot
 
-Status: Experimental; requires Milestones 3 and 4 plus approved study plan
+Status: Deferred for V0 by ADR-041; no M5 product code or participant pilot
 
 User outcome:
 
@@ -260,7 +302,7 @@ Exit criteria:
 
 ## Milestone 6 — Semantic decision
 
-Status: Required; outcome unknown
+Status: Complete for V0 — Remove / do not introduce Semantic Resonance
 
 Use `09-ANALYTICS-EXPERIMENTS.md` thresholds to make one explicit decision:
 
@@ -324,17 +366,38 @@ Possible work:
 - optional location only with explicit consent and no psychological trigger.
 
 Each expands the sensitive-data and return-safety surface and needs a separate
-decision. Book and Legacy remain Frozen even after V2 begins.
+decision. Book and Legacy remain Frozen even after V2 begins, while their
+long-term intent is preserved by ADR-042 and `11-FOUNDER-VISION.md`.
+
+## Long-term — Time trust and private correspondence
+
+Status: Founder direction preserved; no implementation authorized
+
+Possible sequence after the earlier milestones and trust gates:
+
+1. **Time trust** — `Guardar até…`, a future letter to oneself, and exact-word
+   revisiting of decisions, questions, or promises.
+2. **Private correspondence** — scheduled delivery of selected material to an
+   authenticated, consenting living recipient.
+3. **Legacy** — carefully governed posthumous delivery and, separately, a Book
+   assembled from the person's own archive.
+
+This sequence is not a release promise. Each step requires its own product,
+data, encryption/key, recovery, consent, abuse, accessibility, and independent-
+review decisions. ADR-019 still prohibits Legacy schemas, flows, APIs, and
+implementation. ADR-042 records that Legacy is a desired destination rather
+than a discarded concept; it does not supersede the freeze.
 
 ## Current Codex handoff
 
 Current implementation handoff:
 
-> Read `AGENTS.md`, ADR-033–ADR-037, the Accepted Android M1 engineering
-> baseline, and its open pre-pilot evidence. Create and approve the M2 execution
-> plan, then implement M2 with synthetic fixtures and the recorded emulator
-> matrix. Do not start a participant pilot or infer Git, publication, signing,
-> or release.
+> Read `AGENTS.md`, ADR-033–ADR-041, the accepted M1 baseline, completed
+> validation-only M2/M3 checkpoints, retained pre-pilot gates, and the isolated
+> M4 foundation, M4-R2 evidence, and ADR-041 early-stop decision. Corpus/rubric
+> v1 are frozen and V0 selects no semantic model. Do not add a product
+> model/runtime, connect semantic research to Returns, start a
+> participant pilot, or infer Git, publication, signing, or release.
 
 After the Android decisions, matrix, and rewritten plan are Approved,
 application work can proceed in small, verifiable slices. Planning and decision

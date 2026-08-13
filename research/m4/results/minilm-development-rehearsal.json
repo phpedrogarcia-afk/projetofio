@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "status": "development-rehearsal-not-heldout-selection-evidence",
+  "modelId": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+  "revision": "e8f8c211226b894fcb81acc59f3b34ba3efd5f42",
+  "artifactSha256": "783fea82d71a58179b830a4dbd2d58447e640609e98eedf9ffa12622d375a672",
+  "runtime": {
+    "onnxruntime": "1.28.0",
+    "numpy": "2.5.2"
+  },
+  "provider": [
+    "CPUExecutionProvider"
+  ],
+  "inputNames": [
+    "attention_mask",
+    "input_ids",
+    "token_type_ids"
+  ],
+  "developmentPairCount": 240,
+  "developmentGroupCount": 48,
+  "uniqueTextCount": 288,
+  "embeddingDimensions": 384,
+  "loadMs": 850.115,
+  "encodeMs": 11956.245,
+  "meanEncodeMsPerText": 41.515,
+  "workingSetBeforeBytes": 56340480,
+  "workingSetAfterBytes": 576991232,
+  "workingSetDeltaBytes": 520650752,
+  "spearmanDevelopmentTargets": 0.34585,
+  "meanNdcgAt5DevelopmentTargets": 0.483447,
+  "unsafeTop1Rate": 1.0,
+  "meanScoreByCategory": {
+    "indirect_relation": 0.374546,
+    "lexical_trap": 0.581415,
+    "near_duplicate": 0.770407,
+    "negation": 0.584683,
+    "unrelated": 0.345099
+  },
+  "labelSource": "authoringTargetRating-not-human-gold",
+  "heldoutEvaluated": false,
+  "humanGoldUsed": false,
+  "adr024": "deferred",
+  "productLinked": false
+}

@@ -1,6 +1,11 @@
 package com.projetofio.app.crypto
 
-enum class RecordKind(val wireName: String) { ENTRY("entry"), DRAFT("draft") }
+enum class RecordKind(val wireName: String) {
+    ENTRY("entry"),
+    DRAFT("draft"),
+    IMPORT_FINGERPRINT("import-fingerprint"),
+    IMPORT_SOURCE_FILE("import-source-file"),
+}
 
 interface ContentCipher {
     fun seal(plaintext: String, kind: RecordKind, recordId: String, schemaVersion: Int): ByteArray

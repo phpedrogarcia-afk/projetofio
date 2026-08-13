@@ -41,7 +41,9 @@ docs/07-RETURNS-ENGINE.md
 docs/08-PRIVACY-SECURITY.md
 docs/09-ANALYTICS-EXPERIMENTS.md
 docs/10-ROADMAP.md
+docs/11-FOUNDER-VISION.md
 docs/DECISIONS.md
+docs/assets/README.md
 ```
 
 ## Current boundary
@@ -64,6 +66,8 @@ It does not contain:
 - Accepted decisions have precedence; Proposed and Deferred entries are explicit.
 - V0 remains useful with networking and Semantic Resonance disabled.
 - Rejected and Frozen features are visible to Codex.
+- The founder's complete long-term time/correspondence/Legacy direction is
+  preserved without bypassing current feature or decision gates.
 - Cross-cutting work has a plan template and approval boundary.
 - Privacy covers text, embeddings, queries, imports, exports, attachments, logs,
   notifications, and analytics.

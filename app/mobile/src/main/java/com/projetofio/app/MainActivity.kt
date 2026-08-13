@@ -1,6 +1,10 @@
 package com.projetofio.app
 
+import android.Manifest
+import android.content.Intent
+import android.os.Build
 import android.net.Uri
+import android.provider.OpenableColumns
 import android.os.Bundle
 import android.os.SystemClock
 import android.view.WindowManager
@@ -16,7 +20,14 @@ import com.projetofio.app.application.ExportCoordinator
 import com.projetofio.app.application.ExportFormat
 import com.projetofio.app.application.ExportOutcome
 import com.projetofio.app.application.AndroidDocumentWriter
+import com.projetofio.app.application.AndroidImportDocumentReader
+import com.projetofio.app.domain.ImportSource
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.withContext
 import com.projetofio.app.domain.AppLockMode
+import com.projetofio.app.domain.NotificationPermissionObserved
 import com.projetofio.app.security.DeviceAuthenticator
 import com.projetofio.app.security.AppLockPolicy
 import com.projetofio.app.ui.FioApp
@@ -29,17 +40,37 @@ import kotlinx.coroutines.launch
 
 class MainActivity : FragmentActivity() {
     private val graph get() = (application as FioApplication).graph
-    private val viewModel by viewModels<FioViewModel> { FioViewModel.Factory(graph.service) }
+    private val viewModel by viewModels<FioViewModel> {
+        FioViewModel.Factory(
+            graph.service,
+            graph.timeReturns,
+            graph.localImport,
+            BuildConfig.TIME_RETURNS_ENGINEERING_ENABLED,
+            BuildConfig.LOCAL_IMPORT_ENGINEERING_ENABLED,
+        )
+    }
     private lateinit var authenticator: DeviceAuthenticator
     private val appLockPolicy = AppLockPolicy()
     private var privacyCover by mutableStateOf(true)
     private var locked by mutableStateOf(false)
     private var authenticationInFlight = false
+    private var accessGateResolved = false
+    private var accessGateJob: Job? = null
     private var backgroundStartedAt: Long? = null
     private var safeOpenFailure by mutableStateOf(false)
     private var exportMessage by mutableStateOf<String?>(null)
     private val exportCoordinator = ExportCoordinator()
     private val documentWriter by lazy { AndroidDocumentWriter(contentResolver) }
+    private val importReader by lazy { AndroidImportDocumentReader(contentResolver) }
+    private var pendingReturnIntentId: String? = null
+
+    private val notificationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { granted ->
+        viewModel.observeNotificationPermission(
+            if (granted) NotificationPermissionObserved.GRANTED else NotificationPermissionObserved.DENIED,
+        )
+    }
 
     // Activity-scoped registration must survive the privacy cover replacing FioApp onPause.
     private val markdownExportLauncher = registerForActivityResult(
@@ -48,11 +79,15 @@ class MainActivity : FragmentActivity() {
     private val textExportLauncher = registerForActivityResult(
         ActivityResultContracts.CreateDocument(ExportFormat.PLAIN_TEXT.mimeType),
     ) { uri -> writeExport(uri, ExportFormat.PLAIN_TEXT) }
+    private val importLauncher = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) readImport(uri)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         authenticator = DeviceAuthenticator(this)
+        captureReturnIntent(intent)
         setContent {
             FioTheme {
                 when {
@@ -74,6 +109,11 @@ class MainActivity : FragmentActivity() {
                         onExportText = {
                             authorizeFresh { launchExport(ExportFormat.PLAIN_TEXT) }
                         },
+                        onEnableReturns = { viewModel.enableReturns(::requestNotificationPermissionAfterConsent) },
+                        onOpenPendingReturn = viewModel::openReturn,
+                        onSelectImport = {
+                            authorizeFresh { importLauncher.launch(arrayOf("text/plain", "text/markdown")) }
+                        },
                     )
                 }
             }
@@ -82,20 +122,55 @@ class MainActivity : FragmentActivity() {
 
     override fun onStart() {
         super.onStart()
-        lifecycleScope.launch {
-            runCatching { graph.service.loadSettings().appLockMode }
-                .onSuccess { mode ->
-                    safeOpenFailure = false
-                    locked = shouldLock(mode)
-                    privacyCover = false
-                    if (locked) requestUnlock()
-                }
-                .onFailure {
-                    locked = false
-                    safeOpenFailure = true
-                    privacyCover = false
-                }
+        resolveForegroundAccess()
+    }
+
+    private fun resolveForegroundAccess() {
+        accessGateResolved = false
+        privacyCover = true
+        accessGateJob?.cancel()
+        accessGateJob = lifecycleScope.launch {
+            try {
+                val mode = graph.service.loadSettings().appLockMode
+                safeOpenFailure = false
+                locked = shouldLock(mode)
+                accessGateResolved = true
+                privacyCover = false
+                if (locked) requestUnlock()
+                if (!locked) openCapturedReturn()
+            } catch (error: CancellationException) {
+                throw error
+            } catch (_: Exception) {
+                locked = false
+                safeOpenFailure = true
+                accessGateResolved = true
+                privacyCover = false
+            }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // A transient system surface (for example, the Android notification
+        // permission dialog) may call onPause/onResume without onStop/onStart.
+        // In that path onStart cannot remove the privacy cover, so clear it
+        // only after the current foreground access gate has already resolved.
+        if (!accessGateResolved && accessGateJob?.isActive != true) {
+            // ActivityScenario and some vendor lifecycle paths can resume after
+            // a stopped access-gate job without delivering the normal onStart
+            // sequence. Re-resolve instead of leaving the cover indefinitely.
+            resolveForegroundAccess()
+        } else if (accessGateResolved && !locked && !safeOpenFailure && !authenticationInFlight) {
+            privacyCover = false
+            openCapturedReturn()
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        captureReturnIntent(intent)
+        if (!locked && !privacyCover) openCapturedReturn()
     }
 
     override fun onPause() {
@@ -104,6 +179,9 @@ class MainActivity : FragmentActivity() {
     }
 
     override fun onStop() {
+        accessGateResolved = false
+        accessGateJob?.cancel()
+        accessGateJob = null
         backgroundStartedAt = SystemClock.elapsedRealtime()
         super.onStop()
     }
@@ -126,6 +204,7 @@ class MainActivity : FragmentActivity() {
                 backgroundStartedAt = null
                 locked = false
                 privacyCover = false
+                openCapturedReturn()
             },
             onFinishedWithoutSuccess = {
                 authenticationInFlight = false
@@ -187,5 +266,67 @@ class MainActivity : FragmentActivity() {
                 ExportOutcome.FAILED -> "Não foi possível concluir a exportação. Nenhuma cópia adicional foi mantida pelo Fio."
             }
         }
+    }
+
+    private fun requestNotificationPermissionAfterConsent() {
+        if (Build.VERSION.SDK_INT >= 33) {
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        } else {
+            viewModel.observeNotificationPermission(NotificationPermissionObserved.GRANTED)
+        }
+    }
+
+    private fun readImport(uri: Uri) {
+        lifecycleScope.launch {
+            runCatching {
+                val name = displayName(uri)
+                val lowerName = name?.lowercase()
+                require(lowerName == null || lowerName.endsWith(".txt") || lowerName.endsWith(".md") || lowerName.endsWith(".markdown")) {
+                    "Unsupported import extension"
+                }
+                val source = if (
+                    lowerName?.endsWith(".md") == true ||
+                    lowerName?.endsWith(".markdown") == true ||
+                    contentResolver.getType(uri) == "text/markdown"
+                ) {
+                    ImportSource.MARKDOWN
+                } else {
+                    ImportSource.TEXT
+                }
+                val bytes = withContext(Dispatchers.IO) { importReader.read(uri) }
+                Triple(bytes, source, name)
+            }.onSuccess { (bytes, source, name) ->
+                viewModel.previewImport(bytes, source, name)
+            }.onFailure {
+                viewModel.importReadFailed()
+            }
+        }
+    }
+
+    private fun displayName(uri: Uri): String? = contentResolver.query(
+        uri,
+        arrayOf(OpenableColumns.DISPLAY_NAME),
+        null,
+        null,
+        null,
+    )?.use { cursor ->
+        if (cursor.moveToFirst()) cursor.getString(0) else null
+    }
+
+    private fun captureReturnIntent(intent: Intent?) {
+        if (intent?.action == ACTION_OPEN_RETURN) {
+            pendingReturnIntentId = intent.getStringExtra(EXTRA_RETURN_ID)
+        }
+    }
+
+    private fun openCapturedReturn() {
+        val id = pendingReturnIntentId ?: return
+        pendingReturnIntentId = null
+        viewModel.openReturn(id)
+    }
+
+    companion object {
+        const val ACTION_OPEN_RETURN = "com.projetofio.app.action.OPEN_RETURN"
+        const val EXTRA_RETURN_ID = "return_id"
     }
 }

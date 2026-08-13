@@ -49,9 +49,9 @@ lockout, or OEM checks.
 
 The same build has also succeeded with Gradle offline mode. Dependency locks,
 SHA-256 verification metadata, the Room schema v1 JSON, synthetic unit tests,
-and synthetic instrumented tests are included. The current checkpoint passes
-20 JVM unit tests, 17 instrumented tests on API 26 and API 36, and seven safe
-non-background instrumented tests on the physical API 33 POCO. The emulator
+and synthetic instrumented tests are included. The current integrated checkpoint
+passes 51 JVM unit tests and 25 instrumented tests on both API 26 and API 36,
+plus the bounded physical validation recorded for the API 33 POCO. The emulator
 suite now includes an exact Write-to-Archive recreation flow and verifies that
 a corrupt database fails before Android's default corruption handler can
 replace the file.

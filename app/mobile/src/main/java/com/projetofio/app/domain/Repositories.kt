@@ -19,6 +19,21 @@ interface FioRepository {
     suspend fun saveSettings(settings: AppSettings)
 }
 
+interface ReturnRepository {
+    suspend fun loadReturnHistory(): List<ReturnAttempt>
+    suspend fun findReturn(id: String): ReturnAttempt?
+    suspend fun insertReturnIfNoPending(attempt: ReturnAttempt): Boolean
+    suspend fun updateReturn(attempt: ReturnAttempt)
+    suspend fun cancelPendingReturnsForEntry(id: String, atMillis: Long, reason: ReturnCancelReason): Int
+    suspend fun cancelAllPendingReturns(atMillis: Long, reason: ReturnCancelReason): Int
+}
+
+interface ImportRepository {
+    suspend fun commitImport(commit: ImportCommit)
+    suspend fun loadImportBatches(): List<ImportBatch>
+    suspend fun rollbackImport(batchId: String, atMillis: Long, purgeAfterMillis: Long): ImportRollbackResult
+}
+
 fun interface IdGenerator {
     fun newId(): String
 }

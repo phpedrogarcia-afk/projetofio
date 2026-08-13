@@ -543,6 +543,139 @@ Deferred entries do not authorize implementation.
   signing, publication, or release claim is created by this decision. Open
   evidence must remain visible in plans and reports.
 
+## ADR-038 — Use bounded Android scheduling and validation-only M2 activation
+
+- Date: 2026-08-13
+- Status: Accepted
+- Decision: Use AndroidX WorkManager `2.11.2` through
+  `work-runtime-ktx` as M2's only new production dependency, behind a Fio-owned
+  scheduling interface. Schedule one uniquely named, replaceable, one-time
+  local Return opportunity; do not use exact alarms, periodic alarms, remote
+  push, foreground services, or network constraints. Create one low-importance,
+  no-badge `Devoluções` notification channel using only `Algo seu voltou.` and
+  an opaque local Return ID. On API 33+, request `POST_NOTIFICATIONS` only after
+  explicit Return consent. Default quiet hours are 21:00–08:00 local time.
+  Migrate Room schema 1→2 non-destructively. Until ADR-037 pre-pilot gates
+  close, M2 activation is available only in the isolated validation build and
+  deterministic tests using synthetic data.
+- Reason: WorkManager is the official persistent deferrable-work mechanism for
+  the supported Android range and matches Fio's opportunistic, non-exact
+  delivery model. Unique one-time work is quieter and easier to reconcile than
+  periodic work. Validation-only activation allows evidence-driven engineering
+  without involving the owner's primary journal data or pretending that open
+  field gates have passed.
+- Consequence: WorkManager input/progress/output, PendingIntent, and notification
+  payloads contain no Entry text, date, meaningful Entry identifier, algorithm
+  rationale, or score. No Internet, exact-alarm, foreground-service, analytics,
+  account, or remote-push capability is added. Permission denial or dismissal
+  causes no nag, badge, repeat prompt, or loss of core functions. Existing M1
+  installations remain `notConfigured`; migration schedules nothing. The
+  dependency graph, hashes, licenses, offline build, Room migration, API 26/API
+  36 behavior, and removal path require recorded evidence. This decision does
+  not authorize a participant pilot, primary/release activation, real-content
+  testing, Git, signing, publication, release, import, or semantic work.
+
+## ADR-039 — Bound Android M3 import to explicit local formats and atomic rollback
+
+- Date: 2026-08-13
+- Status: Accepted
+- Decision: Import one UTF-8 TXT or Markdown document selected through the
+  Storage Access Framework. Accept lossless Fio v1 export blocks and a
+  conservative explicit Entry-block format; preserve explicit dates/timezones,
+  enforce 5 MiB/2,000 Entry/256 KiB/20,000 line/five-second limits, and reject
+  malformed encoding, active content, archives, and implicit date inference.
+  Deduplicate only exact local SHA-256 fingerprints. Migrate Room `2 → 3` with
+  encrypted minimal provenance and atomic batch/item records. Rollback
+  tombstones only unchanged Entries created by that batch. M3 activation is
+  immutable and true only in the isolated validation variant.
+- Reason: Existing history is necessary for the Time-only proof, but guessing
+  structure/dates, fuzzy deduplication, partial commits, or broad file support
+  can silently change or lose autobiographical material. Exact, bounded,
+  previewed local parsing is explainable and reversible.
+- Consequence: Cancellation or failure writes no canonical Entry; edited
+  imported Entries survive batch rollback; native/unrelated Entries are never
+  touched. No archive/media/HTML/source-specific importer, network, analytics,
+  AI interpretation, primary/release activation, personal-file test,
+  participant pilot, Git, signing, publication, or release is authorized.
+
+## ADR-040 — Isolate M4 as offline synthetic benchmark research
+
+- Date: 2026-08-13
+- Status: Accepted
+- Decision: Implement M4 only as a removable research boundary using about 300
+  purpose-written synthetic PT-BR pairs, a frozen held-out family split, a
+  deterministic non-semantic lexical control, Fio-owned model adapters, closed
+  quality/error/resource measures, and current license/provenance/hash records.
+  Final model selection requires two independent human ratings per held-out
+  pair and explicit approval of the corpus/rubric boundary. Candidate model
+  text, embeddings, scores, and artifacts remain offline and outside Room and
+  production Returns.
+- Reason: A general leaderboard or model reputation cannot establish whether
+  semantic similarity is useful for restrained PT-BR autobiographical returns.
+  Synthetic tooling can make the evaluation reproducible without exposing a
+  journal, while human disagreement and real device measurements cannot be
+  fabricated by automation.
+- Consequence: M4 may create synthetic corpus/rubric tooling, an offline
+  benchmark harness, candidate inventory, and reviewed research-only adapters.
+  It may not use personal/participant content, hosted inference, analytics,
+  production dependencies, semantic indexes in the app database, Return
+  integration, or user-visible AI behavior. ADR-024 remains Deferred until
+  held-out quality, license, provenance, Android compatibility, and physical
+  device evidence support an explicit later decision. M5/M6, Git, signing,
+  publication, and release remain unauthorized.
+
+## ADR-041 — End the V0 semantic path with no model selected
+
+- Date: 2026-08-13
+- Status: Accepted
+- Decision: Treat the failed MiniLM development safety/resource gate as a valid
+  early-stop outcome for M4 and select no embedding model for V0. Do not
+  fabricate two human annotators or use Codex ratings as human gold. Retain
+  Time Returns as the complete V0 mechanism, defer the M5 Resonance pilot, and
+  record the M6 semantic decision as **Remove / do not introduce**.
+- Reason: The project currently has one human owner. MiniLM produced unsafe
+  top-1 rate `1.0`, lower mean nDCG@5 than the lexical control, an approximately
+  118 MB model, and about 521 MB extra Windows working set before any Android
+  integration. Human disagreement cannot be manufactured by automation, and a
+  weak candidate does not justify recruiting annotators or increasing product
+  complexity. The owner requested that Codex automate what can be automated and
+  that the owner test the finished application.
+- Consequence: The frozen corpus, rubric, packets, and research evidence remain
+  available, but held-out evaluation and human annotation are not required to
+  reject the current candidate. ADR-024 remains Deferred; no semantic model,
+  index, dependency, participant study, or M5 product code is added. Reopening
+  semantic selection later requires a new approved decision, a materially
+  better candidate, and the two-independent-human/physical-device evidence in
+  ADR-040. This decision does not waive outstanding accessibility, physical-
+  device, provider, independent-review, signing, publication, or release gates.
+
+## ADR-042 — Preserve the complete long-term time and Legacy vision
+
+- Date: 2026-08-13
+- Status: Accepted
+- Decision: Make `11-FOUNDER-VISION.md` the durable record of the founder's
+  long-term direction. Preserve the intent to reach the coherent Fio capability
+  family over time: free writing and Archive, Time Returns, time-bound keeping,
+  future-self letters, exact-word revisiting of decisions/questions/promises,
+  private future delivery to another living person, Book, and posthumous
+  messages/Legacy. The founder may later explicitly remove, narrow, or reorder
+  any Planned, Research, or Frozen item. Recording the direction does not
+  authorize implementation or expand the current milestone.
+- Reason: The founder explicitly wants all coherent time/correspondence ideas,
+  including messages after death, retained so a narrow current build or future
+  agent does not optimize them out. Durable separation between vision and
+  authorization preserves ambition without bypassing safety gates.
+- Consequence: Agents must consult the founder vision for long-term product
+  proposals and must not treat Frozen as forgotten. ADR-019 remains fully in
+  force: no Legacy or Book schema, flow, API, prototype involving real people,
+  or implementation may be created until a new Accepted decision closes the
+  relevant product, legal, identity, consent, cryptographic-key, recovery,
+  abuse, privacy, emotional-safety, and independent-review gates. Rejected
+  productivity, social, engagement, advertising, AI-companion, and AI-
+  interpretation features remain Rejected. The earlier generated visual mockup
+  is recorded as historical evidence, but `03-UX.md` remains canonical because
+  the image asset was not recovered.
+
 ## How to add a decision
 
 Use the next ADR number and include:

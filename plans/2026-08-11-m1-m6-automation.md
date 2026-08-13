@@ -1,10 +1,10 @@
 # M1 to M6 — evidence-driven Android automation
 
-Status: In progress
+Status: Complete — maximum authorized automation reached
 Owner: Project owner with Codex implementation support
 Related milestone: Milestones 1–6
 Relevant decisions: ADR-003, ADR-006–ADR-008, ADR-010–ADR-012,
-ADR-015–ADR-018, ADR-020–ADR-021, ADR-024, ADR-027, ADR-032–ADR-037
+ADR-015–ADR-018, ADR-020–ADR-021, ADR-024, ADR-027, ADR-032–ADR-041
 
 ## Outcome
 
@@ -177,10 +177,58 @@ reviews before implementation.
   2.11.2, generic low-importance local notifications, 21:00–08:00 quiet hours,
   Room schema 2, and validation-only activation. No M2 dependency, schema,
   permission, or application code changed pending explicit owner approval.
+- 2026-08-13 — The owner approved M2-R1/ADR-038. The validation-only Time
+  Returns implementation and its API 26/API 36 verification are complete; see
+  `plans/evidence/2026-08-13-m2-time-returns.md`. M1's retained pre-pilot gates
+  remain unchanged. The next bounded engineering slice is the M3 import plan;
+  Git, participant use, signing, publication, and release remain separate.
+- 2026-08-13 — The owner approved M3-R1/ADR-039. The bounded import engineering
+  checkpoint is complete with 51 JVM tests and 23 instrumented tests on each
+  API 26/API 36 endpoint; see
+  `plans/evidence/2026-08-13-m3-local-import.md`. Participant use remains
+  blocked. Proposed M4-R1 and its Draft plan are the next human decision gate;
+  no model or semantic dependency has been added.
+- 2026-08-13 — The owner approved M4-R1/ADR-040. The isolated synthetic research
+  foundation now has a hash-frozen 300-pair PT-BR corpus, family-separated
+  240/60 split, two blind annotation packets, current candidate inventory, and
+  11 passing offline tests. The lexical control is explicitly a failed control,
+  not selection evidence. M4-R2 owner approval and two independent human
+  ratings are the next real gates; no model or Android semantic dependency was
+  added.
+- 2026-08-13 — The owner approved M4-R2. A hash-locked MiniLM development-only
+  rehearsal ran twice offline with stable aggregate values but unsafe top-1
+  `1.0` and about 521 MB added Windows working set, so it was not advanced to
+  Android or held-out. Two offline annotation pages and 13 passing M4 tests
+  exhaust safe automation at the two-human-rating gate. ADR-024 remains
+  Deferred and M5/M6 remain unavailable.
+- 2026-08-13 — The sole project owner requested an automated path and reserved
+  functional testing for the finished application. ADR-041 avoids false human
+  evidence and uses the legitimate early-stop branch: no model selected, M5
+  deferred, and M6 `Remove / do not introduce`. The frozen human packets remain
+  available only if semantic selection is reopened later.
+- 2026-08-13 — Revalidated the integrated Time-only V0 offline: 51 JVM tests,
+  lint for debug/validation, debug/validation/unsigned-release assembly, 23/23
+  instrumented tests on API 36 and API 26, both import-picker profiles, both
+  process-death/font/rotation profiles, and the credential profiles passed.
+  Updated only `com.projetofio.app.validation` on the API 33 POCO, cold-launched
+  it, and confirmed Write, Time Returns, and local import surfaces without
+  inserting personal content or touching `com.projetofio.app`. Created the
+  immutable local owner-test APK/source package with SHA-256 evidence.
+- 2026-08-13 — Reproduced and corrected the reported Devoluções static black
+  screen. A transient notification-permission surface left the privacy cover
+  active because Android resumed without restarting the Activity. The
+  foreground access gate now covers transient resume and stopped-job recovery
+  without exposing content early. The synthetic import → consent → permission
+  → pending Return → original words flow passed on API 36; the expanded full
+  suite passes 25/25 instrumented tests on both API 26 and API 36. See
+  `plans/evidence/2026-08-13-return-privacy-cover-regression.md`.
 
 ## Final report
 
-Automated M1 scope is complete and its engineering baseline is accepted under
-ADR-037. The next authorized action is an M2 execution plan and synthetic-data
-implementation. Participant pilots remain blocked at the explicit pre-pilot
-gate, and no M6 outcome may be selected without canonical real-world evidence.
+Automated M1 scope, bounded M2/M3 engineering, and the M4 synthetic research
+foundation plus the bounded MiniLM development rehearsal are complete. ADR-041
+records the safe M6 early-stop outcome without participant claims: Semantic
+Resonance is not introduced in V0 and Time remains core. Participant pilots,
+production readiness, publication, and retained device/accessibility/review
+gates remain outside this automated result. The isolated validation APK is now
+installed on the owner's POCO and ready for functional observation.

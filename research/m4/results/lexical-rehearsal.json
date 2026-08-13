@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "status": "synthetic-rehearsal-not-model-selection-evidence",
+  "control": "unicode-tfidf-cosine",
+  "labelSource": "authoringTargetRating-not-human-gold",
+  "recordCount": 300,
+  "groupCount": 60,
+  "spearmanAll": 0.135344,
+  "meanNdcgAt5": 0.498154,
+  "unsafeTop1Rate": 1.0,
+  "meanScoreByCategory": {
+    "indirect_relation": 0.0058,
+    "lexical_trap": 0.207464,
+    "near_duplicate": 0.25268,
+    "negation": 0.201267,
+    "unrelated": 0.021733
+  },
+  "humanGate": "open",
+  "adr024": "deferred"
+}

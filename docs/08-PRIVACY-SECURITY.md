@@ -199,6 +199,14 @@ Payload rules:
 Notification permission denial must not degrade writing, Archive access,
 export, or deletion.
 
+M2's Android notification adapter creates a low-importance, no-badge
+`Devoluções` channel only after explicit Return consent. The visible payload is
+the canonical sentence above; the intent carries only an opaque local Return
+ID. WorkManager receives empty input/output/progress and no network constraint.
+The merged release manifest has no `INTERNET`, storage, exact-alarm, or
+foreground-service permission. M2 activation remains false in debug-primary and
+release while the retained ADR-037 pre-pilot gates are open.
+
 ## App switcher, widgets, and extensions
 
 - Cover the UI with a neutral Fio surface before Android Recents can capture a
@@ -251,6 +259,13 @@ Embeddings are private content-derived data.
 - Model evaluation uses consented benchmark material, not production journals by
   default.
 
+M4-R1 uses only purpose-written synthetic benchmark material. Scenario families
+are separated between development and held-out partitions, annotation packets
+contain closed response fields, and downloaded model artifacts plus human
+responses stay outside version control. The research harness has no network
+import and no path into Room, Returns, notifications, analytics, or application
+source. Construction targets are not human semantic truth.
+
 ## Analytics and crash reporting
 
 Telemetry is optional, minimal, and governed by
@@ -287,6 +302,16 @@ Implementation requirements:
   canonical store unchanged.
 - Remove temporary plaintext and source copies after the operation.
 - Record parser version and minimal encrypted provenance.
+
+M3 implements these controls only in the validation variant. It accepts one
+SAF-selected `.txt`, `.md`, or `.markdown` UTF-8 document, never requests broad
+storage access, and creates no temporary plaintext file. Limits are 5 MiB,
+2,000 Entry blocks, 256 KiB per Entry, 20,000 lines, and five seconds of parser
+work. Malformed UTF-8, container signatures, active HTML/script, control-heavy
+input, missing/invalid dates, and unmatched explicit delimiters fail before a
+canonical write. Exact SHA-256 deduplication is local; the content-derived
+fingerprint and source filename are encrypted with record-specific AAD. Preview
+is memory-only and is discarded on cancellation or process death.
 
 ## Export security
 
