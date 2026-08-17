@@ -28,7 +28,19 @@ class AesGcmContentCipher(
         val cipher = Cipher.getInstance(TRANSFORMATION)
         cipher.init(Cipher.ENCRYPT_MODE, keys.keyForEncryption())
         cipher.updateAAD(associatedData(kind, recordId, schemaVersion))
-        val ciphertext = cipher.doFinal(plaintext.toByteArray(StandardCharsets.UTF_8))
+        val encoded = try {
+            StandardCharsets.UTF_8.newEncoder()
+                .onMalformedInput(CodingErrorAction.REPORT)
+                .onUnmappableCharacter(CodingErrorAction.REPORT)
+                .encode(java.nio.CharBuffer.wrap(plaintext))
+        } catch (error: java.nio.charset.CharacterCodingException) {
+            throw CryptoFailure.InvalidPlaintext(error.message ?: "Unpaired surrogate or malformed code unit in plaintext")
+        }.let { buffer ->
+            val bytes = ByteArray(buffer.remaining())
+            buffer.get(bytes)
+            bytes
+        }
+        val ciphertext = cipher.doFinal(encoded)
         return EnvelopeCodec.encode(cipher.iv, ciphertext)
     }
 

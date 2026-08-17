@@ -18,4 +18,5 @@ sealed class CryptoFailure(message: String, cause: Throwable? = null) : Exceptio
     class UnsupportedVersion : CryptoFailure("The encrypted record version is unsupported")
     class AuthenticationFailed(cause: Throwable) : CryptoFailure("Encrypted record authentication failed", cause)
     class KeyUnavailable(cause: Throwable) : CryptoFailure("The content key cannot be used", cause)
+    class InvalidPlaintext(message: String = "The plaintext cannot be encoded without loss") : CryptoFailure(message)
 }
