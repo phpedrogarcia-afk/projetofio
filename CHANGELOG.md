@@ -194,6 +194,17 @@ changes. Application changes will be added when implementation begins.
   baseline for synthetic-data M2–M4 development. Its unresolved human,
   provider, second-OEM, and independent-review evidence remains a mandatory
   pre-pilot/release gate and was not relabeled as passed.
+- Added the complete UX/design reorganization package (branch
+  `feature/design-ux-v1`, documents under `docs/design/`): full UX audit of
+  the current Material 3 shell (4 critical, 6 important, 7 cosmetic issues),
+  new information architecture and navigation map (single-surface stack
+  without a bottom bar), the Sage Green design system (light/dark palette,
+  Fraunces + Inter typography, 4 dp spacing scale, radius, buttons, icons),
+  the primary flows and microinteraction spec (zero-friction writing, temporal
+  selector, returns screen, biometric sealing), 6 low-fidelity wireframes,
+  10 high-fidelity mockups, and a 4-stage (A–D) implementation plan with
+  acceptance criteria. No application code was changed; the packet is the
+  design source of truth for the upcoming UI migration work.
 
 ## Specification 0.1 — 2026-08-10
 

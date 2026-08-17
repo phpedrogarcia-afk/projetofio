@@ -105,6 +105,12 @@ class FioViewModel(
         draftChanges.value = content
     }
 
+    /** ADR-014: the save confirmation is restrained — hide it after it was
+     *  observed (the UI auto-dismisses after 1.5s). */
+    fun acknowledgeSaved() {
+        mutableState.update { it.copy(savedNotice = false) }
+    }
+
     fun saveEntry() {
         val content = state.value.draftText
         if (content.isBlank() || !saveInProgress.compareAndSet(false, true)) return

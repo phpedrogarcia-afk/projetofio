@@ -7,6 +7,7 @@ import com.projetofio.app.domain.Entry
 import com.projetofio.app.domain.FioRepository
 import com.projetofio.app.domain.IdGenerator
 import com.projetofio.app.domain.RECENTLY_DELETED_RETENTION_DAYS
+import java.security.MessageDigest
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneId
@@ -115,6 +116,11 @@ class FioService(
             append(entry.content)
             if (!entry.content.endsWith('\n')) appendLine()
         }
+        appendLine()
+        appendLine("---")
+        appendLine()
+        appendLine("**Checksum SHA-256 (do corpo, sem este rodapé):** `${bodyChecksum(entries, exportedAt)}`")
+        appendLine("Formato de export definido em docs/export-format.md v1.0 — arquivo projetado para sobreviver ao próprio app.")
     }
 
     private fun textExport(entries: List<Entry>, exportedAt: String): String = buildString {
@@ -133,7 +139,25 @@ class FioService(
             if (!entry.content.endsWith('\n')) appendLine()
             appendLine("========== FIO: FIM DA ENTRADA =============")
         }
+        appendLine()
+        appendLine("Checksum SHA-256 (do corpo, sem este rodapé): ${bodyChecksum(entries, exportedAt)}")
+        appendLine("Formato de export definido em docs/export-format.md v1.0 — arquivo projetado para sobreviver ao próprio app.")
     }
+
+    // Export v1.0 (ADR-046): checksum of the document body, so the file can be
+    // verified years later — a durability marker, not a security one.
+    private fun bodyChecksum(entries: List<Entry>, exportedAt: String): String = runCatching {
+        val body = buildString {
+            for (entry in entries) {
+                append(displayInstant(entry.originalCreatedAt, entry.originalTimeZone))
+                append(entry.content)
+            }
+            append(exportedAt)
+        }
+        MessageDigest.getInstance("SHA-256")
+            .digest(body.toByteArray(Charsets.UTF_8))
+            .joinToString("") { "%02x".format(it) }
+    }.getOrElse { "indisponível" }
 
     private fun displayInstant(instant: Instant, zoneName: String?): String {
         val zone = runCatching { ZoneId.of(zoneName ?: "UTC") }.getOrDefault(ZoneId.of("UTC"))
