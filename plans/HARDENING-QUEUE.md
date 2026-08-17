@@ -21,13 +21,13 @@
 | 8 | **Export Torture + Round-Trip (SHA-256 ADR-046)** | P1 | DONE (commit dea9671) | `ExportRoundTripTest` (7 testes): checksum reproduzível por implementação independente SHA-256, 1 byte muda o hash, surrogate halves do P0 sobrevive ao export sem substituição |
 | 9 | **Dependencies audit** | P2 | DONE (commit 5555755) | zero CVEs ativos; transientes antigos forçados pelo Gradle; `biometric:1.1.0` P3 (avaliar androidx.credentials), `fragment` P4 (removível — usado só por FragmentActivity) |
 | 10 | **Static quality (lint Android)** | P3 | DONE (commit a84312c) | 0 erros; fix `DefaultLocale` em `quietHoursLabel` (Locale.ROOT), remoção de `ic_thread`/`write_prompt` não usados, lockfile atualizado para Robolectric; ktlint/detekt recomendado como evolução futura |
-| 11 | **Performance (10k+ entradas, archive tipográfico)** | P2 | NOW | — |
-| 12 | **Battery / Background (notificações em Doze)** | P2 | WAITING | — |
+| 11 | **Performance (10k+ entradas, archive tipográfico)** | P2 | DONE (commit em progresso) | `PerformanceTest` (5 testes) verde: scans 10k <0.32s, purgeExpired 1k <0.22s, rollbackImport 500 <0.5s, Flow emite 1× por mudança; seed 9k ativos + 1k soft-deletados |
+| 12 | **Battery / Background (notificações em Doze)** | P2 | NOW | — |
 | 13 | **Accessibility automation (TalkBack nas seções M2/M3)** | P2 | WAITING | — |
 | 14 | **Visual Regression (ReturnScreen no design)** | P2 | WAITING | — |
 | 15 | **Error UX** | P3 | WAITING | — |
-| 16 | **Fuzz / Property-based (funções puras do engine)** | P1 | WAITING | — |
-| 17 | **Large History (10k entries, GC de deletados)** | P2 | WAITING | — |
+| 16 | **Fuzz / Property-based (funções puras do engine)** | P1 | DONE (merge na campanha 6, commit 35a6390) | sweep de sementes no `EngineTortureTest` + propriedade de 10.000 avaliações |
+| 17 | **Large History (10k entries, GC de deletados)** | P2 | COBERTA PARCIAL (campanha 11: purgeExpired + scans 10k) | ver relatório da campanha 11 |
 
 ---
 
