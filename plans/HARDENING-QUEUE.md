@@ -23,9 +23,9 @@
 | 10 | **Static quality (lint Android)** | P3 | DONE (commit a84312c) | 0 erros; fix `DefaultLocale` em `quietHoursLabel` (Locale.ROOT), remoção de `ic_thread`/`write_prompt` não usados, lockfile atualizado para Robolectric; ktlint/detekt recomendado como evolução futura |
 | 11 | **Performance (10k+ entradas, archive tipográfico)** | P2 | DONE (commit em progresso) | `PerformanceTest` (5 testes) verde: scans 10k <0.32s, purgeExpired 1k <0.22s, rollbackImport 500 <0.5s, Flow emite 1× por mudança; seed 9k ativos + 1k soft-deletados |
 | 12 | **Battery / Background (notificações em Doze)** | P2 | DONE (commit da32538*) | Doze-friendly por design: 1 work não-exact, sem foreground/alarmes/boot-receiver/rede; P3: boot receiver opcional, constraint battery-not-low |
-| 13 | **Accessibility (TalkBack nas seções M2/M3)** | P2 | NOW | — |
-| 14 | **Visual Regression (ReturnScreen no design)** | P2 | WAITING | — |
-| 15 | **Error UX** | P3 | WAITING | — |
+| 13 | **Accessibility (TalkBack nas seções M2/M3)** | P2 | DONE (estática) | headings/contentDescription/liveRegion/mergeDescendants presentes; P3: teste TalkBack manual em AVD, contraste WCAG AA em labels pequenas |
+| 14 | **Visual Regression (ReturnScreen no design)** | P2 | DONE (estática) | ReturnScreen 100% aderente aos tokens Verde-Sálvia v1 (cor, Fraunces, piso 48dp, heading); P4: screenshot de referência futuro |
+| 15 | **Error UX** | P3 | DONE (estática) | pill terracota com liveRegion Polite, CancellationException nunca engolida, labels de issues pt-BR, garantia "nada foi apagado"; P3: retry affordance futura |
 | 16 | **Fuzz / Property-based (funções puras do engine)** | P1 | DONE (merge na campanha 6, commit 35a6390) | sweep de sementes no `EngineTortureTest` + propriedade de 10.000 avaliações |
 | 17 | **Large History (10k entries, GC de deletados)** | P2 | COBERTA PARCIAL (campanha 11: purgeExpired + scans 10k) | ver relatório da campanha 11 |
 
