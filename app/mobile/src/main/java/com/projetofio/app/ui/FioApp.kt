@@ -59,6 +59,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.scale
+import androidx.compose.foundation.Canvas
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -565,7 +567,7 @@ private fun ArchiveScreen(
         } else if (!state.loading && state.entries.isEmpty()) {
             item {
                 Column(modifier = Modifier.padding(vertical = FioSpace.s7)) {
-                    BotanicalMotif()
+                    BotanicalMotif(firstEntryAt = state.entries.lastOrNull()?.originalCreatedAt)
                     Spacer(Modifier.height(FioSpace.s3))
                     Text(
                         "Quando quiser, suas palavras podem ficar aqui.",
@@ -954,15 +956,37 @@ private fun SectionTitle(text: String) {
 // maturing motif for a later gated slice.
 // ===========================================================================
 
+// Patina Temporal (ADR-045): deterministic botanical growth tied to the
+// diary's age. Purely decorative, no metrics, no streak — the motif just
+// quietly matures with the life of the installation. Removable via the
+// PATINA_ENABLED flag.
+private const val PATINA_ENABLED = true
 @Composable
-private fun BotanicalMotif() {
-    val outline = MaterialTheme.colorScheme.outlineVariant
+private fun BotanicalMotif(firstEntryAt: Instant? = null) {
+    if (!PATINA_ENABLED) return
     val tertiary = MaterialTheme.colorScheme.tertiary
-    Icon(
-        painter = painterResource(R.drawable.ic_thread),
-        contentDescription = null,
-        tint = tertiary,
-        modifier = Modifier.height(56.dp).width(32.dp).alpha(0.6f),
+    val accent = MaterialTheme.colorScheme.secondary
+    // Age in days since the first saved entry; deterministic seed from the
+    // diary's own life, not from the calendar — never a streak, just patina.
+    val ageDays = if (firstEntryAt != null) {
+        ChronoUnit.DAYS.between(firstEntryAt, Instant.now()).coerceAtLeast(0).toInt()
+    } else 0
+    Canvas(
+        modifier = Modifier.height(56.dp).width(32.dp).alpha(0.55f),
+        onDraw = {
+            drawLine(tertiary, start = Offset(16f, 56f), end = Offset(16f, 12f - ageDays.coerceAtMost(30) * 0.15f), strokeWidth = 2.2f)
+            if (ageDays >= 7) {
+                drawLine(tertiary, start = Offset(16f, 42f), end = Offset(6f, 34f), strokeWidth = 1.8f)
+                drawCircle(accent, radius = 3.5f, center = Offset(6f, 34f))
+            }
+            if (ageDays >= 30) {
+                drawLine(tertiary, start = Offset(16f, 30f), end = Offset(26f, 22f), strokeWidth = 1.8f)
+                drawCircle(accent, radius = 3.5f, center = Offset(26f, 22f))
+            }
+            if (ageDays >= 180) {
+                drawCircle(accent, radius = 4.5f, center = Offset(16f, 11f))
+            }
+        },
     )
 }
 
