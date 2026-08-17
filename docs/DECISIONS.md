@@ -559,3 +559,96 @@ Use the next ADR number and include:
 ```
 
 Do not rewrite an Accepted ADR to hide its history. Add a superseding entry.
+
+## ADR-043 — Absolute date as anchor; temporal UI mapped to canonical vocabulary
+- Date: 2026-08-16
+- Status: Accepted
+- Decision: The Home temporal surface offers return policy choices per entry
+  ("Algum dia" / explicit period / "Escolher uma data" / "Nunca") mapped to
+  the canonical vocabulary: Algum dia → `ReturnMode.ELIGIBLE` for organic
+  return; explicit period or date → an explicit return request
+  (canonical `Remember later`); Nunca → `ReturnMode.NEVER`. No operational
+  times, no recurrence, no agenda behavior. "Selar" (biometric seal,
+  privacy) and "Deixar descansar" (temporary ineligibility on an existing
+  entry) remain distinct and are never merged with the temporal picker.
+- Reason: Founder-approved temporal home system and calendar-anchor return
+  (S-5); the write → wait → return loop stays the single primary action of
+  the Home while keeping every control of `07-RETURNS-ENGINE.md` intact.
+- Consequence: UI work adds a policy layer on top of `ReturnMode`; the
+  engine must honor explicit request windows as first-class candidates
+  alongside organic age-bucket selection. Anchored-date returns are
+  candidates, never forced deliveries, keeping the frequency cap, rest
+  rules, never-return, and consent.
+- Supersedes: none (extends ADR-010 and the returns engine spec)
+
+## ADR-044 — First Capsule onboarding (S-3)
+- Date: 2026-08-16
+- Status: Accepted
+- Decision: No tutorial, no profile capture, no early permission requests.
+  The product teaches itself through the first save: the first entry may
+  carry the temporal choice, and the first confirmation reads
+  "Guardado. O tempo cuida do resto." Subsequent saves confirm only with
+  "Guardado." The first real return opportunity (days 30–45 with a single
+  entry) becomes the product's self-explanation moment.
+- Reason: Founder-approved S-3; principle 5 (autonomy before magic) and the
+  canonical promise favor letting the loop speak for itself.
+- Consequence: The UI tracks a one-time first-save confirmation state
+  persisted locally; the bootstrap table of the returns engine is the only
+  onboarding logic needed. No name, profile, or notification request at
+  first launch.
+- Supersedes: none
+
+## ADR-045 — Temporal Patina for the home botanical motif (S-4 revised)
+- Date: 2026-08-16
+- Status: Accepted
+- Decision: The decorative botanical motif of the Home may mature very
+  slowly as a function of time since the first entry only (internal states:
+  início, jovem, intermediário, maduro — never presented as levels).
+  Entry count, frequency, streaks, consecutive days, sessions, engagement,
+  and return count are explicitly excluded as inputs. No progress,
+  percentages, unlockables, goals, "continue writing", or rewards. No
+  regression during absence: the motif keeps maturing while the user does
+  not write. The motif is purely decorative: TalkBack ignores it, Reduce
+  Motion is respected, and any per-user deterministic variation stays on
+  device and is never social or comparable.
+- Reason: Founder-approved S-4 with these constraints; principle 4 forbids
+  completion pressure and guilt, and the user must never be able to feed
+  the plant by writing more.
+- Consequence: Implementation is a small, deterministic, removable
+  UI-only module (vector assets or simple interpolation); no engine, no
+  persistence beyond the first-entry date, no network, no analytics
+  involvement.
+- Supersedes: none
+
+## ADR-046 — Longevity promise for the export format (S-7)
+- Date: 2026-08-16
+- Status: Accepted
+- Decision: Declare export format version `1.0`, documented and
+  application-independent: combined Markdown + plain text, simple directory
+  structure, documented metadata (original timestamp, timezone, opaque id),
+  a format version marker, and an integrity checksum where appropriate. The
+  promise is readability without Fio, not compatibility with any future
+  technology.
+- Reason: Founder-approved S-7; principle 11 (trust includes departure)
+  and the existing export behavior already satisfy most of the shape; this
+  formalizes it.
+- Consequence: A canonical export-format document is added; version marker
+  and checksum go into export output; any incompatible format change
+  requires an explicit decision and migration documentation. No proprietary
+  format is introduced.
+- Supersedes: none
+
+## ADR-047 — Ritual do Fio (S-1) is Planned, gated on archive and engine maturity
+- Date: 2026-08-16
+- Status: Planned
+- Decision: The annual self-review surface is approved in spirit but waits
+  for a stable Archive, a proven time-return engine, and observable
+  long-history behavior. When implemented it is factual only ("Um ano do
+  seu Fio. Quer reler aquele período?"), chronological, silent, with no
+  summary, statistics, generated cover, or growth narrative; AI must not
+  state what the user wrote about.
+- Reason: Founder-approved S-1 conditioned on temporal dependencies; time
+  since first entry must exist meaningfully before the ritual is offered.
+- Consequence: No implementation now; the idea is retained and re-evaluated
+  when the gated dependencies are met.
+- Supersedes: none

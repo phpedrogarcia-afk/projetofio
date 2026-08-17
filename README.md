@@ -45,6 +45,8 @@ Fio/
 │   ├── build.gradle.kts
 │   └── settings.gradle.kts
 ├── docs/
+│   ├── design/              UX/design reorganization package (source of truth
+│   │   │                        for the upcoming UI migration; see its README)
 │   ├── 01-PRODUCT.md
 │   ├── 02-PRINCIPLES.md
 │   ├── 03-UX.md
@@ -77,6 +79,9 @@ Fio/
 | `docs/01-PRODUCT.md` | What is Fio, for whom, and what is its core loop? |
 | `docs/02-PRINCIPLES.md` | What must the product protect or refuse? |
 | `docs/03-UX.md` | How should Fio look, sound, and behave? |
+| `docs/design/` | The full UX/design reorganization packet: audit, new IA and
+navigation, Sage Green design system, flows, microinteractions, wireframes,
+mockups, and the staged (A–D) implementation plan. |
 | `docs/04-FEATURES.md` | What is approved, experimental, deferred, or rejected? |
 | `docs/05-ARCHITECTURE.md` | Where do responsibilities and trust boundaries live? |
 | `docs/06-DATA-MODEL.md` | What entities and invariants exist? |
