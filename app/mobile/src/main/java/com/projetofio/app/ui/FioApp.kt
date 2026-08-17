@@ -1072,7 +1072,7 @@ private fun DeletedRow(entry: Entry, onRecover: () -> Unit, onPurge: () -> Unit)
 
 
 private fun quietHoursLabel(startMinute: Int, endMinute: Int): String {
-    fun fmt(m: Int): String = "${(m / 60) % 24}h${(m % 60).let { if (it == 0) "00" else String.format("%02d", it) }}"
+    fun fmt(m: Int): String = "${(m / 60) % 24}h${(m % 60).let { if (it == 0) "00" else String.format(Locale.ROOT, "%02d", it) }}"
     return "${fmt(startMinute)}–${fmt(endMinute)}"
 }
 
