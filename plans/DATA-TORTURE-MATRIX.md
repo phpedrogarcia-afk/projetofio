@@ -75,11 +75,100 @@
 
 ---
 
+## 6. Time torture (campanha 6 + 16 — CONCLUÍDA)
+
+| # | Cenário | Critério | Resultado |
+|---|---|---|---|
+| 1 | Fusos extremos: UTC±14 e +5:45 (Kathmandu) | Delivery sempre em local time válido | PASS |
+| 2 | DST fall-back (America/New_York, 01/11/2026) | Sem hora ambígua em janela | PASS |
+| 3 | Epoch edges: 1970-01-01, 2038-01-19 (Y2038), 3000-01-01 | Sem overflow/underflow | PASS |
+| 4 | Leap day (29/02) em ano bissexto e não-bissexto | Buckets corretos | PASS |
+| 5 | Sweep de sementes (propriedade) + varredura 10.000 avaliações horárias | 0 violações de quiet-hours | PASS |
+
+## 7. Storage Failure (campanha 7 — CONCLUÍDA)
+
+| # | Cenário | Critério | Resultado |
+|---|---|---|---|
+| 1 | `ExportCoordinator` sob `IOException` (disco cheio) | `ExportOutcome.FAILED` genérico, sem crash | PASS (`StorageFailureTest`) |
+| 2 | Permission-denied do SAF | FAILED, nada parcial escrito | PASS |
+| 3 | `CancellationException` (usuário fecha o app durante export) | Propaga, sem estado corrompido | PASS |
+| 4 | URI nula do SAF | Falha controlada, sem NPE | PASS |
+| 5 | Document build falha | `ExportOutcome.FAILED`, nenhum arquivo de destino | PASS |
+
+## 8. Export Round-Trip (campanha 8 — CONCLUÍDA)
+
+| # | Cenário | Critério | Resultado |
+|---|---|---|---|
+| 1 | Checksum SHA-256 (ADR-046) reproduzido por implementação independente | Idêntico ao do `FioService` | PASS (`ExportRoundTripTest`) |
+| 2 | 1 byte alterado no documento | Hash muda | PASS |
+| 3 | Surrogate halves do finding A presentes no conteúdo | Preservados no export (sem substituição) | PASS |
+| 4 | Markdown e plain text | Ambos com checksum válido | PASS |
+
+## 9. Dependencies (campanha 9 — CONCLUÍDA)
+
+| # | Domínio | Critério | Resultado |
+|---|---|---|---|
+| 1 | CVEs conhecidos (Room, coroutines, lifecycle, Kotlin) | Nenhum ativo nas versões usadas | PASS |
+| 2 | Transitivas antigas (kotlin-stdlib 1.3/1.6, coroutines 1.8) | Forçadas pela transitiva; sem exposição direta | FINDING (P4) — documentado |
+| 3 | `biometric:1.1.0` (legado) | Avaliar `androidx.credentials` | RECOMENDAÇÃO (P3) |
+| 4 | `fragment` (só `FragmentActivity`) | Removível | RECOMENDAÇÃO (P4) |
+
+## 10. Static quality (campanha 10 — CONCLUÍDA)
+
+| # | Domínio | Critério | Resultado |
+|---|---|---|---|
+| 1 | `lintDebug` Android | 0 erros, warnings mínimos | PASS (0 erros após fix) |
+| 2 | `DefaultLocale` em `quietHoursLabel` | `Locale.ROOT` no format numérico | FIX APLICADO |
+| 3 | Recursos não usados (`ic_thread`, `write_prompt`) | Removidos | FIX APLICADO |
+| 4 | ktlint/detekt | Não configurados | RECOMENDAÇÃO (P3 — evolução futura) |
+
+## 11. Performance 10k+ (campanha 11 — CONCLUÍDA)
+
+| # | Caminho | Cenário | Resultado |
+|---|---|---|---|
+| 1 | Scan de entries ativos | 10k linhas (9k ativos + 1k soft-deletados) | <0.32s, ordem correta end-to-end |
+| 2 | Scan de deletados | 1k soft-deletados | PASS, ordem correta |
+| 3 | `purgeExpired` (GC) | 1.000 expirados | <0.22s, idempotente |
+| 4 | `rollbackImport` | 500 itens + 500 returns pendentes | <0.5s, sem blowup quadrático |
+| 5 | Estabilidade de Flow | 1 insert → 1 re-emissão; 1 soft-delete → 1 re-emissão | PASS (Room 1× por mudança) |
+
+## 12. Battery / Doze (campanha 12 — CONCLUÍDA)
+
+| # | Domínio | Critério | Resultado |
+|---|---|---|---|
+| 1 | Superfície de background | Único work não-exact (`setInitialDelay`), sem alarmes exact | PASS |
+| 2 | Manifest | `FOREGROUND_SERVICE` e `SystemForegroundService` removidos; sem receiver BOOT | PASS |
+| 3 | Retry | Limitado a 3 tentativas | PASS |
+| 4 | Rede em background | Inexistente (`usesCleartextTraffic=false`, sem domínios) | PASS |
+| 5 | Re-schedule pós-boot | Recriado por interação do usuário (`reconcile`); janela expirada reagenda | ACCEPTABLE (finding aberto P3) |
+
+## 13. Accessibility (campanha 13 — CONCLUÍDA, estática)
+
+| # | Critério | Resultado |
+|---|---|---|
+| 1 | `heading()`, `contentDescription`, `liveRegion = Polite`, `mergeDescendants` nas 4 seções | PASS |
+| 2 | `contentDescription = null` apenas em decorativos | PASS |
+| 3 | Piso de toque ≥48dp | PASS |
+| 4 | TalkBack real (AVD) | RECOMENDAÇÃO (P3 — checklist 10 min) |
+
+## 14. Visual Regression (campanha 14 — CONCLUÍDA, estática)
+
+| # | Token v1 | Resultado |
+|---|---|---|
+| 1 | ReturnScreen: marfim, Fraunces na data, terracota sem vermelho puro, piso 48dp | PASS — 100% aderente |
+| 2 | Screenshot de referência em CI | RECOMENDAÇÃO (P4) |
+
+## 15. Error UX (campanha 15 — CONCLUÍDA)
+
+| # | Critério | Resultado |
+|---|---|---|
+| 1 | Toda ação com `onFailure`/`catch`; `CancellationException` nunca engolida | PASS |
+| 2 | Pill terracota com `liveRegion Polite` | PASS |
+| 3 | Labels de issues de import em pt-BR; garantia "nada foi apagado" | PASS |
+| 4 | Retry affordance no pill | RECOMENDAÇÃO (P3) |
+
+---
+
 ## Próximas campanhas na fila (`plans/HARDENING-QUEUE.md`)
 
-| Ordem | Campanha | Prioridade |
-|---|---|---|
-| 6 | Time Torture (fusos extremos, DST, epoch edges) | P1 |
-| 7 | Storage Failure (SAF, disco cheio, permissões) | P1 |
-| 8 | Export Torture + Round-Trip (SHA-256 ADR-046) | P1 |
-| 9–17 | Dependencies, static quality, performance, battery, accessibility, visual regression, error UX, fuzz, large history | P2–P4 |
+Todas as 17 campanhas estão **CONCLUÍDAS** (16 e 17 cobertas pelas campanhas 6 e 11 respectivamente). Pendências finais de relatórios: `MANUS-HARDENING-FINAL.md` (raiz do repositório).
