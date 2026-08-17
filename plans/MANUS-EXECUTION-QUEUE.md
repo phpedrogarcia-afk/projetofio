@@ -4,22 +4,18 @@ Regras: NOW tem exatamente UMA fatia. NEXT tem no máximo 3. CHECKPOINTs listam 
 
 ## NOW
 
-- [Fase 2.2] Home redesenhada: escrita zero-fricção + seletor temporal "Pode voltar" (ADR-043) + confirmação sutil única na primeira nota (ADR-044), sobre o FioApp atual (main antigo) — aguardando decisão A/B/C do fundador sobre o PR #1; os tokens já estão disponíveis via MaterialTheme.
+- [Fase 3] Integração do engine temporal: conectar o ReturnPolicy da UI (7 rótulos, ADR-043) ao schema — campo `returnPolicy` em Entry (migração Room schema 4) — e à futura integração com o TimeReturnEngine do PR #1; mapear cada rótulo ao vocabulário canônico (ELIGIBLE / explicit / anchored / never-return).
 
 ## NEXT
 
+1. [Fase 4] Primeira Cápsula persistente: gate first-save via `settings.firstCapsuleAcknowledged` no schema 4; copy canônica única (ADR-044).
+2. [Fase 6] Data-Âncora: devolução no aniversário da nota, respeitando cap/consent/never (ADR-043).
+3. [Fase 11] Ritual do Fio: Planned + gates (ADR-047) — tela de virada de ano lendo as notas do ano, sem gamificação.
 
 ## LATER
 
-4. [Fase 2] Menu ⋯ (Arquivo/Configurações) + confirmação Guardado discreta.
-5. [Fase 2] Arquivo tipográfico agrupado por mês com distância temporal secundária (S-2 revisada).
-6. [Fase 3] Sistema temporal da Home mapeado a ReturnMode/Remember later (ADR-043).
-7. [Fase 4] Primeira Cápsula (ADR-044): estado first-save, copy canônica única.
-8. [Fase 6] Data-Âncora como candidato especial respeitando cap/consent/never (ADR-043).
-9. [Fase 8] Leitura de Carta: TalkBack com dignidade de carta (BLOCKED — human/device validation; gates manuais M1).
-10. [Fase 9] Export v1.0: version marker + checksum no output.
-11. [Fase 10] Pátina Temporal: módulo decorativo determinístico e removível (ADR-045).
-12. [Fase 11] Ritual do Fio: Planned, gated (ADR-047).
+- Leitura de Carta (TalkBack com dignidade de carta): BLOCKED — human/device validation.
+- Devolução selada (biometria na devolução): pronta na UI; hook real depende do engine no PR #1.
 
 ## BLOCKED — HUMAN/DEVICE VALIDATION REQUIRED
 
