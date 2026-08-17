@@ -34,5 +34,6 @@ Regras: NOW tem exatamente UMA fatia. NEXT tem no máximo 3. CHECKPOINTs listam 
 ## DONE
 
 - Fase 0–1: Verdade do repositório (PR #1 codex descoberto, fora de main), ADRs 043–047, export v1.0, fila + idea inbox (16/08)
+- Fase 2.2: Home redesenhada (commit 9e9c15a): sem bottom bar (pilha + menu ⋯), editor zero-fricção, seletor temporal ADR-043 (ReturnPolicy), copy primeira cápsula ADR-044, pill "Guardado." ADR-014, arquivo tipográfico agrupado por mês com distância temporal S-2, leitura de nota em Fraunces; ícones vetoriais; build + 20 testes verdes.
 - Fase 2.1: Design system foundation — `ui/theme` completo (Color/Theme/Type), fontes Fraunces+Inter em res/font (OFL), FioSpace/FioRadius; BUILD verde, 20 unit tests verdes, APK debug gerado (commit 2ceaa9f, branch feature/design-ux-v1)
 
