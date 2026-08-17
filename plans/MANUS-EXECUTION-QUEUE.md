@@ -4,13 +4,13 @@ Regras: NOW tem exatamente UMA fatia. NEXT tem no máximo 3. CHECKPOINTs listam 
 
 ## NOW
 
-- [Fase 1] Consolidar decisões: ADRs 043–047 registradas em `feature/design-ux-v1` (docs/design) — pendente: registrar também no estado futuro pós-merge do PR #1 e mover a decisão de branch (DECISION REQUIRED em `plans/2026-08-16-design-ui-branch-decision.md`) para o usuário.
+- [Fase 2.2] Home redesenhada: escrita zero-fricção + seletor temporal "Pode voltar" (ADR-043) + confirmação sutil única na primeira nota (ADR-044), sobre o FioApp atual (main antigo) — aguardando decisão A/B/C do fundador sobre o PR #1; os tokens já estão disponíveis via MaterialTheme.
 
 ## NEXT
 
-1. [Fase 1] Documentar o formato de export v1.0 (`docs/export-format.md` no pacote design) — ADR-046.
-2. [Fase 2] Design system: tokens de cor/tipografia/spacing/radius no `ui/theme` (Verde-Sálvia), sem alterar comportamento.
-3. [Fase 2] Home redesenhada: escrita zero-fricção + seletor temporal "Pode voltar" + confirmação sutil única na primeira nota.
+1. [Fase 2.3] Menu ⋯ (Arquivo/Configurações) + pill discreto "Guardado." + estados de interação do sistema.
+2. [Fase 2.4] Arquivo tipográfico agrupado por mês com distância temporal secundária (S-2 revisada), sem cards.
+3. [Fase 2.5] Nota e devolução no novo sistema (FioDisplayDate, leitura de carta, selo).
 
 ## LATER
 
@@ -30,6 +30,9 @@ Regras: NOW tem exatamente UMA fatia. NEXT tem no máximo 3. CHECKPOINTs listam 
 - Gates manuais M1 (TalkBack real, segundo OEM, revisão independente de cripto): documentar como `BLOCKED — HUMAN/DEVICE VALIDATION REQUIRED`, não declarar fechados.
 - Pilot (FASE 12): instrumentação fechada, consentimento, recrutamento — depende do fundador.
 
+
 ## DONE
 
-(nenhum ainda nesta sessão)
+- Fase 0–1: Verdade do repositório (PR #1 codex descoberto, fora de main), ADRs 043–047, export v1.0, fila + idea inbox (16/08)
+- Fase 2.1: Design system foundation — `ui/theme` completo (Color/Theme/Type), fontes Fraunces+Inter em res/font (OFL), FioSpace/FioRadius; BUILD verde, 20 unit tests verdes, APK debug gerado (commit 2ceaa9f, branch feature/design-ux-v1)
+
