@@ -64,6 +64,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
@@ -215,7 +216,8 @@ private fun HomeScreen(
                         .clickable(onClick = { menuOpen = true })
                         .heightIn(min = 48.dp)
                         .widthIn(min = 48.dp)
-                        .padding(12.dp),
+                        .padding(12.dp)
+                        .semantics { contentDescription = "Mais opções" },
                 )
                 DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
                     DropdownMenuItem(
@@ -231,15 +233,6 @@ private fun HomeScreen(
         }
 
         Spacer(Modifier.height(FioSpace.s6))
-
-        state.recoverableError?.let {
-            Text(
-                text = it,
-                color = MaterialTheme.colorScheme.error,
-                modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
-            )
-            Spacer(Modifier.height(FioSpace.s3))
-        }
 
         // The prompt — small, calm, in the body scale.
         Text(
@@ -299,7 +292,6 @@ private fun HomeScreen(
                 Icon(
                     painter = painterResource(R.drawable.ic_clock),
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.height(16.dp).width(16.dp),
                 )
                 Spacer(Modifier.width(FioSpace.s1))
@@ -307,8 +299,34 @@ private fun HomeScreen(
                     text = "Quando isso pode voltar? · $policyLabel",
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.semantics { contentDescription = "Quando isso pode voltar? Escolhido: $policyLabel" },
                 )
             }
+        }
+
+        // Error pill (terracotta, discreet, with icon) — replaces the
+        // full-width red text block for recoverable errors.
+        state.recoverableError?.let {
+            Row(
+                modifier = Modifier
+                    .background(
+                        MaterialTheme.colorScheme.errorContainer,
+                        RoundedCornerShape(FioRadius.md),
+                    )
+                    .padding(horizontal = FioSpace.s3, vertical = FioSpace.s2)
+                    .semantics { liveRegion = LiveRegionMode.Polite },
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_error),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.height(16.dp).width(16.dp),
+                )
+                Spacer(Modifier.width(FioSpace.s2))
+                Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onErrorContainer)
+            }
+            Spacer(Modifier.height(FioSpace.s3))
         }
 
         // Primary action — the tallest, warmest touch target in the app.
@@ -489,7 +507,11 @@ private fun ArchiveScreen(
     var deleting by remember { mutableStateOf<Entry?>(null) }
 
     reading?.let { entry ->
-        NoteScreen(entry = entry, onBack = { reading = null })
+        NoteScreen(
+            entry = entry,
+            onBack = { reading = null },
+            onReedit = { text -> viewModel.onDraftChanged(text) },
+        )
     }
     if (editing != null) {
         EditEntryDialog(
@@ -530,7 +552,8 @@ private fun ArchiveScreen(
                         .clickable(onClick = onBack)
                         .heightIn(min = 48.dp)
                         .widthIn(min = 48.dp)
-                        .padding(12.dp),
+                        .padding(12.dp)
+                        .semantics { contentDescription = "Voltar" },
                 )
                 Text("Arquivo", style = MaterialTheme.typography.headlineMedium, modifier = Modifier.semantics { heading() })
             }
@@ -647,7 +670,13 @@ private fun ArchiveRow(entry: Entry, onOpen: () -> Unit, onEdit: () -> Unit, onD
 // ===========================================================================
 
 @Composable
-private fun NoteScreen(entry: Entry, onBack: () -> Unit) {
+private fun NoteScreen(
+    entry: Entry,
+    onBack: () -> Unit,
+    onReedit: (String) -> Unit = {},
+) {
+    var returning by remember { mutableStateOf(false) }
+    var returned by remember { mutableStateOf(false) }
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         Column(modifier = Modifier.padding(horizontal = FioSpace.s4, vertical = FioSpace.s5)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -659,7 +688,8 @@ private fun NoteScreen(entry: Entry, onBack: () -> Unit) {
                         .clickable(onClick = onBack)
                         .heightIn(min = 48.dp)
                         .widthIn(min = 48.dp)
-                        .padding(12.dp),
+                        .padding(12.dp)
+                        .semantics { contentDescription = "Voltar" },
                 )
             }
             Spacer(Modifier.height(FioSpace.s3))
@@ -675,7 +705,54 @@ private fun NoteScreen(entry: Entry, onBack: () -> Unit) {
                     style = MaterialTheme.typography.bodyMedium,
                 )
             }
+            Spacer(Modifier.height(FioSpace.s5))
+            Row {
+                Text(
+                    text = if (returned) "Reescrita com o olhar de hoje?" else "Devolver para agora",
+                    style = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.primary),
+                    modifier = Modifier
+                        .clickable(onClick = {
+                            if (returned) {
+                                onReedit(entry.content)
+                                onBack()
+                            } else {
+                                returning = true
+                            }
+                        })
+                        .heightIn(min = 48.dp)
+                        .padding(vertical = FioSpace.s2)
+                        .semantics { contentDescription = if (returned) "Reescrever esta nota agora" else "Devolver esta nota agora" },
+                )
+            }
+            Spacer(Modifier.height(FioSpace.s6))
+            BotanicalMotif()
+            Spacer(Modifier.height(FioSpace.s4))
+            if (returned) {
+                Text(
+                    text = "Suas palavras voltaram. Reescreva com o olhar de hoje, se quiser — ou apenas deixe seguir.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+                )
+            }
         }
+    }
+    if (returning) {
+        AlertDialog(
+            onDismissRequest = { returning = false },
+            title = { Text("Devolver agora?") },
+            text = {
+                Text(
+                    "O Fio devolve o que está pronto. Você pode trazê-la de volta agora — ela volta como uma carta, na íntegra, com a data de quando foi escrita.",
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = { returning = false; returned = true },
+                ) { Text("Devolver") }
+            },
+            dismissButton = { TextButton(onClick = { returning = false }) { Text("Cancelar") } },
+        )
     }
 }
 
@@ -756,7 +833,8 @@ private fun SettingsScreen(
                         .clickable(onClick = onBack)
                         .heightIn(min = 48.dp)
                         .widthIn(min = 48.dp)
-                        .padding(12.dp),
+                        .padding(12.dp)
+                        .semantics { contentDescription = "Voltar" },
                 )
                 Text("Configurações", style = MaterialTheme.typography.headlineMedium, modifier = Modifier.semantics { heading() })
             }
