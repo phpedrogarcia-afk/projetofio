@@ -14,8 +14,8 @@
 | 1 | **Data Torture — Unicode & encoding** | P0 | DONE (commits 00bb186, 20b7fae) | FINDING A (P0-class): surrogate halves substituídos por 0x3F silenciosamente antes da criptografia → fix `CryptoFailure.InvalidPlaintext`; findings B/C (P4): ZW-only content aceito por `isBlank()`, documentado |
 | 2 | **Crypto Pre-Review + Plaintext Hunt** | P0 | DONE (commit a18e803) | `docs/security/CRYPTO-REVIEW-PACKET.md`; zero plaintext leaks ativos; notificação, backup e cleartext verificados |
 | 3 | **Database / Migration Torture (Room 2→3)** | P0 | DONE (commit 84a0db2) | `Migration2To3Test` verde: 500 entries + deletados, envelopes byte-idênticos, invariante soft-delete, defaults de settings, estrutura = schema-3.json |
-| 4 | **Returns Engine Torture (determinismo M4)** | P1 | NEXT | — |
-| 5 | **Privacy Boundary & Android Backup** | P0 | WAITING | — |
+| 4 | **Returns Engine Torture (determinismo M4)** | P1 | DONE (commit 0aaca08) | 14 testes novos (`EngineTortureTest`): sweep de 10.000 avaliações sem violação de quiet-hours, DST, buckets 6–2000d, bootstrap, cap; 76 testes verdes |
+| 5 | **Privacy Boundary & Android Backup** | P0 | NOW | — |
 | 6 | **Time Torture (fusos extremos, DST, epoch edges)** | P1 | WAITING | — |
 | 7 | **Storage Failure (SAF, disco cheio, permissões)** | P1 | WAITING | — |
 | 8 | **Export Torture + Round-Trip (SHA-256 ADR-046)** | P1 | WAITING | — |
@@ -57,9 +57,13 @@
 **Decisões exigidas:** se a migração exigir transformação destrutiva, PARA e pede autorização.
 
 ### 4. Returns Engine Torture — P1 — CONCLUÍDA
-**Resultado:** ver seção NOW abaixo (campanha 4 executada na seção NOW)
+**Resultado:** 14 testes novos em `EngineTortureTest.kt` — replay determinístico com RNG fixo, propriedade de 100 sementes (entrega nunca em quiet-hours, sem re-seleção de histórico), consent/pending/cap gates, pools vazios, limites exatos dos buckets 6–2000 dias, DST forward-gap, janelas permitidas de 1h e cruzando meia-noite, bootstrap por contagem, varredura de 10.000 avaliações horárias (0 violações). Invariants dos models documentados no cabeçalho da análise (`campaign4_analysis.md`). 76 testes no total, 0 falhas.
 
-### 4b (objetivo original, agora superset pela versão concluída)
-**Objetivo:** provar determinismo e correção do `TimeReturnEngine` (buckets 7–29…730+, bootstrap, quiet hours, frequency cap 7 dias, `ReturnRandom` injetável).
-**Plano:** testar com RNG fixo (reprodutibilidade), 10.000 simulações de horizonte 730 dias, edge cases (0 entradas, todas nunca-retornadas, todas never, quiet hours cobrindo todo o dia, cap atingido, bootstrap completo), propriedade: nunca notifica dentro de quiet hours; nunca viola cap; nunca retorna "Nunca"; monotonicidade do pool.
-**Critério:** 100% das propriedades satisfeitas no RNG fixo e em 100 sementes aleatórias.
+## NOW (campanha ativa — campanha 5)
+
+### 5. Privacy Boundary & Android Backup — P0
+**Objetivo:** confirmar que a fronteira de privacidade resiste sob pressão: backup Android (auto/ADB), `backup_rules.xml`, `android:dataExtractionRules`, `FLAG_SECURE`, clipboard, recent apps, notificações, cache, snapshots de UI.
+**Plano:** auditar manifest + XMLs de backup; inspecionar `AndroidTimeReturns` (notificação), `PrivacyCover`, `FLAG_SECURE` no `FioApp`; verificar que drafts/em memória não vazam; tentar captura de tela em recents; revisar `ExportCoordinator` (arquivo temporário com modo `MODE_PRIVATE`? SAF não deixa rastro em app dir — confirmar); verificar SharedPreferences/cache de imagem.
+**Critério:** zero achados P0/P1; qualquer leak listado como finding com severidade.
+**Entregável:** seção em `plans/DATA-TORTURE-MATRIX.md` + commit com evidências.
+**Decisões exigidas:** QUALQUER mudança de política de backup PARA e pede autorização.
