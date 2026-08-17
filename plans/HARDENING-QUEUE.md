@@ -19,9 +19,9 @@
 | 6 | **Time Torture + Fuzz engine** | P1 | DONE (commit 35a6390) | 18 testes no `EngineTortureTest`: fusos UTC±14/+5:45, DST fall-back, epoch 1970/2038/3000, ano bissexto, sweep de sementes — 0 violações de quiet-hours |
 | 7 | **Storage Failure (SAF, disco cheio, permissões)** | P1 | DONE (commit 1203f83) | `StorageFailureTest` (7 testes): disco cheio/permission-denied → `ExportOutcome.FAILED`, CancellationException propaga, falha de build não escreve; SAF não guarda cópia parcial |
 | 8 | **Export Torture + Round-Trip (SHA-256 ADR-046)** | P1 | DONE (commit dea9671) | `ExportRoundTripTest` (7 testes): checksum reproduzível por implementação independente SHA-256, 1 byte muda o hash, surrogate halves do P0 sobrevive ao export sem substituição |
-| 9 | **Dependencies audit** | P2 | NOW | — |
-| 10 | **Static quality (ktlint/detekt, lint Android)** | P3 | WAITING | — |
-| 11 | **Performance (10k+ entradas, archive tipográfico)** | P2 | WAITING | — |
+| 9 | **Dependencies audit** | P2 | DONE (commit 5555755) | zero CVEs ativos; transientes antigos forçados pelo Gradle; `biometric:1.1.0` P3 (avaliar androidx.credentials), `fragment` P4 (removível — usado só por FragmentActivity) |
+| 10 | **Static quality (lint Android)** | P3 | DONE (commit a84312c) | 0 erros; fix `DefaultLocale` em `quietHoursLabel` (Locale.ROOT), remoção de `ic_thread`/`write_prompt` não usados, lockfile atualizado para Robolectric; ktlint/detekt recomendado como evolução futura |
+| 11 | **Performance (10k+ entradas, archive tipográfico)** | P2 | NOW | — |
 | 12 | **Battery / Background (notificações em Doze)** | P2 | WAITING | — |
 | 13 | **Accessibility automation (TalkBack nas seções M2/M3)** | P2 | WAITING | — |
 | 14 | **Visual Regression (ReturnScreen no design)** | P2 | WAITING | — |
