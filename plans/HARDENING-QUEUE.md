@@ -15,11 +15,11 @@
 | 2 | **Crypto Pre-Review + Plaintext Hunt** | P0 | DONE (commit a18e803) | `docs/security/CRYPTO-REVIEW-PACKET.md`; zero plaintext leaks ativos; notificação, backup e cleartext verificados |
 | 3 | **Database / Migration Torture (Room 2→3)** | P0 | DONE (commit 84a0db2) | `Migration2To3Test` verde: 500 entries + deletados, envelopes byte-idênticos, invariante soft-delete, defaults de settings, estrutura = schema-3.json |
 | 4 | **Returns Engine Torture (determinismo M4)** | P1 | DONE (commit 0aaca08) | 14 testes novos (`EngineTortureTest`): sweep de 10.000 avaliações sem violação de quiet-hours, DST, buckets 6–2000d, bootstrap, cap; 76 testes verdes |
-| 5 | **Privacy Boundary & Android Backup** | P0 | NOW | — |
-| 6 | **Time Torture (fusos extremos, DST, epoch edges)** | P1 | WAITING | — |
-| 7 | **Storage Failure (SAF, disco cheio, permissões)** | P1 | WAITING | — |
-| 8 | **Export Torture + Round-Trip (SHA-256 ADR-046)** | P1 | WAITING | — |
-| 9 | **Dependencies audit** | P2 | WAITING | — |
+| 5 | **Privacy Boundary & Android Backup** | P0 | DONE (commit 78ed305) | zero P0/P1: backup cloud/device-transfer/legacy excluídos, FLAG_SECURE incondicional, zero clipboard/cache/log leaks, SAF sem rastro; P4: sugestão de teclado em TextFields documentada |
+| 6 | **Time Torture + Fuzz engine** | P1 | DONE (commit 35a6390) | 18 testes no `EngineTortureTest`: fusos UTC±14/+5:45, DST fall-back, epoch 1970/2038/3000, ano bissexto, sweep de sementes — 0 violações de quiet-hours |
+| 7 | **Storage Failure (SAF, disco cheio, permissões)** | P1 | DONE (commit 1203f83) | `StorageFailureTest` (7 testes): disco cheio/permission-denied → `ExportOutcome.FAILED`, CancellationException propaga, falha de build não escreve; SAF não guarda cópia parcial |
+| 8 | **Export Torture + Round-Trip (SHA-256 ADR-046)** | P1 | DONE (commit dea9671) | `ExportRoundTripTest` (7 testes): checksum reproduzível por implementação independente SHA-256, 1 byte muda o hash, surrogate halves do P0 sobrevive ao export sem substituição |
+| 9 | **Dependencies audit** | P2 | NOW | — |
 | 10 | **Static quality (ktlint/detekt, lint Android)** | P3 | WAITING | — |
 | 11 | **Performance (10k+ entradas, archive tipográfico)** | P2 | WAITING | — |
 | 12 | **Battery / Background (notificações em Doze)** | P2 | WAITING | — |
