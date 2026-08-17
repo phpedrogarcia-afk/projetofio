@@ -2,6 +2,7 @@ package com.projetofio.app.domain
 
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
@@ -333,6 +334,113 @@ class EngineTortureTest {
         )
         // 4 entries of 5/10/15/20 days: minimum is 7 and oldest is 20 -> selected.
         assertTrue(engine.evaluate(now, zone, settings(), nEntries(4), emptyList()) is TimeReturnDecision.Selected)
+    }
+
+    @Test
+    fun extremeTimeZonesNeverProduceQuietHoursViolations() {
+        // Campaign 6 — Time Torture: fuse-horários extremos (UTC+14, UTC-11, +5:45 Nepal).
+        // A matemática do chooseAllowedDelivery depende do offset via atZone; o sweep garante
+        // que a entrega nunca cai em quiet hours em qualquer offset civil válido.
+        val zones = listOf(
+            "Pacific/Kiritimati", // UTC+14
+            "Pacific/Midway",     // UTC-11
+            "Asia/Kathmandu",     // UTC+5:45
+            "Asia/Kolkata",       // UTC+5:30
+            "Etc/GMT-12",         // UTC+12 (nomenclatura invertida do Etc)
+            "Etc/GMT+12",         // UTC-12
+            "UTC",
+        )
+        val now = Instant.parse("2026-08-16T12:00:00Z")
+        val pool = listOf(
+            entry("a1", now.minusSeconds(20L * 86400)),
+            entry("a2", now.minusSeconds(40L * 86400)),
+            entry("a3", now.minusSeconds(60L * 86400)),
+            entry("a4", now.minusSeconds(80L * 86400)),
+        )
+        val history = emptyList<ReturnAttempt>()
+        for (zoneId in zones) {
+            val z = ZoneId.of(zoneId)
+            for (seed in 0L..99) {
+                val dec = TimeReturnEngine { SeededRng(seed).nextInt(1) }.evaluate(
+                    now, z, settings(), pool, history,
+                )
+                require(dec is TimeReturnDecision.Selected) {
+                    "unacceptable silence at zone=$zoneId seed=$seed: $dec"
+                }
+                val local = dec.deliveryAt.atZone(z)
+                val quietStart = LocalTime.of(21, 0)
+                val quietEnd = LocalTime.of(8, 0)
+                val inside = local.toLocalTime() >= quietStart || local.toLocalTime() < quietEnd
+                assertFalse(
+                    "quiet-hours violation zone=$zoneId seed=$seed delivery=$local",
+                    inside,
+                )
+            }
+        }
+    }
+
+    @Test
+    fun dstFallBackGapAmbiguityResolvedToValidLocalTime() {
+        // Campaign 6 — DST outono (Nova York, novembro): 02:00 volta a 01:00.
+        // Entrega durante a janela ambígua deve existir como instante válido.
+        val now = ZonedDateTime.of(2026, 11, 1, 6, 30, 0, 0, ZoneId.of("America/New_York")).toInstant()
+        val pool = listOf(
+            entry("a1", now.minusSeconds(20L * 86400)),
+            entry("a2", now.minusSeconds(40L * 86400)),
+            entry("a3", now.minusSeconds(60L * 86400)),
+            entry("a4", now.minusSeconds(80L * 86400)),
+        )
+        val dec = TimeReturnEngine { 0 }.evaluate(now, ZoneId.of("America/New_York"), settings(), pool, emptyList())
+        require(dec is TimeReturnDecision.Selected) { "expected selection, got $dec" }
+        // Janela permitida [08:00, 21:00) local; no dia do DST-fallback a meia-noite ambígua
+        // (01:00–02:00 que se repete) nunca deve ser escolhida como início de entrega.
+        val local = dec.deliveryAt.atZone(ZoneId.of("America/New_York"))
+        val inQuiet = local.toLocalTime() >= LocalTime.of(21, 0) || local.toLocalTime() < LocalTime.of(8, 0)
+        assertFalse("dst-fallback delivery falls inside quiet hours: $local", inQuiet)
+    }
+
+    @Test
+    fun epochEdgesAndFarFutureNeverCrash() {
+        // Campaign 6 — epoch 1970, limite Unix 32-bit 2038-01-19, e datas distantes.
+        val times = listOf(
+            Instant.parse("1970-01-01T00:00:00Z"),
+            Instant.parse("2038-01-19T03:14:06Z"),
+            Instant.parse("2038-01-19T03:14:08Z"),
+            Instant.parse("3000-06-15T10:00:00Z"),
+        )
+        val zoneId = ZoneId.of("America/Sao_Paulo")
+        for (now in times) {
+            val pool = listOf(
+                entry("a1", now.minusSeconds(20L * 86400)),
+                entry("a2", now.minusSeconds(40L * 86400)),
+                entry("a3", now.minusSeconds(60L * 86400)),
+                entry("a4", now.minusSeconds(80L * 86400)),
+            )
+            val dec = TimeReturnEngine { 0 }.evaluate(now, zoneId, settings(), pool, emptyList())
+            require(dec is TimeReturnDecision.Selected) { "unexpected silence at now=$now: $dec" }
+            assertNotNull(dec.deliveryAt)
+        }
+    }
+
+    @Test
+    fun leapYearAndLeapDayEntriesAgeCorrectly() {
+        // Campaign 6 — entries criadas em 29/02 de ano bissexto devem envelhecer por dias civis.
+        val now = ZonedDateTime.of(2028, 3, 1, 12, 0, 0, 0, zone).toInstant()
+        val leapDayEntry = Entry(
+            id = "leap",
+            createdAt = ZonedDateTime.of(2028, 2, 29, 12, 0, 0, 0, zone).toInstant(),
+            originalCreatedAt = ZonedDateTime.of(2028, 2, 29, 12, 0, 0, 0, zone).toInstant(),
+            originalTimeZone = "America/Sao_Paulo",
+            updatedAt = ZonedDateTime.of(2028, 2, 29, 12, 0, 0, 0, zone).toInstant(),
+            content = "born on the leap day",
+        )
+        // 1 de março − 29 de fevereiro = 1 dia de idade; bootstrap 1 entry exige 30 dias → silent.
+        val dec = TimeReturnEngine { 0 }.evaluate(now, zone, settings(), listOf(leapDayEntry), emptyList())
+        assertTrue(
+            "leap-day entry aged 1 day must not be selected: $dec",
+            dec is TimeReturnDecision.Silent &&
+                (dec.reason == SilenceReason.BOOTSTRAP_WAIT || dec.reason == SilenceReason.NO_ELIGIBLE_ENTRY),
+        )
     }
 
     @Test
