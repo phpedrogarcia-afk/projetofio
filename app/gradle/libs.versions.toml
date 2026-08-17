@@ -14,6 +14,7 @@ work = "2.11.2"
 junit4 = "4.13.2"
 androidx-test = "1.7.0"
 androidx-junit = "1.3.0"
+robolectric = "4.14.1"
 espresso = "3.7.0"
 
 [libraries]
@@ -38,6 +39,7 @@ fragment = { module = "androidx.fragment:fragment", version.ref = "fragment" }
 work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "work" }
 work-testing = { module = "androidx.work:work-testing", version.ref = "work" }
 junit4 = { module = "junit:junit", version.ref = "junit4" }
+robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
 androidx-test-core = { module = "androidx.test:core", version.ref = "androidx-test" }
 androidx-test-runner = { module = "androidx.test:runner", version.ref = "androidx-test" }
 androidx-test-rules = { module = "androidx.test:rules", version.ref = "androidx-test" }

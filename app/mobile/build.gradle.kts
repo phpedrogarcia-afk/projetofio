@@ -94,6 +94,8 @@ dependencies {
 
     testImplementation(libs.junit4)
     testImplementation(libs.room.testing)
+    testImplementation(libs.androidx.test.core)
+    testImplementation(libs.robolectric)
 
     androidTestImplementation(platform(libs.compose.bom))
     androidTestImplementation(libs.androidx.test.core)
