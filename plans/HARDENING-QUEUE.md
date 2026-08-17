@@ -12,8 +12,8 @@
 | Ordem | Campanha | Prioridade | Estado | Resultado |
 |-------|----------|------------|--------|-----------|
 | 1 | **Data Torture — Unicode & encoding** | P0 | DONE (commits 00bb186, 20b7fae) | FINDING A (P0-class): surrogate halves substituídos por 0x3F silenciosamente antes da criptografia → fix `CryptoFailure.InvalidPlaintext`; findings B/C (P4): ZW-only content aceito por `isBlank()`, documentado |
-| 2 | **Crypto Pre-Review + Plaintext Hunt** | P0 | RUNNING (NOW) | — |
-| 3 | **Database / Migration Torture (Room 2→3)** | P0 | NEXT | — |
+| 2 | **Crypto Pre-Review + Plaintext Hunt** | P0 | DONE (commit a18e803) | `docs/security/CRYPTO-REVIEW-PACKET.md`; zero plaintext leaks ativos; notificação, backup e cleartext verificados |
+| 3 | **Database / Migration Torture (Room 2→3)** | P0 | DONE (commit 84a0db2) | `Migration2To3Test` verde: 500 entries + deletados, envelopes byte-idênticos, invariante soft-delete, defaults de settings, estrutura = schema-3.json |
 | 4 | **Returns Engine Torture (determinismo M4)** | P1 | NEXT | — |
 | 5 | **Privacy Boundary & Android Backup** | P0 | WAITING | — |
 | 6 | **Time Torture (fusos extremos, DST, epoch edges)** | P1 | WAITING | — |
@@ -38,19 +38,28 @@
 
 ## NEXT (máx. 3)
 
-### 2. Crypto Pre-Review + Plaintext Hunt — P0
+### 2. Crypto Pre-Review + Plaintext Hunt — P0 — CONCLUÍDA
+**Resultado:** review completo em `docs/security/CRYPTO-REVIEW-PACKET.md`: AES-256-GCM com nonce aleatório por envelope (IV gerado em `seal`), AAD vinculando kind/id/schema, Keystore AndroidKeyStore, zero leaks em Log/clipboard/backup (cloud backup excluído via `android:allowBackup=false` + dataExtractionRules), notificação sem conteúdo, FLAG_SECURE ativo. Sem mudanças criptográficas necessárias.
+
+### 2b (objetivo original, agora superset pela versão concluída)
 **Objetivo:** revisar `FioService`/keystore AES-256-GCM, caçar plaintext em logs, SharedPreferences, cache, backups e exceções.
 **Plano:** grep por `Log.`/`printStackTrace`/`toString` de chaves; verificar `KeyStore` key aliases; verificar que o AES-GCM usa nonce aleatório por operação e não reusa; verificar onde o conteúdo em claro existe em memória; conferir `android:allowBackup` e `android:dataExtractionRules`; conferir que exceptions não logam conteúdo de Entry.
 **Entregável:** `docs/security/CRYPTO-REVIEW-PACKET.md`.
 **Decisões exigidas:** QUALQUER mudança no esquema criptográfico PARA e pede autorização.
 
-### 3. Database / Migration Torture — Room 2→3 — P0
+### 3. Database / Migration Torture — Room 2→3 — P0 — CONCLUÍDA
+**Resultado:** `Migration2To3Test` (Robolectric): seed schema-2 realista (500 entries incl. 20 soft-deletados, drafts, settings, 25 returns) → Room aplica `MIGRATION_2_3` sozinho → contagens preservadas, envelopes byte-idênticos, invariante deleted_at⇔purge_after, novos campos null, defaults de settings sobrevivem, estrutura física consistente com schema-3.json. Confirma que `fallbackToDestructiveMigration(false)` + migration existente é o caminho único sem perda. Robolectric shadow não reproduz o IllegalStateException (documentado no teste).
+
+### 3b. Database / Migration Torture (objetivo original)
 **Objetivo:** migrar schema 2→3 (M2/M3/M4: returnMode, lastReturnedAt, returnCount, importBatchId, AppSettings quietHours) com dados sintéticos realistas.
 **Plano:** gerar base schema 2 com 500 entries + deletados; aplicar migração (autoMigration ou manual); verificar contagem, integridade de content, mapeamento de returnMode default (SOMEDAY), defaults de quietHours.
 **Critério:** mesma contagem pré/pós; conteúdo idêntico; engine funciona sobre base migrada.
 **Decisões exigidas:** se a migração exigir transformação destrutiva, PARA e pede autorização.
 
-### 4. Returns Engine Torture — P1
+### 4. Returns Engine Torture — P1 — CONCLUÍDA
+**Resultado:** ver seção NOW abaixo (campanha 4 executada na seção NOW)
+
+### 4b (objetivo original, agora superset pela versão concluída)
 **Objetivo:** provar determinismo e correção do `TimeReturnEngine` (buckets 7–29…730+, bootstrap, quiet hours, frequency cap 7 dias, `ReturnRandom` injetável).
 **Plano:** testar com RNG fixo (reprodutibilidade), 10.000 simulações de horizonte 730 dias, edge cases (0 entradas, todas nunca-retornadas, todas never, quiet hours cobrindo todo o dia, cap atingido, bootstrap completo), propriedade: nunca notifica dentro de quiet hours; nunca viola cap; nunca retorna "Nunca"; monotonicidade do pool.
 **Critério:** 100% das propriedades satisfeitas no RNG fixo e em 100 sementes aleatórias.
