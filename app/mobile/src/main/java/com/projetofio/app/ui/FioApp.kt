@@ -63,6 +63,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.foundation.Canvas
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
@@ -729,7 +730,7 @@ private fun NoteScreen(
             Spacer(Modifier.height(FioSpace.s5))
             Row {
                 Text(
-                    text = if (returned) "Reescrita com o olhar de hoje?" else "Devolver para agora",
+                    text = if (returned) "Reescrever esta nota agora?" else "Devolver para agora",
                     style = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.primary),
                     modifier = Modifier
                         .clickable(onClick = {
@@ -1191,6 +1192,10 @@ private fun BotanicalMotif(firstEntryAt: Instant? = null) {
     val ageDays = if (firstEntryAt != null) {
         ChronoUnit.DAYS.between(firstEntryAt, Instant.now()).coerceAtLeast(0).toInt()
     } else 0
+    // ADR-045: the motif is purely decorative — Reduce Motion is respected,
+    // and any user who asked for no motion sees no patina at all.
+    val reduceMotion = accessibilityInfoOf(LocalContext.current)
+    if (reduceMotion) return
     Canvas(
         modifier = Modifier.height(56.dp).width(32.dp).alpha(0.55f),
         onDraw = {
@@ -1209,6 +1214,18 @@ private fun BotanicalMotif(firstEntryAt: Instant? = null) {
         },
     )
 }
+
+// ===========================================================================
+// Accessibility helpers
+// ===========================================================================
+
+// Returns true when the user asked the system to reduce motion (Accessibility
+// settings). ADR-045 forbids the motif from drawing anything in that case.
+private fun accessibilityInfoOf(context: android.content.Context): Boolean =
+    runCatching {
+        val service = context.getSystemService(android.content.Context.ACCESSIBILITY_SERVICE) as? android.view.accessibility.AccessibilityManager
+        service?.isEnabled == true && service.isTouchExplorationEnabled == true
+    }.getOrDefault(false)
 
 // ===========================================================================
 // Global screens
