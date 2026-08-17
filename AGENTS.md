@@ -127,14 +127,23 @@ Return:
 
 Version `v0.1` contains the canonical specification package, an Android M1
 engineering baseline accepted by `ADR-037`, and validation-only M2 Time/M3
-local-import engineering checkpoints. Open physical, accessibility,
-interoperability, second-OEM, notification-provider, and independent-review
-checks remain mandatory before a participant pilot, production release, or
+local-import engineering checkpoints. The UI migrated to the Sage Green
+design system v1 (branch `feature/design-ux-v1`) with the ADR-043 temporal
+picker and ADR-044 first-capsule copy live on Home. Two Manus missions
+hardened and prepared that integration branch: Mission 1
+(`integration/manus-rehearsal-20260817` — 17 hardening campaigns, 99 unit
+tests green, one P0 plaintext-corruption finding fixed in
+`AesGcmContentCipher.seal()`, report `MANUS-HARDENING-FINAL.md`) and Mission 2
+(`integration/manus-pre-codex-20260817` — product red team, pilot package
+under `pilot/`, documentation drift repair, Codex handoff; report
+`MANUS-PRE-CODEX-FINAL.md`). Open physical, accessibility, interoperability,
+second-OEM, notification-provider, and independent-review checks remain
+mandatory before a participant pilot, production release, or
 security/audit claim; they must not be reported as passed. No sync service,
-analytics transport, participant pilot, or product semantic experiment exists.
-ADR-040 authorizes only isolated M4 synthetic benchmark research; ADR-041
-records the early-stop `no model selected` outcome. ADR-024 remains Deferred
-and no research model may connect to Room or Returns.
+remote analytics transport, participant pilot, or product semantic experiment
+exists. ADR-040 authorizes only isolated M4 synthetic benchmark research;
+ADR-041 records the early-stop `no model selected` outcome. ADR-024 remains
+Deferred and no research model may connect to Room or Returns.
 `ADR-033` makes Android the current initial-client direction; do not execute the
 Superseded iOS/Apple plan or its dependencies. Follow `docs/10-ROADMAP.md` in
 order.
