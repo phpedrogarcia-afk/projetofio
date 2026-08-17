@@ -4,13 +4,15 @@ Regras: NOW tem exatamente UMA fatia. NEXT tem no máximo 3. CHECKPOINTs listam 
 
 ## NOW
 
-- [Fase 3] Integração do engine temporal: conectar o ReturnPolicy da UI (7 rótulos, ADR-043) ao schema — campo `returnPolicy` em Entry (migração Room schema 4) — e à futura integração com o TimeReturnEngine do PR #1; mapear cada rótulo ao vocabulário canônico (ELIGIBLE / explicit / anchored / never-return).
+- Missão Manus 2 concluída nesta branch (`integration/manus-pre-codex-20260817`): Red Team de produto (12 princípios, 11 PASS diretos), correções triviais (Reduce Motion na Pátina, copy neutra), documentação atualizada, pacote de piloto (`pilot/`) e handoff Codex. Próximo passo real: merge do PR #1 (decisão do fundador) e execução dos gates humanos descritos no `MANUS-PRE-CODEX-FINAL.md`.
+
+> Nota de drift corrigido: a antiga NOW (campo `returnPolicy` em Entry via schema 4) foi superada — o design v1 já mapeia os rótulos temporais ADR-043 ao vocabulário canônico (`ELIGIBLE` / períodos explícitos / data âncora / `NEVER`) por cima do engine existente, sem novo campo de schema. O trade-off UI-only permanece registrado como DECISION REQUIRED (levíssima) em `MANUS-HARDENING-FINAL.md`.
 
 ## NEXT
 
-1. [Fase 4] Primeira Cápsula persistente: gate first-save via `settings.firstCapsuleAcknowledged` no schema 4; copy canônica única (ADR-044).
-2. [Fase 6] Data-Âncora: devolução no aniversário da nota, respeitando cap/consent/never (ADR-043).
-3. [Fase 11] Ritual do Fio: Planned + gates (ADR-047) — tela de virada de ano lendo as notas do ano, sem gamificação.
+1. PR #1: merge pelo fundador (foundation: schema 3, engine M2–M4, imports).
+2. PR #3: atualizar título/corpo para o estado real (50 arquivos; começou design-only e incorporou a implementação) e abrir para revisão.
+3. Gates humanos do handoff: TalkBack real (~10 min em dispositivo), large font, dark mode manual, M2AndroidContractTest em AVD.
 
 ## LATER
 
@@ -26,6 +28,7 @@ Regras: NOW tem exatamente UMA fatia. NEXT tem no máximo 3. CHECKPOINTs listam 
 
 ## DONE
 
+- Missões Manus 1 (hardening: 17 campanhas, 99 testes, finding P0 corrigido) e 2 (Red Team + piloto + handoff) — relatórios `MANUS-HARDENING-FINAL.md` e `MANUS-PRE-CODEX-FINAL.md`
 - Fase 0–1: Verdade do repositório (PR #1 codex descoberto, fora de main), ADRs 043–047, export v1.0, fila + idea inbox (16/08)
 - Fases 2.3–2.5: TalkBack labels, error pill, leitura de carta + gesto "Devolver" com reescrita pré-carregada (commit d79a476); build + 20 testes verdes
 - Fase 2.2: Home redesenhada (commit 9e9c15a): sem bottom bar (pilha + menu ⋯), editor zero-fricção, seletor temporal ADR-043 (ReturnPolicy), copy primeira cápsula ADR-044, pill "Guardado." ADR-014, arquivo tipográfico agrupado por mês com distância temporal S-2, leitura de nota em Fraunces; ícones vetoriais; build + 20 testes verdes.
