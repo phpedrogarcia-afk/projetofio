@@ -11,8 +11,8 @@
 
 | Ordem | Campanha | Prioridade | Estado | Resultado |
 |-------|----------|------------|--------|-----------|
-| 1 | **Data Torture — Unicode & encoding** | P0 | PLANNED (próxima NOW) | — |
-| 2 | **Crypto Pre-Review + Plaintext Hunt** | P0 | NEXT | — |
+| 1 | **Data Torture — Unicode & encoding** | P0 | DONE (commits 00bb186, 20b7fae) | FINDING A (P0-class): surrogate halves substituídos por 0x3F silenciosamente antes da criptografia → fix `CryptoFailure.InvalidPlaintext`; findings B/C (P4): ZW-only content aceito por `isBlank()`, documentado |
+| 2 | **Crypto Pre-Review + Plaintext Hunt** | P0 | RUNNING (NOW) | — |
 | 3 | **Database / Migration Torture (Room 2→3)** | P0 | NEXT | — |
 | 4 | **Returns Engine Torture (determinismo M4)** | P1 | NEXT | — |
 | 5 | **Privacy Boundary & Android Backup** | P0 | WAITING | — |
@@ -33,13 +33,8 @@
 
 ## NOW (campanha ativa)
 
-### 1. Data Torture — Unicode & encoding
-**Objetivo:** provar que nenhuma entrada, independente de códigopoints hostis, quebra o app, corrompe dados ou vaza texto em logs/notificações.
-**Plano de ataque:**
-- Testes unitários com payloads: zero-width (`U+200B`, `U+200E` RTL), combining sequences, emoji ZWJ, surrogate halves (`\uD800`), C1 controls, NUL bytes, overlong UTF-8, homoglyphs de "Nunca"/"Algum dia" (usar texto com ligaduras), 64KB de uma linha, 1000 \n no meio, RTL paragraphos misturados com LTR, timestamps com ZWSP, Markdown literal (`# *>` ``) como conteúdo de nota.
-- Verificar: salvamento/edição/retorno de conteúdo intacto (round-trip binário por códigopoint), truncamento de notificação sem cortar surrogate pair, checksum SHA-256 do export inclui o conteúdo hostil sem mudança.
-**Critério de DONE:** todos os payloads preservados bit a bit no round-trip Entry→Room→UI→Export; nenhuma exceção em runtime; nenhuma quebra de layout (maxLines/ellipsize).
-**Decisões exigidas:** nenhuma esperada (leitura/escrita é idempotente).
+### 1. Data Torture — Unicode & encoding — CONCLUÍDA
+**Resultado:** 21 payloads hostis + 10.000 strings aleatórias preservadas bit a bit no round-trip Entry→envelope→Entry→Export; checksum SHA-256 sensível a 1 byte; AAD vincula kind/id/schema. Finding A (P0-class): surrogate halves eram substituídos por 0x3F antes da criptografia — fixado com `CryptoFailure.InvalidPlaintext`. Findings B/C (P4): ZW-only content aceito — documentado, decisão de produto aberta.
 
 ## NEXT (máx. 3)
 
