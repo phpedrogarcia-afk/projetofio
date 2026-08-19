@@ -7,9 +7,6 @@ Regra: NOW = exatamente 1 · NEXT ≤ 3 · RESEARCH = sem decisão · DECISION R
 ## Estado atual
 
 ### NOW
-- **S5** — benchmark PT-BR + research embeddings on-device (research/search/FIO-SEARCH-BENCHMARK.md, RESEARCH-LOG.md)
-
-### NEXT
 - **S6** — prototype semântico sob feature flag (isolado, removível, híbrido, torture tests)
 
 ### RESEARCH (ainda sem decisão)
@@ -37,3 +34,4 @@ S0 state discovery → S1 return history model → S2 threat model → S3 lexica
 - 2026-08-19: S2 — threat model sealed+search (seladas invisíveis por conteúdo; contagem opcional DECISION REQUIRED) + privacy architecture (Opção A scan sob demanda; FTS5 rejeitada p/ V1; queries nunca persistidas) (e77de5e).
 - 2026-08-19: S3 — baseline lexical: `LexicalTokenizer` (NFD+\p{Mn}, prefix só no último token, snippets do texto original), `LocalSearchService` (scan sob demanda, sealed COUNT_ONLY default, soft-deleted invisível, evidência OPENED), `SearchRepository` read-only; 125 testes verdes (0bd694d).
 - 2026-08-19: S4 — UI Encontrar no Arquivo: campo de busca com debounce 300 ms, queries runtime-only (nunca persistidas), snippets preserváveis (SelectionContainer), data factual + "Já voltou N vez(es)", nota neutra de seladas; `SearchService` injetado via FioGraph → MainActivity → FioViewModel.Factory; 125 testes verdes (44ce800).
+- 2026-08-19: S5 — benchmark PT-BR (`research/search/FIO-SEARCH-BENCHMARK.md` + `run_benchmark.py`, 60 entradas/30 consultas, fora do build): lexical MRR 0.200/recall@10 0.109 vs semântica proxy MRR 1.000/recall@10 0.917, latência CPU fria ~2.6s viola teto 500ms; RESEARCH-LOG: EmbeddingGemma-300M TFLite candidato primário (MTEB-BR 13º/93, melhor on-device) (87aa73c).
