@@ -450,17 +450,22 @@ private fun HomeScreen(
     // Date picker dialog (anchored request)
     if (dateSheet) {
         val datePickerState = rememberDatePickerState(
+            // G1 fix: anchor the picker in the device's local zone — UTC
+            // conversion shows the previous day for negative-offset zones
+            // after 21:00 local time.
             initialSelectedDateMillis = (policy as? ReturnPolicy.OnDate)
-                ?.date?.atStartOfDay(ZoneOffset.UTC)?.toInstant()?.toEpochMilli(),
+                ?.date?.atStartOfDay(ZoneId.systemDefault())?.toInstant()?.toEpochMilli(),
         )
         DatePickerDialog(
             onDismissRequest = { dateSheet = false },
             confirmButton = {
                 TextButton(
                     onClick = {
+                        // G1 fix: decode the chosen millis in the device's
+                        // local zone so the touched calendar day is honored.
                         datePickerState.selectedDateMillis?.let { millis ->
                             policy = ReturnPolicy.OnDate(
-                                Instant.ofEpochMilli(millis).atZone(ZoneOffset.UTC).toLocalDate(),
+                                Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate(),
                             )
                         }
                         dateSheet = false
