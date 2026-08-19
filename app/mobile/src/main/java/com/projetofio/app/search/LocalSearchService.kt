@@ -34,7 +34,7 @@ class LocalSearchService(
      * an authorization boundary overrides this single point without touching
      * search internals (threat model contract).
      */
-    private val isSealed: (id: String) -> Boolean = { false },
+    internal val isSealed: (id: String) -> Boolean = { false },
 ) : SearchService {
 
     override suspend fun search(
@@ -90,10 +90,10 @@ class LocalSearchService(
         )
     }
 
-    private fun matchesQuery(entry: com.projetofio.app.domain.Entry, queryTokens: List<String>): Boolean =
+    internal fun matchesQuery(entry: com.projetofio.app.domain.Entry, queryTokens: List<String>): Boolean =
         LexicalTokenizer.containsQueryTokens(LexicalTokenizer.normalize(entry.content), queryTokens)
 
-    private fun matchesFilters(
+    internal fun matchesFilters(
         entry: com.projetofio.app.domain.Entry,
         query: SearchQuery,
         entryReturns: List<ReturnAttempt>?,
