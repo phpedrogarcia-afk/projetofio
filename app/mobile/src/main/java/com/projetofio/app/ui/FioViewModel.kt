@@ -16,6 +16,9 @@ import com.projetofio.app.domain.NotificationPermissionObserved
 import com.projetofio.app.domain.ReturnConsentState
 import com.projetofio.app.domain.ImportBatch
 import com.projetofio.app.domain.ImportSource
+import com.projetofio.app.domain.SearchQuery
+import com.projetofio.app.domain.SearchResult
+import com.projetofio.app.domain.SearchService
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -49,6 +52,13 @@ data class FioUiState(
     val importBatches: List<ImportBatch> = emptyList(),
     val importMessage: String? = null,
     val importing: Boolean = false,
+    // Search (canonical: Encontrar — search retrieves, it does not interpret):
+    // the active query, its evidence, and whether a search is in flight.
+    // Nothing here is persisted; queries are pure runtime state.
+    val searchTerms: String = "",
+    val searchResult: SearchResult? = null,
+    val searchLoading: Boolean = false,
+    val searchError: String? = null,
 )
 
 @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
@@ -58,10 +68,18 @@ class FioViewModel(
     private val localImport: ImportService,
     private val m2EngineeringEnabled: Boolean,
     private val m3EngineeringEnabled: Boolean,
+    /**
+     * Nullable by design: tests that predate the search layer keep working,
+     * and the search lens can be removed entirely without touching the rest
+     * of the UI layer (SEARCH-ARCHITECTURE.md — the semantic path, should
+     * it ever exist, must be removable behind its own flag).
+     */
+    private val search: SearchService? = null,
 ) : ViewModel() {
     private val mutableState = MutableStateFlow(
         FioUiState(m2EngineeringEnabled = m2EngineeringEnabled, m3EngineeringEnabled = m3EngineeringEnabled),
     )
+    private val searchTermsFlow = MutableStateFlow("")
     val state: StateFlow<FioUiState> = mutableState.asStateFlow()
     private val draftChanges = MutableStateFlow("")
     private val saveInProgress = AtomicBoolean(false)
@@ -98,11 +116,46 @@ class FioViewModel(
                     .onFailure { showDataFailure(it) }
             }
         }
+        viewModelScope.launch {
+            searchTermsFlow.drop(1).debounce(300).distinctUntilChanged().collect { terms ->
+                if (search == null) {
+                    mutableState.update { it.copy(searchTerms = terms) }
+                    return@collect
+                }
+                mutableState.update { it.copy(searchTerms = terms, searchError = null) }
+                if (terms.isBlank()) {
+                    mutableState.update { it.copy(searchResult = null, searchLoading = false) }
+                    return@collect
+                }
+                mutableState.update { it.copy(searchLoading = true) }
+                runCatching { search.search(SearchQuery(terms = terms.trim())) }
+                    .onSuccess { result ->
+                        mutableState.update {
+                            it.copy(searchResult = result, searchLoading = false, searchError = null)
+                        }
+                    }
+                    .onFailure {
+                        mutableState.update {
+                            it.copy(
+                                searchLoading = false,
+                                searchResult = null,
+                                searchError = "A busca não pôde ser concluída com segurança. Nada foi apagado.",
+                            )
+                        }
+                    }
+            }
+        }
     }
 
     fun onDraftChanged(content: String) {
         mutableState.update { it.copy(draftText = content, savedNotice = false, recoverableError = null) }
         draftChanges.value = content
+    }
+
+    /** Search contract: the query is runtime-only — never persisted, logged, or sent anywhere. */
+    fun onSearchChanged(terms: String) {
+        mutableState.update { it.copy(searchTerms = terms, searchResult = null, searchLoading = terms.isNotBlank(), searchError = null) }
+        searchTermsFlow.value = terms
     }
 
     /** ADR-014: the save confirmation is restrained — hide it after it was
@@ -330,11 +383,12 @@ class FioViewModel(
         private val localImport: ImportService,
         private val m2EngineeringEnabled: Boolean,
         private val m3EngineeringEnabled: Boolean,
+        private val search: SearchService? = null,
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
             require(modelClass.isAssignableFrom(FioViewModel::class.java))
-            return FioViewModel(service, timeReturns, localImport, m2EngineeringEnabled, m3EngineeringEnabled) as T
+            return FioViewModel(service, timeReturns, localImport, m2EngineeringEnabled, m3EngineeringEnabled, search) as T
         }
     }
 }

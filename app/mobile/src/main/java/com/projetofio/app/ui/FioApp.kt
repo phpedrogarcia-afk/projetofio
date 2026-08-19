@@ -4,6 +4,8 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -20,8 +22,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -86,6 +86,9 @@ import com.projetofio.app.domain.ImportBatch
 import com.projetofio.app.domain.ImportIssueCode
 import com.projetofio.app.domain.NotificationPermissionObserved
 import com.projetofio.app.domain.ReturnConsentState
+import com.projetofio.app.domain.ReturnedFilter
+import com.projetofio.app.domain.SearchQuery
+import com.projetofio.app.domain.SearchTimeFilter
 import com.projetofio.app.ui.theme.FioDisplayDate
 import com.projetofio.app.ui.theme.FioRadius
 import com.projetofio.app.ui.theme.FioSpace
@@ -586,9 +589,63 @@ private fun ArchiveScreen(
             }
         }
         item { Spacer(Modifier.height(FioSpace.s3)) }
+
+        // FIND — the search lens over the archive (Encontrar). The query is
+        // runtime-only: it is never persisted, logged, or sent to analytics.
+        // Search retrieves the user's own words with factual context; it
+        // never answers autobiographical questions on the user's behalf.
+        item { ArchiveSearchField(terms = state.searchTerms, onChanged = viewModel::onSearchChanged) }
+
         if (state.loading) item { CircularProgressIndicator() }
         if (state.archiveError) {
             item { Text("O Arquivo não pôde ser aberto com segurança. Nada foi apagado.", color = MaterialTheme.colorScheme.error) }
+        } else if (state.searchTerms.isNotBlank()) {
+            // FIND — results render inline in the list scope so the
+            // LazyColumn receiver is the one actually emitting `item`.
+            when {
+                state.searchLoading -> item {
+                    CircularProgressIndicator(modifier = Modifier.padding(vertical = FioSpace.s5))
+                }
+                state.searchError != null -> item {
+                    Text(state.searchError, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(vertical = FioSpace.s3))
+                }
+                state.searchResult == null -> {} // idle while the debounced query settles
+                else -> {
+                    val result = checkNotNull(state.searchResult)
+                    item {
+                        Text(
+                            text = "${result.hits.size} resultado(s) para “${state.searchTerms}”",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(vertical = FioSpace.s2),
+                        )
+                    }
+                    if (result.sealedCount > 0) {
+                        item {
+                            Text(
+                                text = "${result.sealedCount} nota(s) selada(s) não pesquisável(is).",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(bottom = FioSpace.s2),
+                            )
+                        }
+                    }
+                    if (result.hits.isEmpty()) {
+                        item {
+                            Text(
+                                text = "Nada no arquivo contém essas palavras.",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(vertical = FioSpace.s3),
+                            )
+                        }
+                    }
+                    items(result.hits, key = { it.entry.id }) { hit ->
+                        ArchiveSearchHitRow(hit = hit, onOpen = { reading = hit.entry })
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
+                    }
+                }
+            }
         } else if (!state.loading && state.entries.isEmpty()) {
             item {
                 Column(modifier = Modifier.padding(vertical = FioSpace.s7)) {
@@ -601,25 +658,96 @@ private fun ArchiveScreen(
                     )
                 }
             }
-        }
-        val grouped = state.entries.groupBy { groupKey(it) }
-        grouped.forEach { (label, entries) ->
-            item {
-                Column(modifier = Modifier.padding(top = FioSpace.s4, bottom = FioSpace.s2)) {
-                    Text(label, style = MaterialTheme.typography.titleMedium)
+        } else {
+            val grouped = state.entries.groupBy { groupKey(it) }
+            grouped.forEach { (label, entries) ->
+                item {
+                    Column(modifier = Modifier.padding(top = FioSpace.s4, bottom = FioSpace.s2)) {
+                        Text(label, style = MaterialTheme.typography.titleMedium)
+                    }
                 }
-            }
-            items(entries, key = { it.id }) { entry ->
-                ArchiveRow(
-                    entry = entry,
-                    onOpen = { reading = entry },
-                    onEdit = { editing = entry },
-                    onDelete = { deleting = entry },
-                )
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
+                items(entries, key = { it.id }) { entry ->
+                    ArchiveRow(
+                        entry = entry,
+                        onOpen = { reading = entry },
+                        onEdit = { editing = entry },
+                        onDelete = { deleting = entry },
+                    )
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
+                }
             }
         }
         item { Spacer(Modifier.height(FioSpace.s5)) }
+    }
+}
+
+// ===========================================================================
+// FIND — search field and factual result panel (Encontrar).
+// ===========================================================================
+
+@Composable
+private fun ArchiveSearchField(terms: String, onChanged: (String) -> Unit) {
+    var clearable by remember { mutableStateOf(terms.isNotBlank()) }
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
+    OutlinedTextField(
+        value = terms,
+        onValueChange = {
+            clearable = it.isNotBlank()
+            onChanged(it)
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 48.dp)
+            .semantics { contentDescription = "Buscar no arquivo" },
+        placeholder = { Text("Buscar no arquivo", style = MaterialTheme.typography.bodyLarge) },
+        singleLine = true,
+        trailingIcon = {
+            if (clearable) {
+                TextButton(
+                    onClick = {
+                        onChanged("")
+                        focusManager.clearFocus()
+                        keyboardController?.hide()
+                    },
+                    modifier = Modifier.heightIn(min = 40.dp),
+                ) { Text("✕", fontSize = 13.sp) }
+            }
+        },
+    )
+    Spacer(Modifier.height(FioSpace.s2))
+}
+
+@Composable
+private fun ArchiveSearchHitRow(hit: com.projetofio.app.domain.SearchHit, onOpen: () -> Unit) {
+    SelectionContainer {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(onClick = onOpen)
+                .padding(vertical = FioSpace.s3),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    displayDate(hit.entry),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                if (hit.returnedCount > 0) {
+                    Spacer(Modifier.width(FioSpace.s2))
+                    Text(
+                        text = "Já voltou ${hit.returnedCount} vez(es)",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.tertiary,
+                    )
+                }
+            }
+            Text(
+                text = hit.matchedSnippet,
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.padding(top = FioSpace.s1),
+            )
+        }
     }
 }
 

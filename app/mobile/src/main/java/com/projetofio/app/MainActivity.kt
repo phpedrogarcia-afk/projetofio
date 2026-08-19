@@ -47,6 +47,7 @@ class MainActivity : FragmentActivity() {
             graph.localImport,
             BuildConfig.TIME_RETURNS_ENGINEERING_ENABLED,
             BuildConfig.LOCAL_IMPORT_ENGINEERING_ENABLED,
+            graph.search,
         )
     }
     private lateinit var authenticator: DeviceAuthenticator
