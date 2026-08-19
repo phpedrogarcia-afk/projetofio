@@ -21,6 +21,14 @@ interface FioRepository {
 
 interface ReturnRepository {
     suspend fun loadReturnHistory(): List<ReturnAttempt>
+
+    /**
+     * Return history for one entry, ordered by creation. This is the read-only
+     * lens the search UI uses to show factual "já voltou" evidence.
+     * Search code paths must never write return history through it.
+     */
+    suspend fun loadReturnsForEntry(entryId: String): List<ReturnAttempt>
+
     suspend fun findReturn(id: String): ReturnAttempt?
     suspend fun insertReturnIfNoPending(attempt: ReturnAttempt): Boolean
     suspend fun updateReturn(attempt: ReturnAttempt)

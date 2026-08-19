@@ -174,6 +174,10 @@ class RoomFioRepository(
         dao.loadReturnHistory().map { it.toDomain() }
     }
 
+    override suspend fun loadReturnsForEntry(entryId: String): List<ReturnAttempt> = io {
+        dao.loadReturnsForEntry(entryId).map { it.toDomain() }
+    }
+
     override suspend fun findReturn(id: String): ReturnAttempt? = io {
         dao.findReturn(id)?.toDomain()
     }

@@ -189,6 +189,7 @@ class TimeReturnsServiceTest {
         override suspend fun loadSettings() = settings
         override suspend fun saveSettings(settings: AppSettings) { this.settings = settings }
         override suspend fun loadReturnHistory() = history.toList()
+        override suspend fun loadReturnsForEntry(entryId: String) = history.filter { it.entryId == entryId }
         override suspend fun findReturn(id: String) = history.find { it.id == id }
         override suspend fun insertReturnIfNoPending(attempt: ReturnAttempt): Boolean {
             if (history.any { it.state in setOf(ReturnState.SELECTED, ReturnState.SCHEDULED, ReturnState.NOTIFIED) }) return false

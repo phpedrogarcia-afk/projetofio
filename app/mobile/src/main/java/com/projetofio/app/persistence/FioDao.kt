@@ -64,6 +64,9 @@ abstract class FioDao {
     @Query("SELECT * FROM returns WHERE id = :id LIMIT 1")
     abstract suspend fun findReturn(id: String): ReturnEntity?
 
+    @Query("SELECT * FROM returns WHERE entry_id = :entryId ORDER BY created_at ASC, id ASC")
+    abstract suspend fun loadReturnsForEntry(entryId: String): List<ReturnEntity>
+
     @Query("SELECT COUNT(*) FROM returns WHERE state IN ('SELECTED', 'SCHEDULED', 'NOTIFIED')")
     protected abstract suspend fun pendingReturnCount(): Int
 
