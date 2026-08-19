@@ -735,7 +735,7 @@ private fun NoteScreen(
             Spacer(Modifier.height(FioSpace.s5))
             Row {
                 Text(
-                    text = if (returned) "Reescrever esta nota agora?" else "Devolver para agora",
+                    text = if (returned) "Reescrever esta nota?" else "Devolver para agora", // G2: factual — a antiga interpretativa foi neutralizada
                     style = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.primary),
                     modifier = Modifier
                         .clickable(onClick = {
@@ -756,7 +756,8 @@ private fun NoteScreen(
             Spacer(Modifier.height(FioSpace.s4))
             if (returned) {
                 Text(
-                    text = "Suas palavras voltaram. Reescreva com o olhar de hoje, se quiser — ou apenas deixe seguir.",
+                    // G2 fix: factual, sem interpretar o que a volta significa.
+                    text = "Esta nota voltou. Reescrever se quiser — ou apenas deixe seguir.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
@@ -1199,8 +1200,8 @@ private fun BotanicalMotif(firstEntryAt: Instant? = null) {
     } else 0
     // ADR-045: the motif is purely decorative — Reduce Motion is respected,
     // and any user who asked for no motion sees no patina at all.
-    val reduceMotion = accessibilityInfoOf(LocalContext.current)
-    if (reduceMotion) return
+    // G9 fix: suppress the motif for reduced motion OR TalkBack.
+    if (isMotionReduced(LocalContext.current)) return
     Canvas(
         modifier = Modifier.height(56.dp).width(32.dp).alpha(0.55f),
         onDraw = {
@@ -1224,12 +1225,22 @@ private fun BotanicalMotif(firstEntryAt: Instant? = null) {
 // Accessibility helpers
 // ===========================================================================
 
-// Returns true when the user asked the system to reduce motion (Accessibility
-// settings). ADR-045 forbids the motif from drawing anything in that case.
-private fun accessibilityInfoOf(context: android.content.Context): Boolean =
+// G9 fix: returns true when motion should be suppressed — either the user
+// asked for reduced motion (system animation scale disabled) or TalkBack is
+// active (navigation is by order, not appearance). ADR-045 forbids the motif
+// from drawing anything in either case. The old helper only read
+// isTouchExplorationEnabled and was misnamed `reduceMotion`.
+private fun isMotionReduced(context: android.content.Context): Boolean =
     runCatching {
+        val settings = android.provider.Settings.Global.getFloat(
+            context.contentResolver,
+            android.provider.Settings.Global.ANIMATOR_DURATION_SCALE,
+            1f,
+        )
+        val reducedMotion = settings <= 0f
         val service = context.getSystemService(android.content.Context.ACCESSIBILITY_SERVICE) as? android.view.accessibility.AccessibilityManager
-        service?.isEnabled == true && service.isTouchExplorationEnabled == true
+        val talkBack = service?.isEnabled == true && service.isTouchExplorationEnabled == true
+        reducedMotion || talkBack
     }.getOrDefault(false)
 
 // ===========================================================================
