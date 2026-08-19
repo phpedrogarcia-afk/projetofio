@@ -7,7 +7,7 @@ Regra: NOW = exatamente 1 · NEXT ≤ 3 · RESEARCH = sem decisão · DECISION R
 ## Estado atual
 
 ### NOW
-- **S6** — prototype semântico sob feature flag (isolado, removível, híbrido, torture tests)
+- **S7** — acessibilidade (ArchiveScreen busca: contentDescription, TalkBack, liveRegion) + red team final + MANUS-SEARCH-FINAL.md + push final
 
 ### RESEARCH (ainda sem decisão)
 - Modelo de embeddings on-device PT-BR (2026, §29–31)
@@ -35,3 +35,4 @@ S0 state discovery → S1 return history model → S2 threat model → S3 lexica
 - 2026-08-19: S3 — baseline lexical: `LexicalTokenizer` (NFD+\p{Mn}, prefix só no último token, snippets do texto original), `LocalSearchService` (scan sob demanda, sealed COUNT_ONLY default, soft-deleted invisível, evidência OPENED), `SearchRepository` read-only; 125 testes verdes (0bd694d).
 - 2026-08-19: S4 — UI Encontrar no Arquivo: campo de busca com debounce 300 ms, queries runtime-only (nunca persistidas), snippets preserváveis (SelectionContainer), data factual + "Já voltou N vez(es)", nota neutra de seladas; `SearchService` injetado via FioGraph → MainActivity → FioViewModel.Factory; 125 testes verdes (44ce800).
 - 2026-08-19: S5 — benchmark PT-BR (`research/search/FIO-SEARCH-BENCHMARK.md` + `run_benchmark.py`, 60 entradas/30 consultas, fora do build): lexical MRR 0.200/recall@10 0.109 vs semântica proxy MRR 1.000/recall@10 0.917, latência CPU fria ~2.6s viola teto 500ms; RESEARCH-LOG: EmbeddingGemma-300M TFLite candidato primário (MTEB-BR 13º/93, melhor on-device) (87aa73c).
+- 2026-08-19: S6 — prototype híbrido: `SemanticSearchPrototype.kt` (RRF k=60, `EmbeddingProvider` + `FakeEmbeddingProvider` determinístico sem pesos embarcados, `HybridSearchService`), braço vetorial herda o contrato TOTAL de filtros do léxico (seladas/deletadas/filtros de tempo-retorno aplicados ANTES da fusão — a semântica nunca reintroduz conteúdo descartado pelo léxico); totalmente removível (ADR-040/041); `LocalSearchService` isSealed/matchesQuery/matchesFilters viraram `internal` para reuso. 9 testes novos (fusão, filtros em ambos os braços, invariantes selada/deletada, fallback sem embeddings, edição/exclusão refletida). Suíte: **134 testes verdes, 0 falhas** (8f2eb38).
