@@ -1,0 +1,757 @@
+======================================================================
+SURFACE INVENTORY — FioApp.kt
+======================================================================
+
+## FioApp (linha 120)
+      viewModel: FioViewModel,
+      authorizeFresh: (() -> Unit) -> Unit,
+      authenticationAvailable: Boolean,
+      exportMessage: String?,
+      onExportMarkdown: () -> Unit,
+      onExportText: () -> Unit,
+      onEnableReturns: () -> Unit,
+      onOpenPendingReturn: (String) -> Unit,
+      onSelectImport: () -> Unit,
+  ) {
+      val state by viewModel.state.collectAsStateWithLifecycle()
+      var surface by remember { mutableStateOf(MainSurface.HOME) }
+      val focusManager = LocalFocusManager.current
+      val keyboardController = LocalSoftwareKeyboardController.current
+      val isSaved = state.savedNotice
+      LaunchedEffect(isSaved) {
+          if (isSaved) {
+              delay(1500)
+
+## HomeScreen (linha 195)
+      state: FioUiState,
+      viewModel: FioViewModel,
+      padding: PaddingValues,
+      onOpenArchive: () -> Unit,
+      onOpenSettings: () -> Unit,
+  ) {
+      val focusManager = LocalFocusManager.current
+      val keyboardController = LocalSoftwareKeyboardController.current
+      var menuOpen by remember { mutableStateOf(false) }
+      var timeSheet by remember { mutableStateOf(false) }
+      var dateSheet by remember { mutableStateOf(false) }
+      var policy by remember { mutableStateOf<ReturnPolicy>(ReturnPolicy.Someday) }
+  
+      // First-capsule copy (ADR-044): the single extended confirmation appears
+      // only for the very first save of the life of this installation.
+      val isFirstSave =
+          state.settings.returnConsentState == ReturnConsentState.NOT_CONFIGURED &&
+              state.entries.isEmpty() && state.savedNotice
+
+## TimeOption (linha 479)
+      Surface(
+          modifier = Modifier
+              .fillMaxWidth()
+              .clickable(onClick = onClick)
+              .heightIn(min = 48.dp),
+          shape = RoundedCornerShape(FioRadius.md),
+          color = if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+          else MaterialTheme.colorScheme.surface,
+      ) {
+          Row(
+              modifier = Modifier.padding(horizontal = FioSpace.s3, vertical = FioSpace.s2),
+              verticalAlignment = Alignment.CenterVertically,
+          ) {
+              if (selected) {
+                  Icon(
+                      painter = painterResource(R.drawable.ic_check),
+                      contentDescription = "Selecionado",
+                      tint = MaterialTheme.colorScheme.primary,
+
+## returnPolicyLabel (linha 507)
+      7 -> "Em 7 dias"
+      30 -> "Em 30 dias"
+      90 -> "Em 90 dias"
+      365 -> "Em 1 ano"
+      else -> "Em $days dias"
+  }
+  
+  // ===========================================================================
+  // ARCHIVE — typographic grouping by month, temporal distance as secondary
+  // line, no cards (the system's rule: cards only for elevated objects).
+  // ===========================================================================
+  
+  @Composable
+  private fun ArchiveScreen(
+      state: FioUiState,
+      viewModel: FioViewModel,
+      padding: PaddingValues,
+      onBack: () -> Unit,
+
+## ArchiveScreen (linha 521)
+      state: FioUiState,
+      viewModel: FioViewModel,
+      padding: PaddingValues,
+      onBack: () -> Unit,
+  ) {
+      var reading by remember { mutableStateOf<Entry?>(null) }
+      var editing by remember { mutableStateOf<Entry?>(null) }
+      var deleting by remember { mutableStateOf<Entry?>(null) }
+  
+      reading?.let { entry ->
+          NoteScreen(
+              entry = entry,
+              onBack = { reading = null },
+              onReedit = { text -> viewModel.onDraftChanged(text) },
+          )
+      }
+      if (editing != null) {
+          EditEntryDialog(
+
+## groupKey (linha 621)
+      val zone = runCatching { ZoneId.of(entry.originalTimeZone ?: "UTC") }.getOrDefault(ZoneId.of("UTC"))
+      val local = entry.originalCreatedAt.atZone(zone).toLocalDate()
+      val monthLabel = DateTimeFormatter.ofPattern("MMMM 'de' yyyy", Locale.forLanguageTag("pt-BR"))
+          .format(local)
+      return monthLabel.replaceFirstChar { it.uppercase(Locale.forLanguageTag("pt-BR")) }
+  }
+  
+  private fun temporalDistance(entry: Entry): String {
+      val zone = runCatching { ZoneId.of(entry.originalTimeZone ?: "UTC") }.getOrDefault(ZoneId.of("UTC"))
+      val then = entry.originalCreatedAt.atZone(zone).toLocalDate()
+      val now = LocalDate.now(zone)
+      val days = ChronoUnit.DAYS.between(then, now)
+      return when {
+          days <= 0 -> "Hoje"
+          days == 1L -> "Ontem"
+          days < 30 -> "há $days dias"
+          days < 365 -> {
+              val months = (days / 30).toInt().coerceAtLeast(1)
+
+## temporalDistance (linha 629)
+      val zone = runCatching { ZoneId.of(entry.originalTimeZone ?: "UTC") }.getOrDefault(ZoneId.of("UTC"))
+      val then = entry.originalCreatedAt.atZone(zone).toLocalDate()
+      val now = LocalDate.now(zone)
+      val days = ChronoUnit.DAYS.between(then, now)
+      return when {
+          days <= 0 -> "Hoje"
+          days == 1L -> "Ontem"
+          days < 30 -> "há $days dias"
+          days < 365 -> {
+              val months = (days / 30).toInt().coerceAtLeast(1)
+              "há $months " + if (months == 1) "mês" else "meses"
+          }
+          else -> {
+              val years = (days / 365).toInt().coerceAtLeast(1)
+              "há $years " + if (years == 1) "ano" else "anos"
+          }
+      }
+  }
+
+## ArchiveRow (linha 650)
+      SelectionContainer {
+          Column(
+              modifier = Modifier
+                  .fillMaxWidth()
+                  .clickable(onClick = onOpen)
+                  .padding(vertical = FioSpace.s3),
+          ) {
+              Row(verticalAlignment = Alignment.CenterVertically) {
+                  Text(
+                      displayDate(entry),
+                      style = MaterialTheme.typography.labelLarge,
+                      color = MaterialTheme.colorScheme.onSurfaceVariant,
+                  )
+                  Spacer(Modifier.width(FioSpace.s2))
+                  Text(
+                      temporalDistance(entry),
+                      style = MaterialTheme.typography.labelLarge,
+                      color = MaterialTheme.colorScheme.tertiary,
+
+## NoteScreen (linha 695)
+      entry: Entry,
+      onBack: () -> Unit,
+      onReedit: (String) -> Unit = {},
+  ) {
+      var returning by remember { mutableStateOf(false) }
+      var returned by remember { mutableStateOf(false) }
+      Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+          Column(modifier = Modifier.padding(horizontal = FioSpace.s4, vertical = FioSpace.s5)) {
+              Row(verticalAlignment = Alignment.CenterVertically) {
+                  Text(
+                      text = "← ",
+                      style = MaterialTheme.typography.bodyLarge,
+                      color = MaterialTheme.colorScheme.primary,
+                      modifier = Modifier
+                          .clickable(onClick = onBack)
+                          .heightIn(min = 48.dp)
+                          .widthIn(min = 48.dp)
+                          .padding(12.dp)
+
+## noteDate (linha 781)
+      val zone = runCatching { ZoneId.of(entry.originalTimeZone ?: "UTC") }.getOrDefault(ZoneId.of("UTC"))
+      val formatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG)
+          .withLocale(Locale.forLanguageTag("pt-BR"))
+      return formatter.format(entry.originalCreatedAt.atZone(zone).toLocalDate())
+  }
+  
+  @Composable
+  private fun EditEntryDialog(entry: Entry, onDismiss: () -> Unit, onSave: (String) -> Unit) {
+      var text by remember(entry.id) { mutableStateOf(entry.content) }
+      AlertDialog(
+          onDismissRequest = onDismiss,
+          title = { Text("Editar entrada") },
+          text = {
+              OutlinedTextField(
+                  value = text,
+                  onValueChange = { text = it },
+                  modifier = Modifier.fillMaxWidth(),
+                  minLines = 6,
+
+## EditEntryDialog (linha 789)
+      var text by remember(entry.id) { mutableStateOf(entry.content) }
+      AlertDialog(
+          onDismissRequest = onDismiss,
+          title = { Text("Editar entrada") },
+          text = {
+              OutlinedTextField(
+                  value = text,
+                  onValueChange = { text = it },
+                  modifier = Modifier.fillMaxWidth(),
+                  minLines = 6,
+              )
+          },
+          confirmButton = {
+              TextButton(onClick = { onSave(text) }, enabled = text.isNotBlank()) {
+                  Text("Guardar alterações")
+              }
+          },
+          dismissButton = { TextButton(onClick = onDismiss) { Text("Cancelar") } },
+
+## SettingsScreen (linha 816)
+      state: FioUiState,
+      viewModel: FioViewModel,
+      padding: PaddingValues,
+      authenticationAvailable: Boolean,
+      exportMessage: String?,
+      authorizeFresh: (() -> Unit) -> Unit,
+      onExportMarkdown: () -> Unit,
+      onExportText: () -> Unit,
+      onBack: () -> Unit,
+      onEnableReturns: () -> Unit,
+      onOpenPendingReturn: (String) -> Unit,
+      onSelectImport: () -> Unit,
+  ) {
+      var permanentDelete by remember { mutableStateOf<Entry?>(null) }
+      var confirmReturnConsent by remember { mutableStateOf(false) }
+      var rollbackBatch by remember { mutableStateOf<ImportBatch?>(null) }
+      if (confirmReturnConsent) {
+          AlertDialog(
+
+## DeletedRow (linha 1057)
+      Column(
+          modifier = Modifier
+              .fillMaxWidth()
+              .padding(vertical = FioSpace.s3),
+      ) {
+          Text(displayDate(entry), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+          Text(entry.content, maxLines = 3, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(top = FioSpace.s1))
+          Row(horizontalArrangement = Arrangement.spacedBy(FioSpace.s2)) {
+              TextButton(onClick = onRecover, modifier = Modifier.heightIn(min = 40.dp)) { Text("Recuperar", fontSize = 13.sp) }
+              TextButton(onClick = onPurge, modifier = Modifier.heightIn(min = 40.dp)) {
+                  Text("Excluir para sempre", fontSize = 13.sp, color = MaterialTheme.colorScheme.error)
+              }
+          }
+      }
+  }
+  
+  
+  private fun quietHoursLabel(startMinute: Int, endMinute: Int): String {
+
+## quietHoursLabel (linha 1075)
+      fun fmt(m: Int): String = "${(m / 60) % 24}h${(m % 60).let { if (it == 0) "00" else String.format(Locale.ROOT, "%02d", it) }}"
+      return "${fmt(startMinute)}–${fmt(endMinute)}"
+  }
+  
+  private fun displayImportDate(instant: java.time.Instant, zone: String): String {
+      val zoneId = runCatching { ZoneId.of(zone) }.getOrDefault(ZoneId.of("UTC"))
+      return DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
+          .withLocale(Locale.forLanguageTag("pt-BR"))
+          .format(instant.atZone(zoneId))
+  }
+  
+  private fun importIssueLabel(code: ImportIssueCode): String = when (code) {
+      ImportIssueCode.FILE_TOO_LARGE -> "O arquivo ultrapassa 5 MiB."
+      ImportIssueCode.TOO_MANY_LINES -> "O arquivo ultrapassa 20.000 linhas."
+      ImportIssueCode.TOO_MANY_ENTRIES -> "O arquivo ultrapassa 2.000 entradas."
+      ImportIssueCode.ENTRY_TOO_LARGE -> "Uma entrada ultrapassa 256 KiB."
+      ImportIssueCode.MALFORMED_UTF8 -> "O arquivo não é UTF-8 válido."
+      ImportIssueCode.UNSUPPORTED_CONTAINER -> "Arquivos compactados não são aceitos."
+
+## fmt (linha 1076)
+      return "${fmt(startMinute)}–${fmt(endMinute)}"
+  }
+  
+  private fun displayImportDate(instant: java.time.Instant, zone: String): String {
+      val zoneId = runCatching { ZoneId.of(zone) }.getOrDefault(ZoneId.of("UTC"))
+      return DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
+          .withLocale(Locale.forLanguageTag("pt-BR"))
+          .format(instant.atZone(zoneId))
+  }
+  
+  private fun importIssueLabel(code: ImportIssueCode): String = when (code) {
+      ImportIssueCode.FILE_TOO_LARGE -> "O arquivo ultrapassa 5 MiB."
+      ImportIssueCode.TOO_MANY_LINES -> "O arquivo ultrapassa 20.000 linhas."
+      ImportIssueCode.TOO_MANY_ENTRIES -> "O arquivo ultrapassa 2.000 entradas."
+      ImportIssueCode.ENTRY_TOO_LARGE -> "Uma entrada ultrapassa 256 KiB."
+      ImportIssueCode.MALFORMED_UTF8 -> "O arquivo não é UTF-8 válido."
+      ImportIssueCode.UNSUPPORTED_CONTAINER -> "Arquivos compactados não são aceitos."
+      ImportIssueCode.ACTIVE_CONTENT -> "Conteúdo HTML ou executável não é aceito."
+
+## displayImportDate (linha 1080)
+      val zoneId = runCatching { ZoneId.of(zone) }.getOrDefault(ZoneId.of("UTC"))
+      return DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)
+          .withLocale(Locale.forLanguageTag("pt-BR"))
+          .format(instant.atZone(zoneId))
+  }
+  
+  private fun importIssueLabel(code: ImportIssueCode): String = when (code) {
+      ImportIssueCode.FILE_TOO_LARGE -> "O arquivo ultrapassa 5 MiB."
+      ImportIssueCode.TOO_MANY_LINES -> "O arquivo ultrapassa 20.000 linhas."
+      ImportIssueCode.TOO_MANY_ENTRIES -> "O arquivo ultrapassa 2.000 entradas."
+      ImportIssueCode.ENTRY_TOO_LARGE -> "Uma entrada ultrapassa 256 KiB."
+      ImportIssueCode.MALFORMED_UTF8 -> "O arquivo não é UTF-8 válido."
+      ImportIssueCode.UNSUPPORTED_CONTAINER -> "Arquivos compactados não são aceitos."
+      ImportIssueCode.ACTIVE_CONTENT -> "Conteúdo HTML ou executável não é aceito."
+      ImportIssueCode.CONTROL_CONTENT -> "O arquivo contém controles não suportados."
+      ImportIssueCode.UNSUPPORTED_STRUCTURE -> "A estrutura de entradas não foi reconhecida."
+      ImportIssueCode.MISSING_DATE -> "Uma entrada não possui data original explícita."
+      ImportIssueCode.INVALID_DATE -> "Uma data original é inválida."
+
+## importIssueLabel (linha 1087)
+      ImportIssueCode.FILE_TOO_LARGE -> "O arquivo ultrapassa 5 MiB."
+      ImportIssueCode.TOO_MANY_LINES -> "O arquivo ultrapassa 20.000 linhas."
+      ImportIssueCode.TOO_MANY_ENTRIES -> "O arquivo ultrapassa 2.000 entradas."
+      ImportIssueCode.ENTRY_TOO_LARGE -> "Uma entrada ultrapassa 256 KiB."
+      ImportIssueCode.MALFORMED_UTF8 -> "O arquivo não é UTF-8 válido."
+      ImportIssueCode.UNSUPPORTED_CONTAINER -> "Arquivos compactados não são aceitos."
+      ImportIssueCode.ACTIVE_CONTENT -> "Conteúdo HTML ou executável não é aceito."
+      ImportIssueCode.CONTROL_CONTENT -> "O arquivo contém controles não suportados."
+      ImportIssueCode.UNSUPPORTED_STRUCTURE -> "A estrutura de entradas não foi reconhecida."
+      ImportIssueCode.MISSING_DATE -> "Uma entrada não possui data original explícita."
+      ImportIssueCode.INVALID_DATE -> "Uma data original é inválida."
+      ImportIssueCode.INVALID_SIZE -> "O tamanho declarado de uma entrada é inválido."
+      ImportIssueCode.TIME_LIMIT -> "A leitura ultrapassou o limite de segurança."
+  }
+  
+  
+  
+  // Returns screen — the engine's delivery contract (codex PR #1), adapted to the
+
+## ReturnScreen (linha 1108)
+      Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+          Column(
+              modifier = Modifier.fillMaxSize().padding(horizontal = FioSpace.s6, vertical = FioSpace.s8),
+              verticalArrangement = Arrangement.spacedBy(FioSpace.s4),
+          ) {
+              Text("Uma palavra sua voltou", style = MaterialTheme.typography.headlineMedium, modifier = Modifier.semantics { heading() })
+              Text(displayDate(entry), style = FioDisplayDate, color = MaterialTheme.colorScheme.primary)
+              SelectionContainer { Text(entry.content, style = MaterialTheme.typography.bodyLarge) }
+              Spacer(Modifier.weight(1f))
+              Button(
+                  onClick = onClose,
+                  modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                  shape = RoundedCornerShape(FioRadius.lg),
+              ) { Text("Fechar") }
+              TextButton(
+                  onClick = onNeverReturn,
+                  modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+              ) { Text("Não mostrar novamente") }
+
+## AppLockChoices (linha 1132)
+      Column(verticalArrangement = Arrangement.spacedBy(FioSpace.s1), modifier = Modifier.padding(top = FioSpace.s2)) {
+          listOf(
+              AppLockMode.OFF to "Desativado",
+              AppLockMode.IMMEDIATE to "Imediato",
+              AppLockMode.ONE_MINUTE to "Após 1 minuto",
+              AppLockMode.FIVE_MINUTES to "Após 5 minutos",
+          ).forEach { (mode, label) ->
+              val isSelected = mode == selected
+              Surface(
+                  modifier = Modifier
+                      .fillMaxWidth()
+                      .clickable(enabled = enabled && !isSelected) { onChoose(mode) }
+                      .heightIn(min = 48.dp),
+                  shape = RoundedCornerShape(FioRadius.md),
+                  color = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+                  else MaterialTheme.colorScheme.surface,
+              ) {
+                  Row(
+
+## SectionTitle (linha 1170)
+      Text(text, style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = FioSpace.s2).semantics { heading() })
+  }
+  
+  // ===========================================================================
+  // Botanical motif — the thread with two small leaves. Decorative only,
+  // TalkBack ignores it, never animated in a loop. ADR-045 reserves the
+  // maturing motif for a later gated slice.
+  // ===========================================================================
+  
+  // Patina Temporal (ADR-045): deterministic botanical growth tied to the
+  // diary's age. Purely decorative, no metrics, no streak — the motif just
+  // quietly matures with the life of the installation. Removable via the
+  // PATINA_ENABLED flag.
+  private const val PATINA_ENABLED = true
+  @Composable
+  private fun BotanicalMotif(firstEntryAt: Instant? = null) {
+      if (!PATINA_ENABLED) return
+      val tertiary = MaterialTheme.colorScheme.tertiary
+
+## BotanicalMotif (linha 1186)
+      if (!PATINA_ENABLED) return
+      val tertiary = MaterialTheme.colorScheme.tertiary
+      val accent = MaterialTheme.colorScheme.secondary
+      // Age in days since the first saved entry; deterministic seed from the
+      // diary's own life, not from the calendar — never a streak, just patina.
+      val ageDays = if (firstEntryAt != null) {
+          ChronoUnit.DAYS.between(firstEntryAt, Instant.now()).coerceAtLeast(0).toInt()
+      } else 0
+      // ADR-045: the motif is purely decorative — Reduce Motion is respected,
+      // and any user who asked for no motion sees no patina at all.
+      val reduceMotion = accessibilityInfoOf(LocalContext.current)
+      if (reduceMotion) return
+      Canvas(
+          modifier = Modifier.height(56.dp).width(32.dp).alpha(0.55f),
+          onDraw = {
+              drawLine(tertiary, start = Offset(16f, 56f), end = Offset(16f, 12f - ageDays.coerceAtMost(30) * 0.15f), strokeWidth = 2.2f)
+              if (ageDays >= 7) {
+                  drawLine(tertiary, start = Offset(16f, 42f), end = Offset(6f, 34f), strokeWidth = 1.8f)
+
+## accessibilityInfoOf (linha 1224)
+      runCatching {
+          val service = context.getSystemService(android.content.Context.ACCESSIBILITY_SERVICE) as? android.view.accessibility.AccessibilityManager
+          service?.isEnabled == true && service.isTouchExplorationEnabled == true
+      }.getOrDefault(false)
+  
+  // ===========================================================================
+  // Global screens
+  // ===========================================================================
+  
+  @Composable
+  fun PrivacyCover() {
+      Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+          Box(contentAlignment = Alignment.Center) {
+              Text("Fio", style = MaterialTheme.typography.displayLarge, color = MaterialTheme.colorScheme.primary)
+          }
+      }
+  }
+  
+
+## PrivacyCover (linha 1235)
+      Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+          Box(contentAlignment = Alignment.Center) {
+              Text("Fio", style = MaterialTheme.typography.displayLarge, color = MaterialTheme.colorScheme.primary)
+          }
+      }
+  }
+  
+  @Composable
+  fun LockedScreen(
+      authenticationAvailable: Boolean,
+      onUnlock: () -> Unit,
+      onDisableUnavailableLock: () -> Unit,
+  ) {
+      var confirmDisable by remember { mutableStateOf(false) }
+      if (confirmDisable) {
+          AlertDialog(
+              onDismissRequest = { confirmDisable = false },
+              title = { Text("Desativar o bloqueio do Fio?") },
+
+## LockedScreen (linha 1244)
+      authenticationAvailable: Boolean,
+      onUnlock: () -> Unit,
+      onDisableUnavailableLock: () -> Unit,
+  ) {
+      var confirmDisable by remember { mutableStateOf(false) }
+      if (confirmDisable) {
+          AlertDialog(
+              onDismissRequest = { confirmDisable = false },
+              title = { Text("Desativar o bloqueio do Fio?") },
+              text = { Text("A autenticação do Android não está disponível. O conteúdo continuará cifrado no armazenamento, mas o Fio abrirá sem esta barreira adicional.") },
+              confirmButton = {
+      TextButton(
+                      onClick = { confirmDisable = false; onDisableUnavailableLock() },
+                      colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                  ) { Text("Desativar e continuar") }
+              },
+              dismissButton = { TextButton(onClick = { confirmDisable = false }) { Text("Manter bloqueado") } },
+          )
+
+## SafeOpenFailure (linha 1293)
+      Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+          Column(modifier = Modifier.padding(FioSpace.s6), verticalArrangement = Arrangement.Center) {
+              Text("Fio", style = MaterialTheme.typography.displayLarge, color = MaterialTheme.colorScheme.primary)
+              Text(
+                  "Os dados locais não puderam ser abertos com segurança. Nada foi apagado. Feche o Fio e tente novamente.",
+                  modifier = Modifier.padding(top = FioSpace.s4),
+              )
+          }
+      }
+  }
+  
+  // ---------------------------------------------------------------------------
+  // Date formatting shared by archive rows (medium date) and notes (long date).
+  // ---------------------------------------------------------------------------
+  
+  private object Formatter {
+      val ptDate: DateTimeFormatter = DateTimeFormatter.ofPattern("d 'de' MMMM 'de' yyyy", Locale.forLanguageTag("pt-BR"))
+  }
+
+## displayDate (linha 1313)
+      val zone = runCatching { ZoneId.of(entry.originalTimeZone ?: "UTC") }.getOrDefault(ZoneId.of("UTC"))
+      val formatter = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT)
+          .withLocale(Locale.forLanguageTag("pt-BR"))
+      return formatter.format(entry.originalCreatedAt.atZone(zone))
+  }
+
+======================================================================
+COPY LITERALS — todos os literais com linha
+======================================================================
+  L103: 'Algum dia'
+  L105: 'Escolher uma data'
+  L105: 'Nunca'
+  L214: 'Guardado. O tempo cuida do resto.'
+  L214: 'Guardado.'
+  L226: 'Fio'
+  L242: 'Mais opções'
+  L246: 'Arquivo'
+  L250: 'Configurações'
+  L261: 'O que está passando pela sua cabeça hoje?'
+  L285: 'Escreva quando quiser.'
+  L298: 'Algum dia'
+  L300: 'Em ${p.date.format(Formatter.ptDate)}'
+  L301: 'Nunca'
+  L321: 'Quando isso pode voltar? · $policyLabel'
+  L324: 'Quando isso pode voltar? Escolhido: $policyLabel'
+  L377: 'Guardando…'
+  L377: 'Guardar'
+  L381: 'Guardado.'
+  L416: 'Quando isso pode voltar?'
+  L418: 'O Fio decide o momento exato. Sua escolha apenas guia o que pode voltar.'
+  L424: 'Algum dia'
+  L427: 'Em 7 dias'
+  L430: 'Em 30 dias'
+  L433: 'Em 90 dias'
+  L436: 'Em 1 ano'
+  L439: 'Escolher uma data'
+  L442: 'Nunca'
+  L468: 'Escolher'
+  L470: 'Cancelar'
+  L496: 'Selecionado'
+  L508: 'Em 7 dias'
+  L509: 'Em 30 dias'
+  L510: 'Em 90 dias'
+  L511: 'Em 1 ano'
+  L512: 'Em $days dias'
+  L551: 'Mover para Excluídos recentemente?'
+  L552: 'Você poderá recuperar esta entrada por 30 dias.'
+  L555: 'Mover'
+  L558: 'Cancelar'
+  L570: '← '
+  L578: 'Voltar'
+  L580: 'Arquivo'
+  L586: 'O Arquivo não pôde ser aberto com segurança. Nada foi apagado.'
+  L593: 'Quando quiser, suas palavras podem ficar aqui.'
+  L622: 'UTC'
+  L622: 'UTC'
+  L624: "MMMM 'de' yyyy"
+  L624: 'pt-BR'
+  L626: 'pt-BR'
+  L630: 'UTC'
+  L630: 'UTC'
+  L635: 'Hoje'
+  L636: 'Ontem'
+  L637: 'há $days dias'
+  L640: 'há $months '
+  L640: 'mês'
+  L640: 'meses'
+  L644: 'há $years '
+  L644: 'ano'
+  L644: 'anos'
+  L680: 'Editar'
+  L683: 'Excluir'
+  L706: '← '
+  L714: 'Voltar'
+  L733: 'Reescrever esta nota agora?'
+  L733: 'Devolver para agora'
+  L746: 'Reescrever esta nota agora'
+  L746: 'Devolver esta nota agora'
+  L754: 'Suas palavras voltaram. Reescreva com o olhar de hoje, se quiser — ou apenas deixe seguir.'
+  L765: 'Devolver agora?'
+  L768: 'O Fio devolve o que está pronto. Você pode trazê-la de volta agora — ela volta como uma ca'
+  L774: 'Devolver'
+  L776: 'Cancelar'
+  L782: 'UTC'
+  L782: 'UTC'
+  L784: 'pt-BR'
+  L793: 'Editar entrada'
+  L804: 'Guardar alterações'
+  L807: 'Cancelar'
+  L836: 'Ativar devoluções?'
+  L839: 'O Fio poderá, de vez em quando, mostrar uma notificação discreta quando uma entrada antiga'
+  L840: 'A notificação nunca mostra o texto da entrada. Você poderá pausar quando quiser.'
+  L847: 'Ativar devoluções'
+  L849: 'Agora não'
+  L855: 'Excluir permanentemente?'
+  L856: 'Esta ação não pode ser desfeita. O Fio não promete apagamento físico seguro do armazenamen'
+  L861: 'Excluir permanentemente'
+  L863: 'Cancelar'
+  L870: 'Desfazer este lote?'
+  L871: 'Entradas importadas e não editadas irão para Excluídos recentemente. Entradas editadas dep'
+  L876: 'Desfazer lote'
+  L878: 'Cancelar'
+  L890: '← '
+  L898: 'Voltar'
+  L900: 'Configurações'
+  L904: 'Privacidade'
+  L905: 'O conteúdo é ocultado nas capturas e na tela de aplicativos recentes. O bloqueio é opciona'
+  L908: 'Configure uma tela de bloqueio compatível no Android para usar o bloqueio do Fio.'
+  L919: 'Devoluções — validação'
+  L921: 'Recurso isolado para testes sintéticos. Nenhuma palavra é colocada na notificação.'
+  L928: 'Conhecer e ativar'
+  L935: 'Pausar devoluções'
+  L937: 'Horário silencioso atual: ${quietHoursLabel(state.settings.quietHoursStartMinute, state.se'
+  L940: '21h–8h'
+  L941: '22h–9h'
+  L949: 'Retomar devoluções'
+  L953: 'Notificações estão desativadas. O Fio continuará funcionando normalmente e não pedirá nova'
+  L960: 'Abrir devolução disponível'
+  L967: 'Importar — validação'
+  L968: 'Escolha um TXT ou Markdown UTF-8 com blocos e datas explícitos. A prévia não altera o Arqu'
+  L974: 'Preparando…'
+  L974: 'Escolher arquivo'
+  L979: 'Prévia: ${preview.importableCount} novas, ${preview.duplicateCount} duplicadas, ${preview.'
+  L983: 'preview-${preview.id}-${it.candidate.sourceIndex}'
+  L988: 'Duplicada — não será importada.'
+  L992: 'issue-${preview.id}-${it.sourceIndex}-${it.code}'
+  L1001: 'Importar ${preview.importableCount}'
+  L1002: 'Cancelar'
+  L1009: 'batch-${it.id}'
+  L1010: 'COMMITTED'
+  L1013: 'Lote: ${batch.importedCount} entradas'
+  L1014: 'Nome do arquivo não mantido'
+  L1015: 'Desfazer este lote'
+  L1022: 'Exportar'
+  L1023: 'O arquivo escolhido ficará fora da proteção do Fio. A exportação é local e não envia uma c'
+  L1026: 'Markdown'
+  L1027: 'Texto'
+  L1034: 'Excluídos recentemente'
+  L1036: 'Nenhuma entrada excluída.'
+  L1038: 'deleted-${it.id}'
+  L1048: 'M1 local: sem conta, sincronização, analytics ou devoluções ativas.'
+  L1066: 'Recuperar'
+  L1068: 'Excluir para sempre'
+  L1076: '${(m / 60) % 24}h${(m % 60).let { if (it == 0) '
+  L1076: ' else String.format(Locale.ROOT, '
+  L1076: ', it) }}'
+  L1077: '${fmt(startMinute)}–${fmt(endMinute)}'
+  L1081: 'UTC'
+  L1083: 'pt-BR'
+  L1088: 'O arquivo ultrapassa 5 MiB.'
+  L1089: 'O arquivo ultrapassa 20.000 linhas.'
+  L1090: 'O arquivo ultrapassa 2.000 entradas.'
+  L1091: 'Uma entrada ultrapassa 256 KiB.'
+  L1092: 'O arquivo não é UTF-8 válido.'
+  L1093: 'Arquivos compactados não são aceitos.'
+  L1094: 'Conteúdo HTML ou executável não é aceito.'
+  L1095: 'O arquivo contém controles não suportados.'
+  L1096: 'A estrutura de entradas não foi reconhecida.'
+  L1097: 'Uma entrada não possui data original explícita.'
+  L1098: 'Uma data original é inválida.'
+  L1099: 'O tamanho declarado de uma entrada é inválido.'
+  L1100: 'A leitura ultrapassou o limite de segurança.'
+  L1114: 'Uma palavra sua voltou'
+  L1122: 'Fechar'
+  L1126: 'Não mostrar novamente'
+  L1135: 'Desativado'
+  L1136: 'Imediato'
+  L1137: 'Após 1 minuto'
+  L1138: 'Após 5 minutos'
+  L1158: '— atual'
+  L1238: 'Fio'
+  L1253: 'Desativar o bloqueio do Fio?'
+  L1254: 'A autenticação do Android não está disponível. O conteúdo continuará cifrado no armazename'
+  L1259: 'Desativar e continuar'
+  L1261: 'Manter bloqueado'
+  L1270: 'Fio'
+  L1272: 'Protegido pelo bloqueio do seu aparelho.'
+  L1272: 'A autenticação do aparelho não está disponível.'
+  L1280: 'Abrir'
+  L1286: 'Rever bloqueio'
+  L1296: 'Fio'
+  L1298: 'Os dados locais não puderam ser abertos com segurança. Nada foi apagado. Feche o Fio e ten'
+  L1310: "d 'de' MMMM 'de' yyyy"
+  L1310: 'pt-BR'
+  L1314: 'UTC'
+  L1314: 'UTC'
+  L1316: 'pt-BR'
+
+======================================================================
+STATE — FioUiState (FioViewModel.kt)
+======================================================================
+  data class FioUiState(
+      val draftText: String = "",
+      val entries: List<Entry> = emptyList(),
+      val deletedEntries: List<Entry> = emptyList(),
+      val settings: AppSettings = AppSettings(),
+      val loading: Boolean = true,
+      val saving: Boolean = false,
+      val savedNotice: Boolean = false,
+      val recoverableError: String? = null,
+      val archiveError: Boolean = false,
+      val m2EngineeringEnabled: Boolean = false,
+      val pendingReturnId: String? = null,
+      val openedReturn: OpenedReturn? = null,
+      val returnError: String? = null,
+      val m3EngineeringEnabled: Boolean = false,
+      val importPreview: ImportPreview? = null,
+      val importBatches: List<ImportBatch> = emptyList(),
+      val importMessage: String? = null,
+      val importing: Boolean = false,
+  )
+  
+  @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
+  class FioViewModel(
+      private val service: FioService,
+      private val timeReturns: TimeReturnsService,
+      private val localImport: ImportService,
+      private val m2EngineeringEnabled: Boolean,
+      private val m3EngineeringEnabled: Boolean,
+  ) : ViewModel() {
+      private val mutableState = MutableStateFlow(
+          FioUiState(m2EngineeringEnabled = m2EngineeringEnabled, m3EngineeringEnabled = m3EngineeringEnabled),
+      )
+      val state: StateFlow<FioUiState> = mutableState.asStateFlow()
+      private val draftChanges = MutableStateFlow("")
+      private val saveInProgress = AtomicBoolean(false)
+  
+      init {
+          viewModelScope.launch {
+              runCatching {
+                  service.purgeExpired()
+                  val draft = service.loadDraft()
+                  val settings = service.loadSettings()
+                  val text = draft?.content.orEmpty()
+                  draftChanges.value = text
+                  mutableState.update { it.copy(draftText = text, settings = settings, loading = false) }
+                  if (m2EngineeringEnabled) {
+                      timeReturns.reconcile()
+                      refreshPendingReturn()
+                  }
+                  if (m3EngineeringEnabled) refreshImportBatches()
+              }.onFailure(::showDataFailure)
+          }
+          viewModelScope.launch {
+              service.observeActiveEntries()
+                  .catch { showDataFailure(it, archive = true) }
+                  .collect { entries -> mutableState.update { it.copy(entries = entries, archiveError = false) } }
+          }
+          viewModelScope.launch {
+              service.observeDeletedEntries()
+                  .catch { showDataFailure(it, archive = true) }
+                  .collect { entries -> mutableState.update { it.copy(deletedEntries = entries) } }
