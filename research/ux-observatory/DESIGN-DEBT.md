@@ -22,6 +22,7 @@ Dívidas de design conhecidas do ProjetoFio. Diferentemente do UX-REFINEMENT-QUE
 |---|---|---|
 | D10 | Política de retorno editável após o save (UI ainda não existe para isso) | Schema 4 / UI de edição — DECISION REQUIRED (Missão 1) |
 | D11 | Analytics remoto do piloto (matriz define 10 eventos locais; transporte remoto aberto) | DECISION REQUIRED (PILOT-PROTOCOL) |
+| D12 | Sem teste contratual dedicado ao cenário "insert falha e o draft sobrevive" (o autosave antes do insert em saveEntry fecha a janela, mas a garantia é implícita) | Teste unitário de regressão | Missão 3, ciclos E–H: mitigado por design (autosaveDraft precede a transação); o teste valeria 30 min e fecharia o último ponto cego do ciclo E |
 
 ## Regra de atualização
 
