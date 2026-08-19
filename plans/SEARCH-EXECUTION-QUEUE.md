@@ -7,11 +7,11 @@ Regra: NOW = exatamente 1 · NEXT ≤ 3 · RESEARCH = sem decisão · DECISION R
 ## Estado atual
 
 ### NOW
-- **S3** — baseline lexical (tokenizer PT-BR, search service scan sob demanda, DAO/repo, contratos delete/edit/purge, testes)
+- **S4** — UI de busca no Archive (campo, snippet, filtros temporal/retorno, sealed neutro)
+- **S5** — benchmark PT-BR + research embeddings on-device
 
 ### NEXT
-- **S4** — UI de busca no Archive (entrada, campo, filtros temporais, já-voltou)
-- **S5** — research PT-BR: benchmark lexical + modelos de embeddings on-device
+- **S6** — prototype semântico sob feature flag (isolado, removível, híbrido, torture tests)
 
 ### RESEARCH (ainda sem decisão)
 - Modelo de embeddings on-device PT-BR (2026, §29–31)
@@ -36,3 +36,4 @@ S0 state discovery → S1 return history model → S2 threat model → S3 lexica
 - 2026-08-19: missão iniciada; branch criada; S0 concluído (7669d0a).
 - 2026-08-19: D12 fechado; `loadReturnsForEntry` (read-only, search lens) sem schema change; pushed; 104 testes verdes (a2ad34f).
 - 2026-08-19: S2 — threat model sealed+search (seladas invisíveis por conteúdo; contagem opcional DECISION REQUIRED) + privacy architecture (Opção A scan sob demanda; FTS5 rejeitada p/ V1; queries nunca persistidas) (e77de5e).
+- 2026-08-19: S3 — baseline lexical: `LexicalTokenizer` (NFD+\p{Mn}, prefix só no último token, snippets do texto original), `LocalSearchService` (scan sob demanda, sealed COUNT_ONLY default, soft-deleted invisível, evidência OPENED), `SearchRepository` read-only; 125 testes verdes (0bd694d).
