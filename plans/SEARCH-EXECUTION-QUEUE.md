@@ -7,12 +7,7 @@ Regra: NOW = exatamente 1 · NEXT ≤ 3 · RESEARCH = sem decisão · DECISION R
 ## Estado atual
 
 ### NOW
-- **S0+S1** — state discovery concluído (docs criados, baseline compilado); auditar modelo de reencontros: `ReturnEntity` já cobre "já voltou" ou exige estrutura mínima? (audit em andamento, sem código produtivo)
-
-### NEXT
-- **D12** — teste contratual "insert falha e draft sobrevive" (pequeno, independente — fechar antes de search entrar)
-- **S2** — threat model Search + Sealed Notes (`docs/search/SEARCH-SEALED-THREAT-MODEL.md`)
-- **S2** — `SEARCH-PRIVACY-ARCHITECTURE.md` (plaintext lifecycle, comparação scan vs índice, decisão de baseline lexical)
+- **S2** — threat model Search + Sealed Notes (`docs/search/SEARCH-SEALED-THREAT-MODEL.md`) + `SEARCH-PRIVACY-ARCHITECTURE.md`
 
 ### RESEARCH (ainda sem decisão)
 - FTS5 vs scan local vs índice protegido (benchmark lexical manda)
@@ -26,7 +21,8 @@ Regra: NOW = exatamente 1 · NEXT ≤ 3 · RESEARCH = sem decisão · DECISION R
 - Semântica nas devoluções (proibido nesta missão, §88)
 
 ### DONE
-- S0 — branch criada, baseline OK, `docs/search/SEARCH-ARCHITECTURE.md` com definições canônicas Guardar/Encontrar/Reencontrar + princípio "search retrieves, does not interpret"
+- S0 — branch criada, baseline OK, `docs/search/SEARCH-ARCHITECTURE.md` com definições canônicas Guardar/Encontrar/Reencontrar + princípio "search retrieves, does not interpret" (commit 7669d0a)
+- D12 — fechado: `DraftSurvivesFailedInsertTest` (3 contratos, incluindo "o estado exato do editor substitui o draft antigo antes da transação"); projeção read-only `loadReturnsForEntry` em `ReturnRepository`/`FioDao`/`RoomFioRepository` sem migração de schema; auditoria em `research/search/RETURN-HISTORY-AUDIT.md` (commit a2ad34f). Suíte: **104 testes verdes, 0 falhas** (3 novos).
 
 ## Ordem recomendada (da missão)
 
@@ -34,4 +30,5 @@ S0 state discovery → S1 return history model → S2 threat model → S3 lexica
 
 ## Histórico
 
-- 2026-08-19: missão iniciada; branch criada; S0 concluído.
+- 2026-08-19: missão iniciada; branch criada; S0 concluído (7669d0a).
+- 2026-08-19: D12 fechado; `loadReturnsForEntry` (read-only, search lens) sem schema change; pushed; 104 testes verdes (a2ad34f).
