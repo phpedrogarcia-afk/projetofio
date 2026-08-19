@@ -617,7 +617,11 @@ private fun ArchiveScreen(
                             text = "${result.hits.size} resultado(s) para “${state.searchTerms}”",
                             style = MaterialTheme.typography.labelLarge,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(vertical = FioSpace.s2),
+                            modifier = Modifier
+                                .padding(vertical = FioSpace.s2)
+                                // Announce result counts to TalkBack without
+                                // stealing focus from the search field.
+                                .semantics { liveRegion = LiveRegionMode.Polite },
                         )
                     }
                     if (result.sealedCount > 0) {
@@ -699,10 +703,12 @@ private fun ArchiveSearchField(terms: String, onChanged: (String) -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(min = 48.dp)
-            .semantics { contentDescription = "Buscar no arquivo" },
+            // Label comes from the placeholder (read once by TalkBack);
+            // avoid a duplicated contentDescription on the field itself.
+            .semantics(mergeDescendants = true) {},
         placeholder = { Text("Buscar no arquivo", style = MaterialTheme.typography.bodyLarge) },
         singleLine = true,
-        trailingIcon = {
+            trailingIcon = {
             if (clearable) {
                 TextButton(
                     onClick = {
@@ -710,7 +716,9 @@ private fun ArchiveSearchField(terms: String, onChanged: (String) -> Unit) {
                         focusManager.clearFocus()
                         keyboardController?.hide()
                     },
-                    modifier = Modifier.heightIn(min = 40.dp),
+                    modifier = Modifier
+                        .heightIn(min = 48.dp)
+                        .semantics { contentDescription = "Limpar busca" },
                 ) { Text("✕", fontSize = 13.sp) }
             }
         },
@@ -725,7 +733,22 @@ private fun ArchiveSearchHitRow(hit: com.projetofio.app.domain.SearchHit, onOpen
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable(onClick = onOpen)
-                .padding(vertical = FioSpace.s3),
+                .padding(vertical = FioSpace.s3)
+                // Announce each hit factually for TalkBack: date + snippet, no
+                // interpretation. The live-region updates flow through the
+                // results container so results refresh without stealing focus.
+                .semantics(mergeDescendants = true) {
+                    contentDescription = buildString {
+                        append(displayDate(hit.entry))
+                        append(". ")
+                        append(hit.matchedSnippet)
+                        if (hit.returnedCount > 0) {
+                            append(". ")
+                            append("Já voltou ${hit.returnedCount} vez(es)")
+                        }
+                    }
+                    liveRegion = LiveRegionMode.Polite
+                },
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
