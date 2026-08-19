@@ -7,8 +7,7 @@ Regra: NOW = exatamente 1 · NEXT ≤ 3 · RESEARCH = sem decisão · DECISION R
 ## Estado atual
 
 ### NOW
-- **S4** — UI de busca no Archive (campo, snippet, filtros temporal/retorno, sealed neutro)
-- **S5** — benchmark PT-BR + research embeddings on-device
+- **S5** — benchmark PT-BR + research embeddings on-device (research/search/FIO-SEARCH-BENCHMARK.md, RESEARCH-LOG.md)
 
 ### NEXT
 - **S6** — prototype semântico sob feature flag (isolado, removível, híbrido, torture tests)
@@ -37,3 +36,4 @@ S0 state discovery → S1 return history model → S2 threat model → S3 lexica
 - 2026-08-19: D12 fechado; `loadReturnsForEntry` (read-only, search lens) sem schema change; pushed; 104 testes verdes (a2ad34f).
 - 2026-08-19: S2 — threat model sealed+search (seladas invisíveis por conteúdo; contagem opcional DECISION REQUIRED) + privacy architecture (Opção A scan sob demanda; FTS5 rejeitada p/ V1; queries nunca persistidas) (e77de5e).
 - 2026-08-19: S3 — baseline lexical: `LexicalTokenizer` (NFD+\p{Mn}, prefix só no último token, snippets do texto original), `LocalSearchService` (scan sob demanda, sealed COUNT_ONLY default, soft-deleted invisível, evidência OPENED), `SearchRepository` read-only; 125 testes verdes (0bd694d).
+- 2026-08-19: S4 — UI Encontrar no Arquivo: campo de busca com debounce 300 ms, queries runtime-only (nunca persistidas), snippets preserváveis (SelectionContainer), data factual + "Já voltou N vez(es)", nota neutra de seladas; `SearchService` injetado via FioGraph → MainActivity → FioViewModel.Factory; 125 testes verdes (44ce800).
