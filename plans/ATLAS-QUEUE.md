@@ -15,8 +15,8 @@
 | S6 | DOC-DRIFT-AUDIT (§6 da missão: docs 01-11 + plans vs código) | DONE | — |
 | S7 | CODEX-MASTER-MAP + CODEX-EXECUTION-PROTOCOL + EXTERNAL-SOLUTION-INDEX | DONE | — |
 | S8 | Packet factory: TEMPLATE + INDEX + DEPENDENCIES + EXECUTION-QUEUE | DONE | — |
-| S9 | Compromissos por estágio + push | PENDENTE | — |
-| S10 | MANUS-FIO-ATLAS-FINAL.md + entrega | PENDENTE | — |
+| S9 | Compromissos por estágio + push | DONE | 7770caa |
+| S10 | MANUS-FIO-ATLAS-FINAL.md + entrega | DONE | 7770caa |
 
 ## Princípios aplicados (da missão)
 
