@@ -150,3 +150,68 @@ data class ReturnAttempt(
         require((cancelledAt == null) == (cancelReason == null))
     }
 }
+
+// ---------- Search (canonical: Encontrar — search retrieves, it does not interpret)
+
+enum class SearchMode { LEXICAL }
+
+enum class SearchScope { ALL, EXCLUDE_SEALED, SEALED_ONLY }
+
+/** Time window filter over the entry's original (autobiographical) date. */
+data class SearchTimeFilter(
+    val after: Instant? = null,
+    val before: Instant? = null,
+) {
+    init {
+        if (after != null && before != null) require(before >= after) { "Invalid time filter range" }
+    }
+}
+
+enum class ReturnedFilter { ANY, EVER_RETURNED, NEVER_RETURNED }
+
+data class SearchQuery(
+    val terms: String,
+    val mode: SearchMode = SearchMode.LEXICAL,
+    val scope: SearchScope = SearchScope.ALL,
+    val time: SearchTimeFilter = SearchTimeFilter(),
+    val returned: ReturnedFilter = ReturnedFilter.ANY,
+    val maxResults: Int = DEFAULT_MAX_SEARCH_RESULTS,
+) {
+    init {
+        require(terms.isNotBlank()) { "Search terms must not be blank" }
+        require(maxResults in 1..MAX_SEARCH_RESULTS_CAP) { "maxResults out of range" }
+    }
+
+    companion object {
+        const val DEFAULT_MAX_SEARCH_RESULTS = 50
+        const val MAX_SEARCH_RESULTS_CAP = 200
+    }
+}
+
+/**
+ * Evidence returned by search: the entry's original words plus factual
+ * context (matched snippet, dates, return evidence). Search never returns
+ * generated text, interpretations, or summaries of the person's life.
+ */
+data class SearchHit(
+    val entry: Entry,
+    val matchedSnippet: String,
+    val matchedAtOriginalDate: Instant,
+    val returnedCount: Int,
+    val lastReturnedAt: Instant?,
+)
+
+data class SearchResult(
+    val query: SearchQuery,
+    val hits: List<SearchHit>,
+    val totalMatched: Int,
+    val sealedCount: Int,
+    val elapsedMillis: Long,
+)
+
+/**
+ * How sealed entries interact with search. V1 keeps sealed notes invisible
+ * to content search (SEARCH-SEALED-THREAT-MODEL.md): COUNT_ONLY exposes an
+ * opaque match count and nothing else; HIDDEN exposes nothing.
+ */
+enum class SealedSearchBehavior { HIDDEN, COUNT_ONLY }

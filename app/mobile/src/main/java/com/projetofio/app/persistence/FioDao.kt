@@ -19,6 +19,9 @@ abstract class FioDao {
     @Query("SELECT * FROM entries WHERE id = :id LIMIT 1")
     abstract suspend fun findEntry(id: String): EntryEntity?
 
+    @Query("SELECT * FROM entries WHERE deleted_at IS NULL ORDER BY original_created_at DESC, id DESC")
+    abstract suspend fun loadActiveEntries(): List<EntryEntity>
+
     @Query("SELECT * FROM drafts WHERE singleton_slot = 1 LIMIT 1")
     abstract suspend fun loadDraft(): DraftEntity?
 

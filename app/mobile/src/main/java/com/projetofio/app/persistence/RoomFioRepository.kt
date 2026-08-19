@@ -25,6 +25,7 @@ import com.projetofio.app.domain.ReturnCancelReason
 import com.projetofio.app.domain.ReturnRepository
 import com.projetofio.app.domain.ReturnState
 import com.projetofio.app.domain.ReturnMode
+import com.projetofio.app.domain.SearchRepository
 import java.time.Clock
 import java.time.Instant
 import kotlinx.coroutines.Dispatchers
@@ -37,7 +38,7 @@ class RoomFioRepository(
     private val dao: FioDao,
     private val cipher: ContentCipher,
     private val clock: Clock,
-) : FioRepository, ReturnRepository, ImportRepository {
+) : FioRepository, ReturnRepository, ImportRepository, SearchRepository {
     override fun observeActiveEntries(): Flow<List<Entry>> = dao.observeActiveEntries()
         .map { rows -> rows.map(::decryptEntry) }
         .flowOn(Dispatchers.IO)
@@ -176,6 +177,12 @@ class RoomFioRepository(
 
     override suspend fun loadReturnsForEntry(entryId: String): List<ReturnAttempt> = io {
         dao.loadReturnsForEntry(entryId).map { it.toDomain() }
+    }
+
+    override suspend fun loadSearchableEntries(): List<Entry> = io {
+        // Active entries only: deleted/purged rows are invisible to search
+        // by construction (no shadow data to expire separately).
+        dao.loadActiveEntries().map(::decryptEntry)
     }
 
     override suspend fun findReturn(id: String): ReturnAttempt? = io {

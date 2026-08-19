@@ -11,11 +11,13 @@ import com.projetofio.app.domain.IdGenerator
 import com.projetofio.app.domain.ReturnRandom
 import com.projetofio.app.domain.TimeReturnEngine
 import com.projetofio.app.domain.LocalImportParser
+import com.projetofio.app.domain.SearchService
 import com.projetofio.app.persistence.FioDatabase
 import com.projetofio.app.persistence.DatabasePreflight
 import com.projetofio.app.persistence.MIGRATION_1_2
 import com.projetofio.app.persistence.MIGRATION_2_3
 import com.projetofio.app.persistence.RoomFioRepository
+import com.projetofio.app.search.LocalSearchService
 import java.time.Clock
 import java.util.UUID
 import java.security.SecureRandom
@@ -66,6 +68,10 @@ class FioGraph(application: Application) {
         clock = clock,
         ids = IdGenerator { UUID.randomUUID().toString() },
         engineeringEnabled = BuildConfig.TIME_RETURNS_ENGINEERING_ENABLED,
+    )
+
+    val search: SearchService = LocalSearchService(
+        repository = repository,
     )
 
     val localImport = ImportService(
