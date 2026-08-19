@@ -1,0 +1,627 @@
+{
+  "configurations": {
+    "lexical_v1": {
+      "recall@5_mean": 0.098,
+      "recall@10_mean": 0.109,
+      "precision@5_mean": 0.06,
+      "mrr_mean": 0.2,
+      "latency_ms_p95": 0.9
+    },
+    "semantic_proxy_e5_large": {
+      "recall@5_mean": 0.797,
+      "recall@10_mean": 0.917,
+      "precision@5_mean": 0.573,
+      "mrr_mean": 1.0,
+      "latency_ms_p95": 2562.3
+    },
+    "hybrid_e5_large_rrf60": {
+      "recall@5_mean": 0.797,
+      "recall@10_mean": 0.917,
+      "precision@5_mean": 0.573,
+      "mrr_mean": 1.0,
+      "latency_ms_p95": 2562.4
+    }
+  },
+  "per_query": {
+    "Q01": {
+      "lexical_v1": {
+        "recall5": 0.6666666666666666,
+        "recall10": 1.0,
+        "precision5": 0.4,
+        "mrr": 1.0
+      },
+      "semantic_proxy_e5_large": {
+        "recall5": 1.0,
+        "recall10": 1.0,
+        "precision5": 0.6,
+        "mrr": 1.0
+      },
+      "hybrid_e5_large_rrf60": {
+        "recall5": 1.0,
+        "recall10": 1.0,
+        "precision5": 0.6,
+        "mrr": 1.0
+      }
+    },
+    "Q02": {
+      "lexical_v1": {
+        "recall5": 0.5,
+        "recall10": 0.5,
+        "precision5": 0.2,
+        "mrr": 1.0
+      },
+      "semantic_proxy_e5_large": {
+        "recall5": 0.5,
+        "recall10": 1.0,
+        "precision5": 0.2,
+        "mrr": 1.0
+      },
+      "hybrid_e5_large_rrf60": {
+        "recall5": 0.5,
+        "recall10": 1.0,
+        "precision5": 0.2,
+        "mrr": 1.0
+      }
+    },
+    "Q03": {
+      "lexical_v1": {
+        "recall5": 0.0,
+        "recall10": 0.0,
+        "precision5": 0.0,
+        "mrr": 0.0
+      },
+      "semantic_proxy_e5_large": {
+        "recall5": 0.6666666666666666,
+        "recall10": 1.0,
+        "precision5": 0.4,
+        "mrr": 1.0
+      },
+      "hybrid_e5_large_rrf60": {
+        "recall5": 0.6666666666666666,
+        "recall10": 1.0,
+        "precision5": 0.4,
+        "mrr": 1.0
+      }
+    },
+    "Q04": {
+      "lexical_v1": {
+        "recall5": 0.0,
+        "recall10": 0.0,
+        "precision5": 0.0,
+        "mrr": 0.0
+      },
+      "semantic_proxy_e5_large": {
+        "recall5": 1.0,
+        "recall10": 1.0,
+        "precision5": 0.4,
+        "mrr": 1.0
+      },
+      "hybrid_e5_large_rrf60": {
+        "recall5": 1.0,
+        "recall10": 1.0,
+        "precision5": 0.4,
+        "mrr": 1.0
+      }
+    },
+    "Q05": {
+      "lexical_v1": {
+        "recall5": 0.16666666666666666,
+        "recall10": 0.16666666666666666,
+        "precision5": 0.2,
+        "mrr": 1.0
+      },
+      "semantic_proxy_e5_large": {
+        "recall5": 0.8333333333333334,
+        "recall10": 1.0,
+        "precision5": 1.0,
+        "mrr": 1.0
+      },
+      "hybrid_e5_large_rrf60": {
+        "recall5": 0.8333333333333334,
+        "recall10": 1.0,
+        "precision5": 1.0,
+        "mrr": 1.0
+      }
+    },
+    "Q06": {
+      "lexical_v1": {
+        "recall5": 0.0,
+        "recall10": 0.0,
+        "precision5": 0.0,
+        "mrr": 0.0
+      },
+      "semantic_proxy_e5_large": {
+        "recall5": 1.0,
+        "recall10": 1.0,
+        "precision5": 0.6,
+        "mrr": 1.0
+      },
+      "hybrid_e5_large_rrf60": {
+        "recall5": 1.0,
+        "recall10": 1.0,
+        "precision5": 0.6,
+        "mrr": 1.0
+      }
+    },
+    "Q07": {
+      "lexical_v1": {
+        "recall5": 0.0,
+        "recall10": 0.0,
+        "precision5": 0.0,
+        "mrr": 0.0
+      },
+      "semantic_proxy_e5_large": {
+        "recall5": 0.6666666666666666,
+        "recall10": 1.0,
+        "precision5": 0.8,
+        "mrr": 1.0
+      },
+      "hybrid_e5_large_rrf60": {
+        "recall5": 0.6666666666666666,
+        "recall10": 1.0,
+        "precision5": 0.8,
+        "mrr": 1.0
+      }
+    },
+    "Q08": {
+      "lexical_v1": {
+        "recall5": 0.6,
+        "recall10": 0.6,
+        "precision5": 0.6,
+        "mrr": 1.0
+      },
+      "semantic_proxy_e5_large": {
+        "recall5": 1.0,
+        "recall10": 1.0,
+        "precision5": 1.0,
+        "mrr": 1.0
+      },
+      "hybrid_e5_large_rrf60": {
+        "recall5": 1.0,
+        "recall10": 1.0,
+        "precision5": 1.0,
+        "mrr": 1.0
+      }
+    },
+    "Q09": {
+      "lexical_v1": {
+        "recall5": 0.0,
+        "recall10": 0.0,
+        "precision5": 0.0,
+        "mrr": 0.0
+      },
+      "semantic_proxy_e5_large": {
+        "recall5": 0.5714285714285714,
+        "recall10": 1.0,
+        "precision5": 0.8,
+        "mrr": 1.0
+      },
+      "hybrid_e5_large_rrf60": {
+        "recall5": 0.5714285714285714,
+        "recall10": 1.0,
+        "precision5": 0.8,
+        "mrr": 1.0
+      }
+    },
+    "Q10": {
+      "lexical_v1": {
+        "recall5": 0.0,
+        "recall10": 0.0,
+        "precision5": 0.0,
+        "mrr": 0.0
+      },
+      "semantic_proxy_e5_large": {
+        "recall5": 1.0,
+        "recall10": 1.0,
+        "precision5": 0.4,
+        "mrr": 1.0
+      },
+      "hybrid_e5_large_rrf60": {
+        "recall5": 1.0,
+        "recall10": 1.0,
+        "precision5": 0.4,
+        "mrr": 1.0
+      }
+    },
+    "Q11": {
+      "lexical_v1": {
+        "recall5": 0.0,
+        "recall10": 0.0,
+        "precision5": 0.0,
+        "mrr": 0.0
+      },
+      "semantic_proxy_e5_large": {
+        "recall5": 0.8333333333333334,
+        "recall10": 0.8333333333333334,
+        "precision5": 1.0,
+        "mrr": 1.0
+      },
+      "hybrid_e5_large_rrf60": {
+        "recall5": 0.8333333333333334,
+        "recall10": 0.8333333333333334,
+        "precision5": 1.0,
+        "mrr": 1.0
+      }
+    },
+    "Q12": {
+      "lexical_v1": {
+        "recall5": 0.0,
+        "recall10": 0.0,
+        "precision5": 0.0,
+        "mrr": 0.0
+      },
+      "semantic_proxy_e5_large": {
+        "recall5": 1.0,
+        "recall10": 1.0,
+        "precision5": 0.4,
+        "mrr": 1.0
+      },
+      "hybrid_e5_large_rrf60": {
+        "recall5": 1.0,
+        "recall10": 1.0,
+        "precision5": 0.4,
+        "mrr": 1.0
+      }
+    },
+    "Q13": {
+      "lexical_v1": {
+        "recall5": 0.0,
+        "recall10": 0.0,
+        "precision5": 0.0,
+        "mrr": 0.0
+      },
+      "semantic_proxy_e5_large": {
+        "recall5": 0.4,
+        "recall10": 0.7,
+        "precision5": 0.8,
+        "mrr": 1.0
+      },
+      "hybrid_e5_large_rrf60": {
+        "recall5": 0.4,
+        "recall10": 0.7,
+        "precision5": 0.8,
+        "mrr": 1.0
+      }
+    },
+    "Q14": {
+      "lexical_v1": {
+        "recall5": 0.0,
+        "recall10": 0.0,
+        "precision5": 0.0,
+        "mrr": 0.0
+      },
+      "semantic_proxy_e5_large": {
+        "recall5": 0.8333333333333334,
+        "recall10": 0.8333333333333334,
+        "precision5": 1.0,
+        "mrr": 1.0
+      },
+      "hybrid_e5_large_rrf60": {
+        "recall5": 0.8333333333333334,
+        "recall10": 0.8333333333333334,
+        "precision5": 1.0,
+        "mrr": 1.0
+      }
+    },
+    "Q15": {
+      "lexical_v1": {
+        "recall5": 0.0,
+        "recall10": 0.0,
+        "precision5": 0.0,
+        "mrr": 0.0
+      },
+      "semantic_proxy_e5_large": {
+        "recall5": 0.75,
+        "recall10": 1.0,
+        "precision5": 0.6,
+        "mrr": 1.0
+      },
+      "hybrid_e5_large_rrf60": {
+        "recall5": 0.75,
+        "recall10": 1.0,
+        "precision5": 0.6,
+        "mrr": 1.0
+      }
+    },
+    "Q16": {
+      "lexical_v1": {
+        "recall5": 0.0,
+        "recall10": 0.0,
+        "precision5": 0.0,
+        "mrr": 0.0
+      },
+      "semantic_proxy_e5_large": {
+        "recall5": 0.5714285714285714,
+        "recall10": 0.8571428571428571,
+        "precision5": 0.8,
+        "mrr": 1.0
+      },
+      "hybrid_e5_large_rrf60": {
+        "recall5": 0.5714285714285714,
+        "recall10": 0.8571428571428571,
+        "precision5": 0.8,
+        "mrr": 1.0
+      }
+    },
+    "Q17": {
+      "lexical_v1": {
+        "recall5": 0.0,
+        "recall10": 0.0,
+        "precision5": 0.0,
+        "mrr": 0.0
+      },
+      "semantic_proxy_e5_large": {
+        "recall5": 0.8333333333333334,
+        "recall10": 1.0,
+        "precision5": 1.0,
+        "mrr": 1.0
+      },
+      "hybrid_e5_large_rrf60": {
+        "recall5": 0.8333333333333334,
+        "recall10": 1.0,
+        "precision5": 1.0,
+        "mrr": 1.0
+      }
+    },
+    "Q18": {
+      "lexical_v1": {
+        "recall5": 0.0,
+        "recall10": 0.0,
+        "precision5": 0.0,
+        "mrr": 0.0
+      },
+      "semantic_proxy_e5_large": {
+        "recall5": 1.0,
+        "recall10": 1.0,
+        "precision5": 0.4,
+        "mrr": 1.0
+      },
+      "hybrid_e5_large_rrf60": {
+        "recall5": 1.0,
+        "recall10": 1.0,
+        "precision5": 0.4,
+        "mrr": 1.0
+      }
+    },
+    "Q19": {
+      "lexical_v1": {
+        "recall5": 0.0,
+        "recall10": 0.0,
+        "precision5": 0.0,
+        "mrr": 0.0
+      },
+      "semantic_proxy_e5_large": {
+        "recall5": 1.0,
+        "recall10": 1.0,
+        "precision5": 0.2,
+        "mrr": 1.0
+      },
+      "hybrid_e5_large_rrf60": {
+        "recall5": 1.0,
+        "recall10": 1.0,
+        "precision5": 0.2,
+        "mrr": 1.0
+      }
+    },
+    "Q20": {
+      "lexical_v1": {
+        "recall5": 0.5,
+        "recall10": 0.5,
+        "precision5": 0.2,
+        "mrr": 1.0
+      },
+      "semantic_proxy_e5_large": {
+        "recall5": 1.0,
+        "recall10": 1.0,
+        "precision5": 0.4,
+        "mrr": 1.0
+      },
+      "hybrid_e5_large_rrf60": {
+        "recall5": 1.0,
+        "recall10": 1.0,
+        "precision5": 0.4,
+        "mrr": 1.0
+      }
+    },
+    "Q21": {
+      "lexical_v1": {
+        "recall5": 0.0,
+        "recall10": 0.0,
+        "precision5": 0.0,
+        "mrr": 0.0
+      },
+      "semantic_proxy_e5_large": {
+        "recall5": 0.75,
+        "recall10": 0.75,
+        "precision5": 0.6,
+        "mrr": 1.0
+      },
+      "hybrid_e5_large_rrf60": {
+        "recall5": 0.75,
+        "recall10": 0.75,
+        "precision5": 0.6,
+        "mrr": 1.0
+      }
+    },
+    "Q22": {
+      "lexical_v1": {
+        "recall5": 0.0,
+        "recall10": 0.0,
+        "precision5": 0.0,
+        "mrr": 0.0
+      },
+      "semantic_proxy_e5_large": {
+        "recall5": 1.0,
+        "recall10": 1.0,
+        "precision5": 0.6,
+        "mrr": 1.0
+      },
+      "hybrid_e5_large_rrf60": {
+        "recall5": 1.0,
+        "recall10": 1.0,
+        "precision5": 0.6,
+        "mrr": 1.0
+      }
+    },
+    "Q23": {
+      "lexical_v1": {
+        "recall5": 0.0,
+        "recall10": 0.0,
+        "precision5": 0.0,
+        "mrr": 0.0
+      },
+      "semantic_proxy_e5_large": {
+        "recall5": 1.0,
+        "recall10": 1.0,
+        "precision5": 0.4,
+        "mrr": 1.0
+      },
+      "hybrid_e5_large_rrf60": {
+        "recall5": 1.0,
+        "recall10": 1.0,
+        "precision5": 0.4,
+        "mrr": 1.0
+      }
+    },
+    "Q24": {
+      "lexical_v1": {
+        "recall5": 0.0,
+        "recall10": 0.0,
+        "precision5": 0.0,
+        "mrr": 0.0
+      },
+      "semantic_proxy_e5_large": {
+        "recall5": 0.5,
+        "recall10": 0.8333333333333334,
+        "precision5": 0.6,
+        "mrr": 1.0
+      },
+      "hybrid_e5_large_rrf60": {
+        "recall5": 0.5,
+        "recall10": 0.8333333333333334,
+        "precision5": 0.6,
+        "mrr": 1.0
+      }
+    },
+    "Q25": {
+      "lexical_v1": {
+        "recall5": 0.0,
+        "recall10": 0.0,
+        "precision5": 0.0,
+        "mrr": 0.0
+      },
+      "semantic_proxy_e5_large": {
+        "recall5": 1.0,
+        "recall10": 1.0,
+        "precision5": 0.6,
+        "mrr": 1.0
+      },
+      "hybrid_e5_large_rrf60": {
+        "recall5": 1.0,
+        "recall10": 1.0,
+        "precision5": 0.6,
+        "mrr": 1.0
+      }
+    },
+    "Q26": {
+      "lexical_v1": {
+        "recall5": 0.0,
+        "recall10": 0.0,
+        "precision5": 0.0,
+        "mrr": 0.0
+      },
+      "semantic_proxy_e5_large": {
+        "recall5": 1.0,
+        "recall10": 1.0,
+        "precision5": 0.6,
+        "mrr": 1.0
+      },
+      "hybrid_e5_large_rrf60": {
+        "recall5": 1.0,
+        "recall10": 1.0,
+        "precision5": 0.6,
+        "mrr": 1.0
+      }
+    },
+    "Q27": {
+      "lexical_v1": {
+        "recall5": 0.0,
+        "recall10": 0.0,
+        "precision5": 0.0,
+        "mrr": 0.0
+      },
+      "semantic_proxy_e5_large": {
+        "recall5": 1.0,
+        "recall10": 1.0,
+        "precision5": 0.4,
+        "mrr": 1.0
+      },
+      "hybrid_e5_large_rrf60": {
+        "recall5": 1.0,
+        "recall10": 1.0,
+        "precision5": 0.4,
+        "mrr": 1.0
+      }
+    },
+    "Q28": {
+      "lexical_v1": {
+        "recall5": 0.5,
+        "recall10": 0.5,
+        "precision5": 0.2,
+        "mrr": 1.0
+      },
+      "semantic_proxy_e5_large": {
+        "recall5": 0.5,
+        "recall10": 0.5,
+        "precision5": 0.2,
+        "mrr": 1.0
+      },
+      "hybrid_e5_large_rrf60": {
+        "recall5": 0.5,
+        "recall10": 0.5,
+        "precision5": 0.2,
+        "mrr": 1.0
+      }
+    },
+    "Q29": {
+      "lexical_v1": {
+        "recall5": 0.0,
+        "recall10": 0.0,
+        "precision5": 0.0,
+        "mrr": 0.0
+      },
+      "semantic_proxy_e5_large": {
+        "recall5": 0.2,
+        "recall10": 0.2,
+        "precision5": 0.2,
+        "mrr": 1.0
+      },
+      "hybrid_e5_large_rrf60": {
+        "recall5": 0.2,
+        "recall10": 0.2,
+        "precision5": 0.2,
+        "mrr": 1.0
+      }
+    },
+    "Q30": {
+      "lexical_v1": {
+        "recall5": 0.0,
+        "recall10": 0.0,
+        "precision5": 0.0,
+        "mrr": 0.0
+      },
+      "semantic_proxy_e5_large": {
+        "recall5": 0.5,
+        "recall10": 1.0,
+        "precision5": 0.2,
+        "mrr": 1.0
+      },
+      "hybrid_e5_large_rrf60": {
+        "recall5": 0.5,
+        "recall10": 1.0,
+        "precision5": 0.2,
+        "mrr": 1.0
+      }
+    }
+  }
+}
