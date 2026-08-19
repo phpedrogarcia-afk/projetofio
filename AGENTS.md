@@ -73,8 +73,23 @@ decision only after explicit human approval.
 Current semantic boundary: ADR-041 ends the V0 semantic path with no model
 selected. The M4-R2 corpus/rubric stays frozen, but no annotation is required
 to reject the failed MiniLM candidate. Do not fabricate human labels, run M5,
-or connect semantic research to Android. Reopening model selection requires a
-new decision and the human/device gates retained by ADR-040.
+or connect semantic research to Android production. Reopening model selection
+requires a new decision and the human/device gates retained by ADR-040.
+
+Search boundary (Manus Mission 4, branch `integration/manus-search-20260819`):
+search belongs to the canonical **Encontrar** capability and must never merge
+with **Reencontrar** (the returns engine: returns do not use search as a
+selection source, search does not produce returns). Search retrieves the
+user's exact original words plus factual context (date, snippet); it never
+answers autobiographical questions, generates text, or interprets for the
+person. Queries are never persisted by default, never logged, and never sent
+to analytics. Any analytics for search stays local-first (only
+`search_executed`, `result_count_bucket`, `search_mode`, `latency_bucket`);
+remote analytics is DECISION REQUIRED. Semantic search, if prototyped, is
+Experimental: behind a feature flag, removable, and never connected to Room or
+Returns in production (ADR-040). Sealed notes may enter search scope only
+after `docs/search/SEARCH-SEALED-THREAT-MODEL.md` exists; if more than one
+defensible solution, that is DECISION REQUIRED.
 
 ## Never add without an approved decision
 
@@ -129,14 +144,20 @@ Version `v0.1` contains the canonical specification package, an Android M1
 engineering baseline accepted by `ADR-037`, and validation-only M2 Time/M3
 local-import engineering checkpoints. The UI migrated to the Sage Green
 design system v1 (branch `feature/design-ux-v1`) with the ADR-043 temporal
-picker and ADR-044 first-capsule copy live on Home. Two Manus missions
-hardened and prepared that integration branch: Mission 1
+picker and ADR-044 first-capsule copy live on Home. Four Manus missions
+progressed the integration branch: Mission 1
 (`integration/manus-rehearsal-20260817` — 17 hardening campaigns, 99 unit
 tests green, one P0 plaintext-corruption finding fixed in
-`AesGcmContentCipher.seal()`, report `MANUS-HARDENING-FINAL.md`) and Mission 2
+`AesGcmContentCipher.seal()`, report `MANUS-HARDENING-FINAL.md`), Mission 2
 (`integration/manus-pre-codex-20260817` — product red team, pilot package
 under `pilot/`, documentation drift repair, Codex handoff; report
-`MANUS-PRE-CODEX-FINAL.md`). Open physical, accessibility, interoperability,
+`MANUS-PRE-CODEX-FINAL.md`), Mission 3 (`integration/manus-ux-refinement-20260819`
+— UX observatory, 3 code fixes G1/G2/G9, 101 unit tests green, report
+`MANUS-UX-REFINEMENT-FINAL.md`), and Mission 4 in progress on
+`integration/manus-search-20260819` — the first search architecture: lexical
+baseline in production plus a removable, feature-flagged semantic research
+prototype. Design debt D12 (draft survives a failed entry insert) is being
+closed inside Mission 4. Open physical, accessibility, interoperability,
 second-OEM, notification-provider, and independent-review checks remain
 mandatory before a participant pilot, production release, or
 security/audit claim; they must not be reported as passed. No sync service,
