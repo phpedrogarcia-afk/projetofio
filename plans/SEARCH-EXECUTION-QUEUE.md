@@ -7,7 +7,20 @@ Regra: NOW = exatamente 1 · NEXT ≤ 3 · RESEARCH = sem decisão · DECISION R
 ## Estado atual
 
 ### NOW
-- **S7** — acessibilidade (ArchiveScreen busca: contentDescription, TalkBack, liveRegion) + red team final + MANUS-SEARCH-FINAL.md + push final
+- **MANUS-SEARCH-FINAL.md** (20 seções) + push final e entrega
+
+### REVISÃO S7 — RED TEAM FINAL (PASS, 2026-08-19)
+- Queries nunca persistidas/logadas/encontradas em analytics (grep zero, contrato em FioViewModel+service).
+- Seladas invisíveis por conteúdo em ambos os braços; UI mostra apenas contagem neutra "N nota(s) selada(s) não pesquisável(is)".
+- Soft-deleted excluído no repo fake e no contrato real; vector arm herda TODOS os filtros (matchesFilters ANTES da fusão).
+- HybridSearchService não conecta com ReturnRepository/FioDao/Room mutações (só read-only SearchRepository).
+- `loadActiveEntries`/`loadReturnsForEntry` = SELECT puros no FioDao.
+- Benchmark (`research/search/`) fora do build (build.gradle.kts limpo).
+- main intacto: local == origin/main (a4fc835), branch nunca mergeou.
+- Sem "Pesquisas recentes"; sem chatbot/resposta gerada; snippets sempre texto original (SelectionContainer).
+- Acessibilidade: hit row factual (data + snippet original + "Já voltou N vez(es)"), liveRegion Polite no contador, botão limpar 48dp + descrição, sem dupla leitura no campo.
+- Suíte final: **134 testes verdes, 0 falhas** (29 novos na missão).
+- Commits S7: a6d8215 (a11y), 3e0e27d (queue).
 
 ### RESEARCH (ainda sem decisão)
 - Modelo de embeddings on-device PT-BR (2026, §29–31)
