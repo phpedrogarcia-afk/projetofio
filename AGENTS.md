@@ -153,11 +153,21 @@ tests green, one P0 plaintext-corruption finding fixed in
 under `pilot/`, documentation drift repair, Codex handoff; report
 `MANUS-PRE-CODEX-FINAL.md`), Mission 3 (`integration/manus-ux-refinement-20260819`
 — UX observatory, 3 code fixes G1/G2/G9, 101 unit tests green, report
-`MANUS-UX-REFINEMENT-FINAL.md`), and Mission 4 in progress on
-`integration/manus-search-20260819` — the first search architecture: lexical
-baseline in production plus a removable, feature-flagged semantic research
-prototype. Design debt D12 (draft survives a failed entry insert) is being
-closed inside Mission 4. Open physical, accessibility, interoperability,
+`MANUS-UX-REFINEMENT-FINAL.md`), and Mission 4 **completed** on
+`integration/manus-search-20260819` (final report `MANUS-SEARCH-FINAL.md`,
+commit 06307ca; 134 unit tests green) — the first search architecture is in
+production: lexical baseline (PT-BR tokenizer, scan-on-demand Option A, sealed
+notes content-invisible, soft-deleted excluded, factual "Já voltou" counts,
+queries never persisted) plus a removable, isolated hybrid semantic research
+prototype (RRF k=60, `SemanticSearchPrototype.kt`, zero shipped weights,
+vector arm inherits the full lexical filter contract, never connected to Room
+or Returns). Design debt D12 (draft survives a failed entry insert) is
+closed, and `loadReturnsForEntry` (read-only) serves the search lens without
+schema migration. `docs/search/` holds the architecture, sealed threat model,
+and privacy documents; `research/search/` holds the PT-BR benchmark and the
+on-device embedding research log. Semantic production shipping stays Deferred
+(ADR-024) behind a documented kill criterion: recall@10 ≥ +10pp or MRR ≥
++0.08 vs lexical, RAM ≤ +200MB, latency ≤ 500ms on a real NPU device. Open physical, accessibility, interoperability,
 second-OEM, notification-provider, and independent-review checks remain
 mandatory before a participant pilot, production release, or
 security/audit claim; they must not be reported as passed. No sync service,
