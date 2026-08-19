@@ -32,3 +32,6 @@ A fila de trabalho está limpa: G1, G9 e G2 foram pagos (commits 0336cbe e b87d9
 - Criado na Missão 3 com G1–G9 do dogfood simulation. G1 entrou NOW por ser P1 de corretude.
 - Ciclos B–D: G1 pago (0336cbe), G9 pago + G2 pago (b87d9f2).
 - Ciclos E–H: G3/G4/G7/O3 fechados verde por design; D12 registrada.
+- Ciclos I–L: todos verde por design (2 gates AVD humanos).
+- Ciclos M–N: identity check de ~130 literais; M1 ("nota" vs "entrada" na ReturnScreen) registrado para decisão do fundador; red team final 12/12 PASS.
+- Fila limpa após ciclos B–N; o refinamento contínuo é governado por este documento (NOW=1, NEXT≤3).
