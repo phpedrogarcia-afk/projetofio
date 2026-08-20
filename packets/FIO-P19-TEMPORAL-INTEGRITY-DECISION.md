@@ -133,8 +133,8 @@ validado separadamente porque não altera schema nem motor.
 
 | Data | Evidência | Resultado |
 |---|---|---|
-| 2026-08-20 | `FioApp.kt` | política é estado local e `viewModel.saveEntry()` não recebe argumento |
+| 2026-08-20 | `ui/home/HomeScreen.kt` | política é estado local e `viewModel.saveEntry()` não recebe argumento |
 | 2026-08-20 | `FioViewModel.kt` + `FioService.kt` | apenas conteúdo é passado; Entry usa default `ELIGIBLE` |
 | 2026-08-20 | `Entities.kt` + schema 3 | não existem colunas de janela solicitada |
 | 2026-08-20 | `TimeReturnEngine.kt` | elegibilidade usa somente `returnMode`, sem data pedida |
-| 2026-08-20 | `NoteScreen` em `FioApp.kt` | “Devolver para agora” usa somente `remember` local, sem serviço/histórico |
+| 2026-08-20 | `NoteScreen` em `ui/entry/EntryDetailScreen.kt` | “Devolver para agora” usa somente `remember` local, sem serviço/histórico |

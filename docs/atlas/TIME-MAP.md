@@ -1,6 +1,8 @@
 # TIME-MAP — como o Fio lida com o tempo
 
-**Estado examinado:** working tree FIO-P18 em 2026-08-20 · **Evidência:** `E4` (`FioApp.kt`, `FioViewModel.kt`, `FioService.kt`, `Models.kt`, `TimeReturnEngine.kt`) + `E1` (`docs/07-RETURNS-ENGINE.md`, ADR-038, ADR-043).
+**Status:** REFERENCE. Estado temporal examinado em 2026-08-20. UI temporal:
+`ui/home/HomeScreen.kt`; detalhe: `ui/entry/EntryDetailScreen.kt`; estado/serviço:
+`FioViewModel.kt`, `FioService.kt`, `Models.kt`, `TimeReturnEngine.kt`.
 
 ## 1. Os conceitos canônicos
 

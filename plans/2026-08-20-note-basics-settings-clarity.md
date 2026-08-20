@@ -1,6 +1,6 @@
 # Funções básicas de notas visíveis e Ajustes compreensíveis
 
-Status: In progress
+Status: DONE — engineering complete; founder comprehension observation remains external
 Owner: Codex com validação do fundador
 Related milestone: M1 Trusted Local Core + refinamento de UX
 Relevant decisions: ADR-004, ADR-029, ADR-035, ADR-048, ADR-049
@@ -30,7 +30,9 @@ de engenharia.
 - `docs/04-FEATURES.md`
 - `docs/10-ROADMAP.md`
 - `docs/DECISIONS.md`
-- `app/mobile/src/main/java/com/projetofio/app/ui/FioApp.kt`
+- `app/mobile/src/main/java/com/projetofio/app/ui/archive/ArchiveScreen.kt`
+- `app/mobile/src/main/java/com/projetofio/app/ui/entry/EntryDetailScreen.kt`
+- `app/mobile/src/main/java/com/projetofio/app/ui/settings/SettingsScreen.kt`
 - `app/mobile/src/main/java/com/projetofio/app/ui/FioViewModel.kt`
 - serviços e testes de salvar/editar/excluir/recuperar/exportar
 

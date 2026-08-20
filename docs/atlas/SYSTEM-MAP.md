@@ -1,7 +1,7 @@
 # SYSTEM-MAP — mapa real do ProjetoFio
 
-**Estado examinado:** branch `integration/manus-search-20260819` (HEAD `9cfd5f1`, Missão 4 concluída; branch de trabalho do Atlas: `research/manus-fio-master-atlas-20260819`)
-**Data do exame:** 2026-08-19 · **Evidência:** `E4` — leitura do código-fonte real, não da documentação.
+**Status:** REFERENCE. Estrutura de UI atualizada em 2026-08-20; demais camadas
+preservam a radiografia da Missão 4 e devem ser verificadas de forma dirigida.
 
 ## 1. A anatomia canônica (três capacidades, três políticas)
 
@@ -27,17 +27,16 @@ O princípio arquitetural registrado em `AGENTS.md` e `docs/search/SEARCH-ARCHIT
 ```text
 UI (single activity, navegação por estado)
 │  app/mobile/src/main/java/com/projetofio/app/ui/
-├── FioApp.kt                 — MainSurface {HOME, ARCHIVE, SETTINGS}
-│   ├── HomeScreen            — editor (BasicTextField sem moldura), prompt,
-│   │     TimeSheet ("Quando isso pode voltar?"), DateSheet, BotanicalMotif (pátina ADR-045),
-│   │     First Capsule copy (ADR-044), Button Guardar
-│   ├── ArchiveScreen         — lista cronológica + ArchiveSearchField (M4)
-│   │     + ArchiveSearchHitRow + cards por entrada + Excluídos recentemente
-│   ├── SettingsScreen        — consent, pause, app lock, privacy cover, analytics,
-│   │     import (preview/commit/rollback), export (md/txt), quiet hours
-│   ├── NoteScreen / EditEntryDialog / ReturnScreen
-│   ├── PrivacyCover / LockedScreen / SafeOpenFailure (biometria)
-│   └── theme/ (Color, Theme, Type — Verde-Sálvia design v1)
+├── FioApp.kt                 — orquestra MainSurface {SAVE, FIND, ARCHIVE, SETTINGS}
+├── home/HomeScreen.kt        — editor + escolha temporal + First Capsule
+├── search/SearchScreen.kt    — query e resultados factuais
+├── archive/ArchiveScreen.kt  — lista cronológica
+├── entry/EntryDetailScreen.kt — leitura, edição e exclusão
+├── returns/ReturnScreen.kt   — devolução aberta e Never Return
+├── settings/SettingsScreen.kt — app lock, Returns, import/export e excluídos
+├── security/PrivacyScreens.kt — PrivacyCover, LockedScreen, SafeOpenFailure
+├── components/               — componentes compartilhados restritos
+├── theme/                    — Verde-Sálvia design v1
 └── FioViewModel.kt           — FioUiState (StateFlow), onDraftChanged (autosave),
       onSearchChanged (debounce 300ms), saveEntry, openReturn, import/export actions
 

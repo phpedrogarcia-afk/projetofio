@@ -29,15 +29,15 @@ dependências. Não escolha trabalho em `NEXT-WORK` ou em relatórios histórico
 
 | Tarefa | Leia depois do packet | Código provável |
 |---|---|---|
-| Home/Guardar/tempo visual | `docs/atlas/UX-SURFACE-MAP.md`, `docs/03-UX.md` | `ui/home/HomeScreen.kt`, `FioViewModel.kt` |
-| Encontrar/Search | `docs/atlas/SEARCH-MAP.md`, `docs/search/SEARCH-ARCHITECTURE.md` | `ui/search/SearchScreen.kt`, `search/` |
-| Arquivo | `docs/atlas/UX-SURFACE-MAP.md` | `ui/archive/ArchiveScreen.kt` |
-| Nota/editar/excluir | `docs/06-DATA-MODEL.md`, `docs/atlas/UX-SURFACE-MAP.md` | `ui/entry/EntryDetailScreen.kt`, `application/FioService.kt` |
-| Returns/tempo | `docs/atlas/TIME-MAP.md`, `docs/07-RETURNS-ENGINE.md` | `domain/TimeReturnEngine.kt`, `application/TimeReturnsService.kt`, `returns/` |
-| Ajustes | `docs/03-UX.md` | `ui/settings/SettingsScreen.kt` |
-| Privacidade/app lock | `docs/08-PRIVACY-SECURITY.md`, packet | `ui/security/PrivacyScreens.kt`, `security/`, `crypto/` |
-| Room/migration | `docs/atlas/DATA-MAP.md`, `docs/06-DATA-MODEL.md` | `persistence/`, `schemas/` |
-| Import/export | packet, `docs/export-format.md` | `application/ImportService.kt`, `ExportCoordinator.kt` |
+| Home/Guardar/tempo visual | `docs/atlas/UX-SURFACE-MAP.md`, `docs/03-UX.md` | `app/mobile/src/main/java/com/projetofio/app/ui/home/HomeScreen.kt` |
+| Encontrar/Search | `docs/atlas/SEARCH-MAP.md`, `docs/search/SEARCH-ARCHITECTURE.md` | `app/mobile/src/main/java/com/projetofio/app/ui/search/SearchScreen.kt`, `app/mobile/src/main/java/com/projetofio/app/search/` |
+| Arquivo | `docs/atlas/UX-SURFACE-MAP.md` | `app/mobile/src/main/java/com/projetofio/app/ui/archive/ArchiveScreen.kt` |
+| Nota/editar/excluir | `docs/06-DATA-MODEL.md`, `docs/atlas/UX-SURFACE-MAP.md` | `app/mobile/src/main/java/com/projetofio/app/ui/entry/EntryDetailScreen.kt` |
+| Returns/tempo | `docs/atlas/TIME-MAP.md`, `docs/07-RETURNS-ENGINE.md` | `app/mobile/src/main/java/com/projetofio/app/domain/TimeReturnEngine.kt`, `app/mobile/src/main/java/com/projetofio/app/application/TimeReturnsService.kt` |
+| Ajustes | `docs/03-UX.md` | `app/mobile/src/main/java/com/projetofio/app/ui/settings/SettingsScreen.kt` |
+| Privacidade/app lock | `docs/08-PRIVACY-SECURITY.md`, packet | `app/mobile/src/main/java/com/projetofio/app/ui/security/PrivacyScreens.kt`, `app/mobile/src/main/java/com/projetofio/app/security/`, `app/mobile/src/main/java/com/projetofio/app/crypto/` |
+| Room/migration | `docs/atlas/DATA-MAP.md`, `docs/06-DATA-MODEL.md` | `app/mobile/src/main/java/com/projetofio/app/persistence/`, `app/mobile/schemas/` |
+| Import/export | packet, `docs/export-format.md` | `app/mobile/src/main/java/com/projetofio/app/application/ImportService.kt`, `app/mobile/src/main/java/com/projetofio/app/application/ExportCoordinator.kt` |
 
 Atlas completo somente quando a arquitetura estiver desconhecida:
 `docs/atlas/CODEX-MASTER-MAP.md`.
