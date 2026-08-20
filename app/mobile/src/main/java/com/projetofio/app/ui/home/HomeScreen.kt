@@ -27,6 +27,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -55,14 +56,16 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import androidx.annotation.DrawableRes
 import com.projetofio.app.domain.ReturnConsentState
 import com.projetofio.app.R
 import com.projetofio.app.ui.theme.FioRadius
 import com.projetofio.app.ui.theme.FioSpace
 import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneId
+import java.time.ZoneOffset
 
 // first-class candidate.
 // ---------------------------------------------------------------------------
@@ -195,11 +198,12 @@ internal fun HomeScreen(
                 .clickable(onClick = { timeSheet = true })
                 .heightIn(min = 48.dp)
                 .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(FioRadius.md))
+                .testTag("fio-return-policy")
                 .padding(horizontal = FioSpace.s3, vertical = FioSpace.s2),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
-                painter = painterResource(R.drawable.ic_clock),
+                painter = painterResource(R.drawable.ic_time_return),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.height(18.dp).width(18.dp),
@@ -260,7 +264,8 @@ internal fun HomeScreen(
             colors = ButtonDefaults.buttonColors(
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary,
-                disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f),
+                disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.58f),
             ),
             modifier = Modifier
                 .fillMaxWidth()
@@ -311,25 +316,25 @@ internal fun HomeScreen(
             ) {
                 Text("Quando isso pode voltar?", style = MaterialTheme.typography.titleMedium)
                 Spacer(Modifier.height(FioSpace.s2))
-                TimeOption("Algum dia", policy is ReturnPolicy.Someday) {
+                TimeOption("Algum dia", R.drawable.ic_infinity, policy is ReturnPolicy.Someday) {
                     policy = ReturnPolicy.Someday; timeSheet = false
                 }
-                TimeOption("Daqui a 1 semana", (policy as? ReturnPolicy.InPeriod)?.days == 7) {
+                TimeOption("Daqui a 1 semana", R.drawable.ic_calendar_span, (policy as? ReturnPolicy.InPeriod)?.days == 7) {
                     policy = ReturnPolicy.InPeriod(7); timeSheet = false
                 }
-                TimeOption("Daqui a 1 mês", (policy as? ReturnPolicy.InPeriod)?.days == 30) {
+                TimeOption("Daqui a 1 mês", R.drawable.ic_calendar_span, (policy as? ReturnPolicy.InPeriod)?.days == 30) {
                     policy = ReturnPolicy.InPeriod(30); timeSheet = false
                 }
-                TimeOption("Daqui a 3 meses", (policy as? ReturnPolicy.InPeriod)?.days == 90) {
+                TimeOption("Daqui a 3 meses", R.drawable.ic_calendar_span, (policy as? ReturnPolicy.InPeriod)?.days == 90) {
                     policy = ReturnPolicy.InPeriod(90); timeSheet = false
                 }
-                TimeOption("Daqui a 1 ano", (policy as? ReturnPolicy.InPeriod)?.days == 365) {
+                TimeOption("Daqui a 1 ano", R.drawable.ic_calendar_span, (policy as? ReturnPolicy.InPeriod)?.days == 365) {
                     policy = ReturnPolicy.InPeriod(365); timeSheet = false
                 }
-                TimeOption("Escolher uma data", policy is ReturnPolicy.OnDate) {
+                TimeOption("Escolher uma data", R.drawable.ic_calendar_date, policy is ReturnPolicy.OnDate) {
                     timeSheet = false; dateSheet = true
                 }
-                TimeOption("Nunca", policy is ReturnPolicy.Never) {
+                TimeOption("Nunca", R.drawable.ic_never, policy is ReturnPolicy.Never) {
                     policy = ReturnPolicy.Never; timeSheet = false
                 }
                 Spacer(Modifier.height(FioSpace.s2))
@@ -340,24 +345,17 @@ internal fun HomeScreen(
     // Date picker dialog (anchored request)
     if (dateSheet) {
         val datePickerState = rememberDatePickerState(
-            // G1 fix: anchor the picker in the device's local zone — UTC
-            // conversion shows the previous day for negative-offset zones
-            // after 21:00 local time.
             initialSelectedDateMillis = (policy as? ReturnPolicy.OnDate)
-                ?.date?.atStartOfDay(ZoneId.systemDefault())?.toInstant()?.toEpochMilli()
-                ?: LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli(),
+                ?.date?.let(::datePickerMillis)
+                ?: datePickerMillis(LocalDate.now()),
         )
         DatePickerDialog(
             onDismissRequest = { dateSheet = false },
             confirmButton = {
                 TextButton(
                     onClick = {
-                        // G1 fix: decode the chosen millis in the device's
-                        // local zone so the touched calendar day is honored.
                         datePickerState.selectedDateMillis?.let { millis ->
-                            policy = ReturnPolicy.OnDate(
-                                Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate(),
-                            )
+                            policy = ReturnPolicy.OnDate(datePickerDate(millis))
                         }
                         dateSheet = false
                     },
@@ -365,44 +363,80 @@ internal fun HomeScreen(
             },
             dismissButton = { TextButton(onClick = { dateSheet = false }) { Text("Cancelar") } },
         ) {
-            DatePicker(
-                state = datePickerState,
-                title = {
+            Column {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                        .padding(horizontal = FioSpace.s5, vertical = FioSpace.s4),
+                ) {
                     Text(
                         "Escolher uma data",
-                        modifier = Modifier.padding(start = FioSpace.s5, top = FioSpace.s4),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
-                },
-                headline = {
                     val selected = datePickerState.selectedDateMillis?.let { millis ->
-                        Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate()
+                        datePickerDate(millis)
                     }
                     Text(
                         selected?.format(Formatter.ptDate) ?: "Escolha um dia",
-                        modifier = Modifier.padding(horizontal = FioSpace.s5, vertical = FioSpace.s3),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier
+                            .padding(top = FioSpace.s1)
+                            .testTag("fio-date-picker-headline"),
                     )
-                },
-            )
+                }
+                DatePicker(
+                    state = datePickerState,
+                    showModeToggle = false,
+                    title = null,
+                    headline = null,
+                    colors = DatePickerDefaults.colors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                        titleContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        headlineContentColor = MaterialTheme.colorScheme.onSurface,
+                        selectedDayContainerColor = MaterialTheme.colorScheme.primary,
+                        selectedDayContentColor = MaterialTheme.colorScheme.onPrimary,
+                        todayContentColor = MaterialTheme.colorScheme.primary,
+                        todayDateBorderColor = MaterialTheme.colorScheme.primary,
+                    ),
+                )
+            }
         }
     }
 }
 
 
 @Composable
-private fun TimeOption(label: String, selected: Boolean, onClick: () -> Unit) {
+private fun TimeOption(
+    label: String,
+    @DrawableRes icon: Int,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .heightIn(min = 48.dp),
+            .heightIn(min = 48.dp)
+            .semantics { contentDescription = "Definir retorno: $label" },
         shape = RoundedCornerShape(FioRadius.md),
-        color = if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+        color = if (selected) MaterialTheme.colorScheme.primaryContainer
         else MaterialTheme.colorScheme.surface,
     ) {
         Row(
             modifier = Modifier.padding(horizontal = FioSpace.s3, vertical = FioSpace.s2),
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            Icon(
+                painter = painterResource(icon),
+                contentDescription = null,
+                tint = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.height(20.dp).width(20.dp),
+            )
+            Spacer(Modifier.width(FioSpace.s3))
+            Text(label, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
             if (selected) {
                 Icon(
                     painter = painterResource(R.drawable.ic_check),
@@ -410,9 +444,7 @@ private fun TimeOption(label: String, selected: Boolean, onClick: () -> Unit) {
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.height(18.dp).width(18.dp),
                 )
-                Spacer(Modifier.width(FioSpace.s2))
             }
-            Text(label, style = MaterialTheme.typography.bodyLarge)
         }
     }
 }
@@ -424,6 +456,17 @@ private fun returnPolicyLabel(days: Int): String = when (days) {
     365 -> "Daqui a 1 ano"
     else -> "Daqui a $days dias"
 }
+
+/**
+ * Material DatePicker represents calendar dates as midnight UTC. Keeping the
+ * conversion in that calendar domain prevents the header, selected cell and
+ * confirmed value from drifting with the device time zone.
+ */
+internal fun datePickerMillis(date: LocalDate): Long =
+    date.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
+
+internal fun datePickerDate(millis: Long): LocalDate =
+    Instant.ofEpochMilli(millis).atZone(ZoneOffset.UTC).toLocalDate()
 
 // ===========================================================================
 // FIND — deliberate retrieval has its own quiet surface. It never shares the
