@@ -91,3 +91,8 @@ internal fun displayDate(entry: Entry): String {
         .withLocale(Locale.forLanguageTag("pt-BR"))
     return formatter.format(entry.originalCreatedAt.atZone(zone))
 }
+
+internal fun displayDay(entry: Entry): String {
+    val zone = runCatching { ZoneId.of(entry.originalTimeZone ?: "UTC") }.getOrDefault(ZoneId.of("UTC"))
+    return Formatter.ptDate.format(entry.originalCreatedAt.atZone(zone).toLocalDate())
+}

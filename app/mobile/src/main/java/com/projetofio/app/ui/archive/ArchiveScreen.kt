@@ -126,11 +126,7 @@ internal fun ArchiveScreen(
         }
         item {
             Text(
-                text = when (state.entries.size) {
-                    0 -> "Suas palavras, em ordem do tempo."
-                    1 -> "1 lembrança guardada. Toque para ler, editar ou excluir."
-                    else -> "${state.entries.size} lembranças guardadas. Toque em uma para ler, editar ou excluir."
-                },
+                text = "Suas palavras, em ordem do tempo.",
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(bottom = FioSpace.s3),
@@ -210,14 +206,14 @@ private fun ArchiveRow(entry: Entry, onOpen: () -> Unit) {
                 .clickable(onClick = onOpen)
                 .padding(vertical = FioSpace.s3)
                 .semantics(mergeDescendants = true) {
-                    contentDescription = "Abrir lembrança de ${displayDate(entry)} para ler ou editar. ${entry.content}"
+                    contentDescription = "Abrir lembrança de ${displayDay(entry)} para ler ou editar. ${entry.content}"
                 },
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        displayDate(entry),
+                        displayDay(entry),
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )

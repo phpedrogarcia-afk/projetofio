@@ -14,12 +14,15 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -31,6 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
@@ -39,6 +43,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.projetofio.app.domain.Entry
+import com.projetofio.app.R
+import com.projetofio.app.ui.theme.FioRadius
 import com.projetofio.app.ui.theme.FioSpace
 
 @Composable
@@ -136,19 +142,11 @@ internal fun SearchScreen(
 
         if (state.searchTerms.isBlank()) {
             item {
-                Column(modifier = Modifier.padding(top = FioSpace.s6)) {
-                    BotanicalMotif(firstEntryAt = state.entries.lastOrNull()?.originalCreatedAt)
-                    Spacer(Modifier.height(FioSpace.s3))
+                Column(modifier = Modifier.padding(top = FioSpace.s4)) {
                     Text(
-                        "O Fio encontra suas palavras como foram guardadas.",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Text(
-                        "Ele não responde por você nem interpreta o que viveu.",
+                        "O Fio encontra suas palavras como foram guardadas.\nEle não responde por você nem interpreta o que viveu.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(top = FioSpace.s1),
                     )
                 }
             }
@@ -226,8 +224,21 @@ private fun ArchiveSearchField(terms: String, onChanged: (String) -> Unit) {
             .fillMaxWidth()
             .heightIn(min = 48.dp)
             .semantics(mergeDescendants = true) {},
-        label = { Text("Buscar nas suas palavras") },
-        placeholder = { Text("Uma palavra ou frase", style = MaterialTheme.typography.bodyLarge) },
+        placeholder = { Text("O que você procura?", style = MaterialTheme.typography.bodyLarge) },
+        leadingIcon = {
+            Icon(
+                painter = painterResource(R.drawable.ic_find),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        },
+        shape = RoundedCornerShape(FioRadius.md),
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = MaterialTheme.colorScheme.primary,
+            unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+            focusedContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.48f),
+            unfocusedContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.48f),
+        ),
         singleLine = true,
         trailingIcon = {
             if (terms.isNotBlank()) {
@@ -257,7 +268,7 @@ private fun ArchiveSearchHitRow(hit: com.projetofio.app.domain.SearchHit, onOpen
                 .padding(vertical = FioSpace.s3)
                 .semantics(mergeDescendants = true) {
                     contentDescription = buildString {
-                        append(displayDate(hit.entry))
+                        append(displayDay(hit.entry))
                         append(". ")
                         append(hit.matchedSnippet)
                         if (hit.returnedCount > 0) {
@@ -270,7 +281,7 @@ private fun ArchiveSearchHitRow(hit: com.projetofio.app.domain.SearchHit, onOpen
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    displayDate(hit.entry),
+                    displayDay(hit.entry),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
