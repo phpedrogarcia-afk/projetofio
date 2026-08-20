@@ -10,6 +10,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -38,22 +40,91 @@ internal fun BotanicalMotif(firstEntryAt: Instant? = null) {
     // G9 fix: suppress the motif for reduced motion OR TalkBack.
     if (isMotionReduced(LocalContext.current)) return
     Canvas(
-        modifier = Modifier.height(56.dp).width(32.dp).alpha(0.55f),
+        modifier = Modifier.height(56.dp).width(32.dp).alpha(0.68f),
         onDraw = {
-            drawLine(tertiary, start = Offset(16f, 56f), end = Offset(16f, 12f - ageDays.coerceAtMost(30) * 0.15f), strokeWidth = 2.2f)
+            val scaleX = size.width / 32f
+            val scaleY = size.height / 56f
+            fun point(x: Float, y: Float) = Offset(x * scaleX, y * scaleY)
+            val stem = Path().apply {
+                moveTo(point(16f, 56f).x, point(16f, 56f).y)
+                cubicTo(
+                    point(13f, 44f).x,
+                    point(13f, 44f).y,
+                    point(19f, 30f).x,
+                    point(19f, 30f).y,
+                    point(16f, 12f - ageDays.coerceAtMost(30) * 0.08f).x,
+                    point(16f, 12f - ageDays.coerceAtMost(30) * 0.08f).y,
+                )
+            }
+            drawPath(stem, color = tertiary, style = Stroke(width = 1.dp.toPx()))
+            drawLeaf(
+                color = accent,
+                stem = tertiary,
+                base = point(15.5f, 43f),
+                tip = point(6f, 34f),
+                strokeWidth = 0.75.dp.toPx(),
+            )
             if (ageDays >= 7) {
-                drawLine(tertiary, start = Offset(16f, 42f), end = Offset(6f, 34f), strokeWidth = 1.8f)
-                drawCircle(accent, radius = 3.5f, center = Offset(6f, 34f))
+                drawLeaf(
+                    color = accent,
+                    stem = tertiary,
+                    base = point(16.5f, 34f),
+                    tip = point(26f, 25f),
+                    strokeWidth = 0.75.dp.toPx(),
+                )
             }
             if (ageDays >= 30) {
-                drawLine(tertiary, start = Offset(16f, 30f), end = Offset(26f, 22f), strokeWidth = 1.8f)
-                drawCircle(accent, radius = 3.5f, center = Offset(26f, 22f))
+                drawLeaf(
+                    color = accent,
+                    stem = tertiary,
+                    base = point(16f, 25f),
+                    tip = point(7f, 17f),
+                    strokeWidth = 0.75.dp.toPx(),
+                )
             }
             if (ageDays >= 180) {
-                drawCircle(accent, radius = 4.5f, center = Offset(16f, 11f))
+                drawLeaf(
+                    color = accent,
+                    stem = tertiary,
+                    base = point(16f, 15f),
+                    tip = point(21f, 7f),
+                    strokeWidth = 0.75.dp.toPx(),
+                )
             }
         },
     )
+}
+
+private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawLeaf(
+    color: androidx.compose.ui.graphics.Color,
+    stem: androidx.compose.ui.graphics.Color,
+    base: Offset,
+    tip: Offset,
+    strokeWidth: Float,
+) {
+    val direction = tip - base
+    val normal = Offset(-direction.y, direction.x)
+    val normalLength = kotlin.math.sqrt(normal.x * normal.x + normal.y * normal.y).coerceAtLeast(1f)
+    val unitNormal = Offset(normal.x / normalLength, normal.y / normalLength)
+    val middle = base + direction * 0.55f
+    val leaf = Path().apply {
+        moveTo(base.x, base.y)
+        quadraticTo(
+            middle.x + unitNormal.x * 3.2f,
+            middle.y + unitNormal.y * 3.2f,
+            tip.x,
+            tip.y,
+        )
+        quadraticTo(
+            middle.x - unitNormal.x * 2.4f,
+            middle.y - unitNormal.y * 2.4f,
+            base.x,
+            base.y,
+        )
+        close()
+    }
+    drawPath(leaf, color = color.copy(alpha = 0.58f))
+    drawLine(stem, start = base, end = tip, strokeWidth = strokeWidth)
 }
 
 // ===========================================================================

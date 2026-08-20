@@ -148,6 +148,8 @@ internal fun SearchScreen(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
+                    Spacer(Modifier.height(FioSpace.s5))
+                    BotanicalMotif(firstEntryAt = state.entries.lastOrNull()?.originalCreatedAt)
                 }
             }
         } else {
