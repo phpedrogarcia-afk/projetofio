@@ -1,9 +1,8 @@
 package com.projetofio.app.ui
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,7 +13,10 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -34,7 +36,7 @@ import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.projetofio.app.domain.Entry
-import com.projetofio.app.ui.theme.FioDisplayDate
+import com.projetofio.app.ui.theme.FioRadius
 import com.projetofio.app.ui.theme.FioSpace
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -57,10 +59,17 @@ internal fun NoteScreen(
         modifier = Modifier.fillMaxSize().padding(contentPadding),
         color = MaterialTheme.colorScheme.background,
     ) {
-        Column(modifier = Modifier.padding(horizontal = FioSpace.s4, vertical = FioSpace.s5)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+        Column(
+            modifier = Modifier
+                .padding(horizontal = FioSpace.s5, vertical = FioSpace.s4)
+                .verticalScroll(rememberScrollState()),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 Text(
-                    text = "← ",
+                    text = "←",
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier
@@ -70,66 +79,71 @@ internal fun NoteScreen(
                         .padding(12.dp)
                         .semantics { contentDescription = "Voltar" },
                 )
-            }
-            Spacer(Modifier.height(FioSpace.s3))
-            SelectionContainer {
-                Text(
-                    text = noteDate(entry),
-                    style = FioDisplayDate,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.padding(bottom = FioSpace.s5),
-                )
-                Text(
-                    text = entry.content,
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            }
-            Spacer(Modifier.height(FioSpace.s5))
-            if (onEdit != null || onDelete != null) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(FioSpace.s2),
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    onEdit?.let { edit ->
-                        TextButton(
-                            onClick = edit,
-                            modifier = Modifier.heightIn(min = 48.dp),
-                        ) {
-                            Text("Editar")
-                        }
-                    }
-                    onDelete?.let { delete ->
-                        TextButton(
-                            onClick = delete,
-                            modifier = Modifier.heightIn(min = 48.dp),
-                        ) {
-                            Text("Excluir", color = MaterialTheme.colorScheme.error)
-                        }
+                Spacer(Modifier.weight(1f))
+                if (onEdit != null) {
+                    TextButton(onClick = onEdit, modifier = Modifier.heightIn(min = 48.dp)) {
+                        Text("Editar", style = MaterialTheme.typography.labelLarge)
                     }
                 }
-                Spacer(Modifier.height(FioSpace.s2))
             }
-            Row {
-                Text(
-                    text = if (returned) "Reescrever esta nota?" else "Devolver para agora", // G2: factual — a antiga interpretativa foi neutralizada
-                    style = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.primary),
-                    modifier = Modifier
-                        .clickable(onClick = {
-                            if (returned) {
-                                onReedit(entry.content)
-                                onBack()
-                            } else {
-                                returning = true
-                            }
-                        })
-                        .heightIn(min = 48.dp)
-                        .padding(vertical = FioSpace.s2)
-                        .semantics { contentDescription = if (returned) "Reescrever esta nota agora" else "Devolver esta nota agora" },
-                )
+            Spacer(Modifier.height(FioSpace.s4))
+            SelectionContainer {
+                Column {
+                    Text(
+                        text = noteDate(entry),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Text(
+                        text = noteRelativeDate(entry),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = FioSpace.s1),
+                    )
+                    Spacer(Modifier.height(FioSpace.s6))
+                    Text(
+                        text = entry.content,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onBackground,
+                    )
+                }
             }
             Spacer(Modifier.height(FioSpace.s6))
-            BotanicalMotif()
-            Spacer(Modifier.height(FioSpace.s4))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(FioRadius.md))
+                    .clickable {
+                        if (returned) {
+                            onReedit(entry.content)
+                            onBack()
+                        } else {
+                            returning = true
+                        }
+                    }
+                    .heightIn(min = 48.dp)
+                    .padding(horizontal = FioSpace.s3, vertical = FioSpace.s2),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = if (returned) "Reescrever esta nota?" else "Devolver para agora", // G2: factual — a antiga interpretativa foi neutralizada
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.weight(1f).semantics {
+                        contentDescription = if (returned) "Reescrever esta nota agora" else "Devolver esta nota agora"
+                    },
+                )
+                Text("›", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            if (onDelete != null) {
+                Spacer(Modifier.height(FioSpace.s4))
+                TextButton(
+                    onClick = onDelete,
+                    modifier = Modifier.heightIn(min = 48.dp),
+                ) {
+                    Text("Excluir", color = MaterialTheme.colorScheme.error)
+                }
+            }
             if (returned) {
                 Text(
                     // G2 fix: factual, sem interpretar o que a volta significa.
@@ -139,6 +153,7 @@ internal fun NoteScreen(
                     modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
                 )
             }
+            Spacer(Modifier.height(FioSpace.s5))
         }
     }
     if (returning) {
@@ -165,6 +180,21 @@ private fun noteDate(entry: Entry): String {
     val formatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG)
         .withLocale(Locale.forLanguageTag("pt-BR"))
     return formatter.format(entry.originalCreatedAt.atZone(zone).toLocalDate())
+}
+
+private fun noteRelativeDate(entry: Entry): String {
+    val zone = runCatching { ZoneId.of(entry.originalTimeZone ?: "UTC") }.getOrDefault(ZoneId.of("UTC"))
+    val days = java.time.temporal.ChronoUnit.DAYS.between(
+        entry.originalCreatedAt.atZone(zone).toLocalDate(),
+        java.time.LocalDate.now(zone),
+    )
+    return when {
+        days <= 0 -> "hoje"
+        days == 1L -> "ontem"
+        days < 30 -> "há $days dias"
+        days < 365 -> "há ${(days / 30).coerceAtLeast(1)} " + if (days / 30 == 1L) "mês" else "meses"
+        else -> "há ${(days / 365).coerceAtLeast(1)} " + if (days / 365 == 1L) "ano" else "anos"
+    }
 }
 
 @Composable
