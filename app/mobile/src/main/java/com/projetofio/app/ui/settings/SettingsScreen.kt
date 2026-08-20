@@ -2,6 +2,7 @@ package com.projetofio.app.ui
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,6 +21,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
@@ -31,8 +33,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.annotation.DrawableRes
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
@@ -48,6 +52,7 @@ import com.projetofio.app.domain.ImportBatch
 import com.projetofio.app.domain.ImportIssueCode
 import com.projetofio.app.domain.NotificationPermissionObserved
 import com.projetofio.app.domain.ReturnConsentState
+import com.projetofio.app.R
 import com.projetofio.app.ui.theme.FioRadius
 import com.projetofio.app.ui.theme.FioSpace
 import java.time.format.DateTimeFormatter
@@ -211,6 +216,7 @@ private fun SettingsOverview(
                 SettingsNavigationRow(
                     title = "Lembranças que voltam",
                     summary = returnsSummary(state.settings.returnConsentState),
+                    icon = R.drawable.ic_time_return,
                     onClick = { onOpen(SettingsPage.RETURNS) },
                 )
             }
@@ -220,6 +226,7 @@ private fun SettingsOverview(
             SettingsNavigationRow(
                 title = "Proteção ao abrir",
                 summary = appLockSummary(state.settings.appLockMode),
+                icon = R.drawable.ic_privacy,
                 onClick = { onOpen(SettingsPage.PRIVACY) },
             )
         }
@@ -229,6 +236,7 @@ private fun SettingsOverview(
                 SettingsNavigationRow(
                     title = "Importar notas",
                     summary = "Trazer textos e datas de um arquivo TXT ou Markdown.",
+                    icon = R.drawable.ic_import,
                     onClick = { onOpen(SettingsPage.IMPORT) },
                 )
             }
@@ -237,6 +245,7 @@ private fun SettingsOverview(
             SettingsNavigationRow(
                 title = "Exportar uma cópia",
                 summary = "Guardar todas as suas notas em um arquivo legível.",
+                icon = R.drawable.ic_export,
                 onClick = { onOpen(SettingsPage.EXPORT) },
             )
         }
@@ -248,21 +257,29 @@ private fun SettingsOverview(
                     1 -> "1 nota pode ser recuperada por até 30 dias."
                     else -> "${state.deletedEntries.size} notas podem ser recuperadas por até 30 dias."
                 },
+                icon = R.drawable.ic_deleted,
                 onClick = { onOpen(SettingsPage.DELETED) },
             )
         }
         item {
-            Text(
-                buildString {
-                    append("Suas notas ficam neste aparelho. Não há conta, sincronização ou análise das suas palavras.")
-                    if (!state.m2EngineeringEnabled || !state.m3EngineeringEnabled) {
-                        append(" Nesta instalação, alguns recursos ainda não estão disponíveis.")
-                    }
-                },
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = FioSpace.s5),
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(top = FioSpace.s5),
+                verticalAlignment = Alignment.Bottom,
+            ) {
+                Text(
+                    buildString {
+                        append("Suas notas ficam neste aparelho. Não há conta, sincronização ou análise das suas palavras.")
+                        if (!state.m2EngineeringEnabled || !state.m3EngineeringEnabled) {
+                            append(" Nesta instalação, alguns recursos ainda não estão disponíveis.")
+                        }
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.weight(1f),
+                )
+                Spacer(Modifier.width(FioSpace.s4))
+                BotanicalMotif(firstEntryAt = state.entries.lastOrNull()?.originalCreatedAt)
+            }
         }
     }
 }
@@ -614,12 +631,18 @@ private fun SettingsHeader(title: String, onBack: () -> Unit, backDescription: S
 }
 
 @Composable
-private fun SettingsNavigationRow(title: String, summary: String, onClick: () -> Unit) {
+private fun SettingsNavigationRow(
+    title: String,
+    summary: String,
+    @DrawableRes icon: Int,
+    onClick: () -> Unit,
+) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
             .heightIn(min = 72.dp)
+            .border(0.5.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(FioRadius.md))
             .semantics(mergeDescendants = true) { contentDescription = "$title. $summary" },
         color = MaterialTheme.colorScheme.surface,
         shape = RoundedCornerShape(FioRadius.md),
@@ -628,6 +651,13 @@ private fun SettingsNavigationRow(title: String, summary: String, onClick: () ->
             modifier = Modifier.padding(horizontal = FioSpace.s3, vertical = FioSpace.s3),
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            Icon(
+                painter = painterResource(icon),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.width(22.dp),
+            )
+            Spacer(Modifier.width(FioSpace.s3))
             Column(modifier = Modifier.weight(1f)) {
                 Text(title, style = MaterialTheme.typography.titleSmall)
                 Text(
@@ -723,7 +753,7 @@ private fun AppLockChoices(selected: AppLockMode, enabled: Boolean, onChoose: (A
                     .clickable(enabled = enabled && !isSelected) { onChoose(mode) }
                     .heightIn(min = 48.dp),
                 shape = RoundedCornerShape(FioRadius.md),
-                color = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+                color = if (isSelected) MaterialTheme.colorScheme.primaryContainer
                 else MaterialTheme.colorScheme.surface,
             ) {
                 Row(
