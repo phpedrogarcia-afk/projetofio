@@ -179,6 +179,11 @@ not be described as such.
 - Apply `FLAG_SECURE` to content-bearing windows and place a neutral Compose
   privacy cover before the activity becomes non-visible. Verify both protections
   on physical devices because OEM Recents behavior can differ.
+- Temporary visual-validation exception (`ADR-050`): debug and validation
+  variants allow screenshots/screen recording by omitting `FLAG_SECURE`.
+  Release keeps `FLAG_SECURE` and the normal lifecycle `PrivacyCover`. The
+  cover remains active in every variant while the access/app-lock gate is
+  unresolved; the exception never authorizes real journal content in evidence.
 
 ## Notification privacy
 
