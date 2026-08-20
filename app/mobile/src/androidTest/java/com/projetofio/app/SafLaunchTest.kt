@@ -21,7 +21,7 @@ class SafLaunchTest {
         composeRule.onNodeWithText("Exportar uma cópia").performClick()
         composeRule.onNodeWithText("Exportar uma cópia").assertIsDisplayed()
         val appPackageName = composeRule.activity.packageName
-        composeRule.onNodeWithText("Criar arquivo de texto (.txt)").performClick()
+        composeRule.onNodeWithText("Texto (.txt)").performClick()
 
         val uiAutomation = InstrumentationRegistry.getInstrumentation().uiAutomation
         composeRule.waitUntil(timeoutMillis = 15_000) {

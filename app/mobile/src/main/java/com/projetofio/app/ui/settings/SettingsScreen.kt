@@ -205,14 +205,6 @@ private fun SettingsOverview(
                 modifier = Modifier.padding(bottom = FioSpace.s3),
             )
         }
-        item { SectionTitle("Privacidade") }
-        item {
-            SettingsNavigationRow(
-                title = "Proteção ao abrir",
-                summary = appLockSummary(state.settings.appLockMode),
-                onClick = { onOpen(SettingsPage.PRIVACY) },
-            )
-        }
         if (state.m2EngineeringEnabled) {
             item { SectionTitle("Lembranças") }
             item {
@@ -222,6 +214,14 @@ private fun SettingsOverview(
                     onClick = { onOpen(SettingsPage.RETURNS) },
                 )
             }
+        }
+        item { SectionTitle("Privacidade") }
+        item {
+            SettingsNavigationRow(
+                title = "Proteção ao abrir",
+                summary = appLockSummary(state.settings.appLockMode),
+                onClick = { onOpen(SettingsPage.PRIVACY) },
+            )
         }
         item { SectionTitle("Seus dados") }
         if (state.m3EngineeringEnabled) {
@@ -254,9 +254,10 @@ private fun SettingsOverview(
         item {
             Text(
                 buildString {
-                    append("Nesta versão, suas notas ficam neste aparelho. Não há conta, sincronização ou envio das suas palavras para análise de uso.")
-                    if (!state.m2EngineeringEnabled) append(" O recurso de fazer lembranças antigas voltarem ainda não está ativo neste aplicativo instalado.")
-                    if (!state.m3EngineeringEnabled) append(" A importação de arquivos ainda não está disponível aqui.")
+                    append("Suas notas ficam neste aparelho. Não há conta, sincronização ou análise das suas palavras.")
+                    if (!state.m2EngineeringEnabled || !state.m3EngineeringEnabled) {
+                        append(" Nesta instalação, alguns recursos ainda não estão disponíveis.")
+                    }
                 },
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -513,8 +514,7 @@ private fun ExportSettingsPage(
         }
         item {
             Text(
-                "Se estiver em dúvida, escolha Texto (.txt): é o formato mais simples e abre em quase qualquer aplicativo. " +
-                    "Markdown (.md) preserva melhor títulos e datas para levar as notas a outro aplicativo compatível.",
+                "Se estiver em dúvida, escolha Texto (.txt).",
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
@@ -522,12 +522,30 @@ private fun ExportSettingsPage(
             Column(verticalArrangement = Arrangement.spacedBy(FioSpace.s2)) {
                 OutlinedButton(
                     onClick = onExportText,
-                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
-                ) { Text("Criar arquivo de texto (.txt)") }
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 72.dp),
+                ) {
+                    Column(Modifier.fillMaxWidth()) {
+                        Text("Texto (.txt)", style = MaterialTheme.typography.titleSmall)
+                        Text(
+                            "Mais simples. Abre em praticamente qualquer lugar.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
                 OutlinedButton(
                     onClick = onExportMarkdown,
-                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
-                ) { Text("Criar arquivo Markdown (.md)") }
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 72.dp),
+                ) {
+                    Column(Modifier.fillMaxWidth()) {
+                        Text("Markdown (.md)", style = MaterialTheme.typography.titleSmall)
+                        Text(
+                            "Preserva melhor a estrutura para aplicativos compatíveis.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
             }
         }
         exportMessage?.let { message ->
