@@ -8,38 +8,48 @@ import androidx.compose.ui.graphics.Color
 // compiling after this expansion.
 // ---------------------------------------------------------------------------
 
-// Light mode
-internal val LightBackground = Color(0xFFF8F4EA) // marfim quente (legacy WarmPaper)
-internal val LightSurface = Color(0xFFFBF8F0) // superfícies elevadas
-internal val LightSurfaceVariant = Color(0xFFF0EBDE) // terciária, hover, fundo de chips
-internal val LightPrimary = Color(0xFF667A66) // verde sálvia (legacy Sage)
-internal val LightOnPrimary = Color(0xFFFAF7EE)
-internal val LightSecondary = Color(0xFF8CA38A)
-internal val LightOnSecondary = Color(0xFFFBF8F0)
-internal val LightTertiary = Color(0xFFB0BFA6) // periféricos, botânicos, placeholders
-internal val LightOutline = Color(0xFFDCD5C4)
-internal val LightOutlineVariant = Color(0xFFEAE4D4) // dividers de baixa presença
-internal val LightOnBackground = Color(0xFF252A25) // texto principal (legacy Charcoal)
-internal val LightOnSurface = Color(0xFF252A25)
-internal val LightOnSurfaceVariant = Color(0xFF5A6158) // captions, datas
-internal val LightError = Color(0xFFA8543F) // terracota terroso, nunca vermelho puro
-internal val LightOnError = Color(0xFFFBF7F2)
-internal val LightSuccess = Color(0xFF5E7A5A) // estados positivos acessíveis
+// Light mode — natural paper, mineral ink and a quieter botanical sage.
+internal val LightBackground = Color(0xFFF6F1E7) // papel quente (legacy WarmPaper)
+internal val LightSurface = Color(0xFFFBF8F1) // papel interno
+internal val LightElevatedSurface = Color(0xFFFFFCF5) // diálogo / folha elevada
+internal val LightSurfaceVariant = Color(0xFFEDE9DE) // campos e grupos discretos
+internal val LightPrimary = Color(0xFF596C5A) // sálvia mineral (legacy Sage)
+internal val LightOnPrimary = Color(0xFFFFFBF3)
+internal val LightPrimaryContainer = Color(0xFFDFE7DA) // seleção delicada
+internal val LightOnPrimaryContainer = Color(0xFF263329)
+internal val LightSecondary = Color(0xFF7D9079)
+internal val LightOnSecondary = Color(0xFFFFFBF3)
+internal val LightTertiary = Color(0xFF9AAA91) // botânicos e sinais periféricos
+internal val LightOnTertiary = Color(0xFF1F2B21)
+internal val LightOutline = Color(0xFFD2CCBE)
+internal val LightOutlineVariant = Color(0xFFE5DED1) // divisores de baixa presença
+internal val LightOnBackground = Color(0xFF242823) // tinta principal (legacy Charcoal)
+internal val LightOnSurface = Color(0xFF242823)
+internal val LightOnSurfaceVariant = Color(0xFF5B6259) // captions e datas
+internal val LightError = Color(0xFF9A5947) // terracota, nunca vermelho puro
+internal val LightOnError = Color(0xFFFFF8F3)
+internal val LightSuccess = Color(0xFF526D53)
 
-// Dark mode — never a pure inversion: deep charcoal-green with lighter sage.
-internal val DarkBackground = Color(0xFF1E2320) // verde-carvão (legacy WarmPaperDark)
-internal val DarkSurface = Color(0xFF262C28)
-internal val DarkSurfaceVariant = Color(0xFF303732)
-internal val DarkPrimary = Color(0xFFA8B9A0) // sálvia claro
-internal val DarkOnPrimary = Color(0xFF1E2320)
-internal val DarkSecondary = Color(0xFF859980)
-internal val DarkOutline = Color(0xFF404A42)
-internal val DarkOutlineVariant = Color(0xFF333B36)
-internal val DarkOnBackground = Color(0xFFEFEFE9)
-internal val DarkOnSurface = Color(0xFFEFEFE9)
-internal val DarkOnSurfaceVariant = Color(0xFFB9BDB2)
-internal val DarkError = Color(0xFFC87B63) // terracota claro
-internal val DarkOnError = Color(0xFF2A2220)
+// Dark mode — warm charcoal, never hard black and never a literal inversion.
+internal val DarkBackground = Color(0xFF1C211D) // carvão quente (legacy WarmPaperDark)
+internal val DarkSurface = Color(0xFF242A25)
+internal val DarkElevatedSurface = Color(0xFF2A302B)
+internal val DarkSurfaceVariant = Color(0xFF303731)
+internal val DarkPrimary = Color(0xFFB2C0A9) // sálvia de baixa luminosidade
+internal val DarkOnPrimary = Color(0xFF1F281F)
+internal val DarkPrimaryContainer = Color(0xFF39463A)
+internal val DarkOnPrimaryContainer = Color(0xFFDCE7D7)
+internal val DarkSecondary = Color(0xFF93A58E)
+internal val DarkOnSecondary = Color(0xFF182019)
+internal val DarkTertiary = Color(0xFF879A82)
+internal val DarkOnTertiary = Color(0xFF172018)
+internal val DarkOutline = Color(0xFF4B554C)
+internal val DarkOutlineVariant = Color(0xFF363E37)
+internal val DarkOnBackground = Color(0xFFECEDE6)
+internal val DarkOnSurface = Color(0xFFECEDE6)
+internal val DarkOnSurfaceVariant = Color(0xFFBDC2B8)
+internal val DarkError = Color(0xFFD08A72)
+internal val DarkOnError = Color(0xFF2D201C)
 
 // Legacy aliases (keep existing call sites working)
 internal val Sage = LightPrimary
