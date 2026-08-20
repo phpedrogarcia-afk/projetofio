@@ -1,5 +1,6 @@
 package com.projetofio.app.ui
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -34,13 +35,14 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -117,7 +119,7 @@ sealed class ReturnPolicy {
     data object Never : ReturnPolicy()
 }
 
-private enum class MainSurface { HOME, ARCHIVE, SETTINGS }
+private enum class MainSurface { SAVE, FIND, ARCHIVE, SETTINGS }
 
 @Composable
 fun FioApp(
@@ -132,7 +134,7 @@ fun FioApp(
     onSelectImport: () -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    var surface by remember { mutableStateOf(MainSurface.HOME) }
+    var surface by remember { mutableStateOf(MainSurface.SAVE) }
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
     val isSaved = state.savedNotice
@@ -156,20 +158,37 @@ fun FioApp(
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
+        bottomBar = {
+            if (surface != MainSurface.SETTINGS) {
+                FioPrimaryNavigation(
+                    selected = surface,
+                    onSelect = { destination ->
+                        focusManager.clearFocus()
+                        keyboardController?.hide()
+                        surface = destination
+                    },
+                )
+            }
+        },
     ) { padding ->
         when (surface) {
-            MainSurface.HOME -> HomeScreen(
+            MainSurface.SAVE -> HomeScreen(
                 state = state,
                 viewModel = viewModel,
                 padding = padding,
-                onOpenArchive = { surface = MainSurface.ARCHIVE },
+                onOpenSettings = { surface = MainSurface.SETTINGS },
+            )
+            MainSurface.FIND -> SearchScreen(
+                state = state,
+                viewModel = viewModel,
+                padding = padding,
                 onOpenSettings = { surface = MainSurface.SETTINGS },
             )
             MainSurface.ARCHIVE -> ArchiveScreen(
                 state = state,
                 viewModel = viewModel,
                 padding = padding,
-                onBack = { surface = MainSurface.HOME },
+                onOpenSettings = { surface = MainSurface.SETTINGS },
             )
             MainSurface.SETTINGS -> SettingsScreen(
                 state = state,
@@ -180,11 +199,54 @@ fun FioApp(
                 authorizeFresh = authorizeFresh,
                 onExportMarkdown = onExportMarkdown,
                 onExportText = onExportText,
-                onBack = { surface = MainSurface.HOME },
+                onBack = { surface = MainSurface.SAVE },
                 onEnableReturns = onEnableReturns,
                 onOpenPendingReturn = onOpenPendingReturn,
                 onSelectImport = onSelectImport,
             )
+        }
+    }
+}
+
+@Composable
+private fun FioPrimaryNavigation(
+    selected: MainSurface,
+    onSelect: (MainSurface) -> Unit,
+) {
+    val destinations = listOf(
+        Triple(MainSurface.SAVE, "Guardar", R.drawable.ic_write),
+        Triple(MainSurface.FIND, "Encontrar", R.drawable.ic_find),
+        Triple(MainSurface.ARCHIVE, "Arquivo", R.drawable.ic_archive),
+    )
+    Column {
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
+        NavigationBar(
+            containerColor = MaterialTheme.colorScheme.surface,
+            tonalElevation = 0.dp,
+        ) {
+            destinations.forEach { (destination, label, icon) ->
+                NavigationBarItem(
+                    selected = selected == destination,
+                    onClick = { onSelect(destination) },
+                    icon = {
+                        Icon(
+                            painter = painterResource(icon),
+                            contentDescription = null,
+                        )
+                    },
+                    label = { Text(label, style = MaterialTheme.typography.labelMedium) },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        selectedTextColor = MaterialTheme.colorScheme.primary,
+                        indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    ),
+                    modifier = Modifier
+                        .heightIn(min = 64.dp)
+                        .semantics { contentDescription = "Abrir $label" },
+                )
+            }
         }
     }
 }
@@ -199,12 +261,10 @@ private fun HomeScreen(
     state: FioUiState,
     viewModel: FioViewModel,
     padding: PaddingValues,
-    onOpenArchive: () -> Unit,
     onOpenSettings: () -> Unit,
 ) {
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
-    var menuOpen by remember { mutableStateOf(false) }
     var timeSheet by remember { mutableStateOf(false) }
     var dateSheet by remember { mutableStateOf(false) }
     var policy by remember { mutableStateOf<ReturnPolicy>(ReturnPolicy.Someday) }
@@ -222,38 +282,31 @@ private fun HomeScreen(
             .padding(padding)
             .padding(horizontal = FioSpace.s6, vertical = FioSpace.s5),
     ) {
-        // Top row: brand + overflow menu (ADR-004: archive/settings
-        // discoverable, never equal to writing)
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        // Top row: writing keeps the strongest brand treatment; only the
+        // secondary Settings action stays outside primary navigation.
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             Text(
                 text = "Fio",
                 style = MaterialTheme.typography.displayLarge,
                 color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.semantics { heading() },
+                modifier = Modifier.semantics {
+                    heading()
+                    contentDescription = "Tela Guardar"
+                },
             )
-            Spacer(Modifier.width(FioSpace.s2))
-            Box {
+            Spacer(Modifier.weight(1f))
+            TextButton(
+                onClick = onOpenSettings,
+                modifier = Modifier.heightIn(min = 48.dp),
+            ) {
                 Text(
-                    text = "⋯",
-                    style = MaterialTheme.typography.bodyLarge.copy(fontSize = 20.sp),
+                    text = "Ajustes",
+                    style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier
-                        .clickable(onClick = { menuOpen = true })
-                        .heightIn(min = 48.dp)
-                        .widthIn(min = 48.dp)
-                        .padding(12.dp)
-                        .semantics { contentDescription = "Mais opções" },
                 )
-                DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
-                    DropdownMenuItem(
-                        text = { Text("Arquivo") },
-                        onClick = { menuOpen = false; onOpenArchive() },
-                    )
-                    DropdownMenuItem(
-                        text = { Text("Configurações") },
-                        onClick = { menuOpen = false; onOpenSettings() },
-                    )
-                }
             }
         }
 
@@ -375,7 +428,8 @@ private fun HomeScreen(
                 .padding(top = FioSpace.s4)
                 .heightIn(min = 52.dp)
                 .scale(if (pressed) 0.98f else 1f)
-                .alpha(if (pressed) 0.92f else 1f),
+                .alpha(if (pressed) 0.92f else 1f)
+                .semantics { contentDescription = "Guardar lembrança" },
         ) {
             Text(if (state.saving) "Guardando…" else "Guardar", style = MaterialTheme.typography.labelMedium)
         }
@@ -521,16 +575,16 @@ private fun returnPolicyLabel(days: Int): String = when (days) {
 }
 
 // ===========================================================================
-// ARCHIVE — typographic grouping by month, temporal distance as secondary
-// line, no cards (the system's rule: cards only for elevated objects).
+// FIND — deliberate retrieval has its own quiet surface. It never shares the
+// chronological Archive list and never affects Returns.
 // ===========================================================================
 
 @Composable
-private fun ArchiveScreen(
+private fun SearchScreen(
     state: FioUiState,
     viewModel: FioViewModel,
     padding: PaddingValues,
-    onBack: () -> Unit,
+    onOpenSettings: () -> Unit,
 ) {
     var reading by remember { mutableStateOf<Entry?>(null) }
     var editing by remember { mutableStateOf<Entry?>(null) }
@@ -541,7 +595,196 @@ private fun ArchiveScreen(
             entry = entry,
             onBack = { reading = null },
             onReedit = { text -> viewModel.onDraftChanged(text) },
+            contentPadding = padding,
+            onEdit = {
+                reading = null
+                editing = entry
+            },
+            onDelete = {
+                reading = null
+                deleting = entry
+            },
         )
+        return
+    }
+    editing?.let { entry ->
+        EditEntryDialog(
+            entry = entry,
+            onDismiss = { editing = null },
+            onSave = { content ->
+                viewModel.editEntry(entry.id, content)
+                editing = null
+            },
+        )
+    }
+    deleting?.let { entry ->
+        AlertDialog(
+            onDismissRequest = { deleting = null },
+            title = { Text("Mover para Excluídos recentemente?") },
+            text = { Text("Você poderá recuperar esta entrada por 30 dias.") },
+            confirmButton = {
+                TextButton(onClick = { viewModel.deleteEntry(entry.id); deleting = null }) {
+                    Text("Mover")
+                }
+            },
+            dismissButton = { TextButton(onClick = { deleting = null }) { Text("Cancelar") } },
+        )
+    }
+
+    LazyColumn(
+        modifier = Modifier.fillMaxSize().padding(padding),
+        contentPadding = PaddingValues(horizontal = FioSpace.s4, vertical = FioSpace.s5),
+        verticalArrangement = Arrangement.spacedBy(FioSpace.s1),
+    ) {
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    "Encontrar",
+                    style = MaterialTheme.typography.headlineMedium,
+                    modifier = Modifier.semantics {
+                        heading()
+                        contentDescription = "Tela Encontrar"
+                    },
+                )
+                Spacer(Modifier.weight(1f))
+                TextButton(
+                    onClick = onOpenSettings,
+                    modifier = Modifier.heightIn(min = 48.dp),
+                ) {
+                    Text(
+                        "Ajustes",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+        }
+        item {
+            Text(
+                "Procure uma palavra ou frase que você escreveu.",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(bottom = FioSpace.s3),
+            )
+        }
+        item { ArchiveSearchField(terms = state.searchTerms, onChanged = viewModel::onSearchChanged) }
+
+        if (state.searchTerms.isBlank()) {
+            item {
+                Column(modifier = Modifier.padding(top = FioSpace.s6)) {
+                    BotanicalMotif(firstEntryAt = state.entries.lastOrNull()?.originalCreatedAt)
+                    Spacer(Modifier.height(FioSpace.s3))
+                    Text(
+                        "O Fio encontra suas palavras como foram guardadas.",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Text(
+                        "Ele não responde por você nem interpreta o que viveu.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = FioSpace.s1),
+                    )
+                }
+            }
+        } else {
+            when {
+                state.searchLoading -> item {
+                    CircularProgressIndicator(modifier = Modifier.padding(vertical = FioSpace.s5))
+                }
+                state.searchError != null -> item {
+                    Text(
+                        state.searchError,
+                        color = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.padding(vertical = FioSpace.s3),
+                    )
+                }
+                state.searchResult == null -> Unit
+                else -> {
+                    val result = checkNotNull(state.searchResult)
+                    item {
+                        Text(
+                            text = when (result.hits.size) {
+                                0 -> "Nenhum resultado"
+                                1 -> "1 resultado"
+                                else -> "${result.hits.size} resultados"
+                            },
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier
+                                .padding(vertical = FioSpace.s2)
+                                .semantics { liveRegion = LiveRegionMode.Polite },
+                        )
+                    }
+                    if (result.sealedCount > 0) {
+                        item {
+                            Text(
+                                text = "${result.sealedCount} nota(s) selada(s) permaneceram ocultas.",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(bottom = FioSpace.s2),
+                            )
+                        }
+                    }
+                    if (result.hits.isEmpty()) {
+                        item {
+                            Text(
+                                text = "Nada no Arquivo contém essas palavras.",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(vertical = FioSpace.s3),
+                            )
+                        }
+                    }
+                    items(result.hits, key = { it.entry.id }) { hit ->
+                        ArchiveSearchHitRow(hit = hit, onOpen = { reading = hit.entry })
+                        HorizontalDivider(
+                            color = MaterialTheme.colorScheme.outlineVariant,
+                            thickness = 0.5.dp,
+                        )
+                    }
+                }
+            }
+        }
+        item { Spacer(Modifier.height(FioSpace.s5)) }
+    }
+}
+
+// ===========================================================================
+// ARCHIVE — typographic grouping by month, temporal distance as secondary
+// line, no cards (the system's rule: cards only for elevated objects).
+// ===========================================================================
+
+@Composable
+private fun ArchiveScreen(
+    state: FioUiState,
+    viewModel: FioViewModel,
+    padding: PaddingValues,
+    onOpenSettings: () -> Unit,
+) {
+    var reading by remember { mutableStateOf<Entry?>(null) }
+    var editing by remember { mutableStateOf<Entry?>(null) }
+    var deleting by remember { mutableStateOf<Entry?>(null) }
+
+    reading?.let { entry ->
+        NoteScreen(
+            entry = entry,
+            onBack = { reading = null },
+            onReedit = { text -> viewModel.onDraftChanged(text) },
+            contentPadding = padding,
+            onEdit = {
+                reading = null
+                editing = entry
+            },
+            onDelete = {
+                reading = null
+                deleting = entry
+            },
+        )
+        return
     }
     if (editing != null) {
         EditEntryDialog(
@@ -573,83 +816,47 @@ private fun ArchiveScreen(
         verticalArrangement = Arrangement.spacedBy(FioSpace.s1),
     ) {
         item {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 Text(
-                    text = "← ",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier
-                        .clickable(onClick = onBack)
-                        .heightIn(min = 48.dp)
-                        .widthIn(min = 48.dp)
-                        .padding(12.dp)
-                        .semantics { contentDescription = "Voltar" },
+                    "Arquivo",
+                    style = MaterialTheme.typography.headlineMedium,
+                    modifier = Modifier.semantics {
+                        heading()
+                        contentDescription = "Tela Arquivo"
+                    },
                 )
-                Text("Arquivo", style = MaterialTheme.typography.headlineMedium, modifier = Modifier.semantics { heading() })
+                Spacer(Modifier.weight(1f))
+                TextButton(
+                    onClick = onOpenSettings,
+                    modifier = Modifier.heightIn(min = 48.dp),
+                ) {
+                    Text(
+                        "Ajustes",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
         }
-        item { Spacer(Modifier.height(FioSpace.s3)) }
-
-        // FIND — the search lens over the archive (Encontrar). The query is
-        // runtime-only: it is never persisted, logged, or sent to analytics.
-        // Search retrieves the user's own words with factual context; it
-        // never answers autobiographical questions on the user's behalf.
-        item { ArchiveSearchField(terms = state.searchTerms, onChanged = viewModel::onSearchChanged) }
+        item {
+            Text(
+                text = when (state.entries.size) {
+                    0 -> "Suas palavras, em ordem do tempo."
+                    1 -> "1 lembrança guardada. Toque para ler, editar ou excluir."
+                    else -> "${state.entries.size} lembranças guardadas. Toque em uma para ler, editar ou excluir."
+                },
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(bottom = FioSpace.s3),
+            )
+        }
 
         if (state.loading) item { CircularProgressIndicator() }
         if (state.archiveError) {
             item { Text("O Arquivo não pôde ser aberto com segurança. Nada foi apagado.", color = MaterialTheme.colorScheme.error) }
-        } else if (state.searchTerms.isNotBlank()) {
-            // FIND — results render inline in the list scope so the
-            // LazyColumn receiver is the one actually emitting `item`.
-            when {
-                state.searchLoading -> item {
-                    CircularProgressIndicator(modifier = Modifier.padding(vertical = FioSpace.s5))
-                }
-                state.searchError != null -> item {
-                    Text(state.searchError, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(vertical = FioSpace.s3))
-                }
-                state.searchResult == null -> {} // idle while the debounced query settles
-                else -> {
-                    val result = checkNotNull(state.searchResult)
-                    item {
-                        Text(
-                            text = "${result.hits.size} resultado(s) para “${state.searchTerms}”",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier
-                                .padding(vertical = FioSpace.s2)
-                                // Announce result counts to TalkBack without
-                                // stealing focus from the search field.
-                                .semantics { liveRegion = LiveRegionMode.Polite },
-                        )
-                    }
-                    if (result.sealedCount > 0) {
-                        item {
-                            Text(
-                                text = "${result.sealedCount} nota(s) selada(s) não pesquisável(is).",
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(bottom = FioSpace.s2),
-                            )
-                        }
-                    }
-                    if (result.hits.isEmpty()) {
-                        item {
-                            Text(
-                                text = "Nada no arquivo contém essas palavras.",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(vertical = FioSpace.s3),
-                            )
-                        }
-                    }
-                    items(result.hits, key = { it.entry.id }) { hit ->
-                        ArchiveSearchHitRow(hit = hit, onOpen = { reading = hit.entry })
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
-                    }
-                }
-            }
         } else if (!state.loading && state.entries.isEmpty()) {
             item {
                 Column(modifier = Modifier.padding(vertical = FioSpace.s7)) {
@@ -674,8 +881,6 @@ private fun ArchiveScreen(
                     ArchiveRow(
                         entry = entry,
                         onOpen = { reading = entry },
-                        onEdit = { editing = entry },
-                        onDelete = { deleting = entry },
                     )
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
                 }
@@ -691,25 +896,22 @@ private fun ArchiveScreen(
 
 @Composable
 private fun ArchiveSearchField(terms: String, onChanged: (String) -> Unit) {
-    var clearable by remember { mutableStateOf(terms.isNotBlank()) }
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
     OutlinedTextField(
         value = terms,
-        onValueChange = {
-            clearable = it.isNotBlank()
-            onChanged(it)
-        },
+        onValueChange = onChanged,
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(min = 48.dp)
             // Label comes from the placeholder (read once by TalkBack);
             // avoid a duplicated contentDescription on the field itself.
             .semantics(mergeDescendants = true) {},
-        placeholder = { Text("Buscar no arquivo", style = MaterialTheme.typography.bodyLarge) },
+        label = { Text("Buscar nas suas palavras") },
+        placeholder = { Text("Uma palavra ou frase", style = MaterialTheme.typography.bodyLarge) },
         singleLine = true,
-            trailingIcon = {
-            if (clearable) {
+        trailingIcon = {
+            if (terms.isNotBlank()) {
                 TextButton(
                     onClick = {
                         onChanged("")
@@ -803,42 +1005,46 @@ private fun temporalDistance(entry: Entry): String {
 }
 
 @Composable
-private fun ArchiveRow(entry: Entry, onOpen: () -> Unit, onEdit: () -> Unit, onDelete: () -> Unit) {
+private fun ArchiveRow(entry: Entry, onOpen: () -> Unit) {
     SelectionContainer {
-        Column(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable(onClick = onOpen)
-                .padding(vertical = FioSpace.s3),
+                .padding(vertical = FioSpace.s3)
+                .semantics(mergeDescendants = true) {
+                    contentDescription = "Abrir lembrança de ${displayDate(entry)} para ler ou editar. ${entry.content}"
+                },
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(modifier = Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        displayDate(entry),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Spacer(Modifier.width(FioSpace.s2))
+                    Text(
+                        temporalDistance(entry),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.tertiary,
+                    )
+                }
                 Text(
-                    displayDate(entry),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Spacer(Modifier.width(FioSpace.s2))
-                Text(
-                    temporalDistance(entry),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.tertiary,
+                    text = entry.content,
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(top = FioSpace.s1),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
             Text(
-                text = entry.content,
-                style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.padding(top = FioSpace.s1),
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
+                "›",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(start = FioSpace.s3),
             )
-            Row(modifier = Modifier.padding(top = FioSpace.s2), horizontalArrangement = Arrangement.spacedBy(FioSpace.s2)) {
-                TextButton(onClick = onEdit, modifier = Modifier.heightIn(min = 40.dp)) {
-                    Text("Editar", fontSize = 13.sp)
-                }
-                TextButton(onClick = onDelete, modifier = Modifier.heightIn(min = 40.dp)) {
-                    Text("Excluir", fontSize = 13.sp, color = MaterialTheme.colorScheme.error)
-                }
-            }
         }
     }
 }
@@ -852,10 +1058,17 @@ private fun NoteScreen(
     entry: Entry,
     onBack: () -> Unit,
     onReedit: (String) -> Unit = {},
+    contentPadding: PaddingValues = PaddingValues(),
+    onEdit: (() -> Unit)? = null,
+    onDelete: (() -> Unit)? = null,
 ) {
+    BackHandler(onBack = onBack)
     var returning by remember { mutableStateOf(false) }
     var returned by remember { mutableStateOf(false) }
-    Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+    Surface(
+        modifier = Modifier.fillMaxSize().padding(contentPadding),
+        color = MaterialTheme.colorScheme.background,
+    ) {
         Column(modifier = Modifier.padding(horizontal = FioSpace.s4, vertical = FioSpace.s5)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
@@ -884,6 +1097,30 @@ private fun NoteScreen(
                 )
             }
             Spacer(Modifier.height(FioSpace.s5))
+            if (onEdit != null || onDelete != null) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(FioSpace.s2),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    onEdit?.let { edit ->
+                        TextButton(
+                            onClick = edit,
+                            modifier = Modifier.heightIn(min = 48.dp),
+                        ) {
+                            Text("Editar")
+                        }
+                    }
+                    onDelete?.let { delete ->
+                        TextButton(
+                            onClick = delete,
+                            modifier = Modifier.heightIn(min = 48.dp),
+                        ) {
+                            Text("Excluir", color = MaterialTheme.colorScheme.error)
+                        }
+                    }
+                }
+                Spacer(Modifier.height(FioSpace.s2))
+            }
             Row {
                 Text(
                     text = if (returned) "Reescrever esta nota?" else "Devolver para agora", // G2: factual — a antiga interpretativa foi neutralizada
@@ -966,8 +1203,10 @@ private fun EditEntryDialog(entry: Entry, onDismiss: () -> Unit, onSave: (String
 }
 
 // ===========================================================================
-// SETTINGS — same content, new system.
+// SETTINGS — a short map first, one understandable subject at a time.
 // ===========================================================================
+
+private enum class SettingsPage { OVERVIEW, PRIVACY, RETURNS, IMPORT, EXPORT, DELETED }
 
 @Composable
 private fun SettingsScreen(
@@ -984,13 +1223,17 @@ private fun SettingsScreen(
     onOpenPendingReturn: (String) -> Unit,
     onSelectImport: () -> Unit,
 ) {
+    var page by remember { mutableStateOf(SettingsPage.OVERVIEW) }
+    BackHandler {
+        if (page == SettingsPage.OVERVIEW) onBack() else page = SettingsPage.OVERVIEW
+    }
     var permanentDelete by remember { mutableStateOf<Entry?>(null) }
     var confirmReturnConsent by remember { mutableStateOf(false) }
     var rollbackBatch by remember { mutableStateOf<ImportBatch?>(null) }
     if (confirmReturnConsent) {
         AlertDialog(
             onDismissRequest = { confirmReturnConsent = false },
-            title = { Text("Ativar devoluções?") },
+            title = { Text("Ativar lembranças que voltam?") },
             text = {
                 Text(
                     "O Fio poderá, de vez em quando, mostrar uma notificação discreta quando uma entrada antiga estiver disponível. " +
@@ -1001,7 +1244,7 @@ private fun SettingsScreen(
                 TextButton(onClick = {
                     confirmReturnConsent = false
                     onEnableReturns()
-                }) { Text("Ativar devoluções") }
+                }) { Text("Ativar") }
             },
             dismissButton = { TextButton(onClick = { confirmReturnConsent = false }) { Text("Agora não") } },
         )
@@ -1010,7 +1253,12 @@ private fun SettingsScreen(
         AlertDialog(
             onDismissRequest = { permanentDelete = null },
             title = { Text("Excluir permanentemente?") },
-            text = { Text("Esta ação não pode ser desfeita. O Fio não promete apagamento físico seguro do armazenamento.") },
+            text = {
+                Text(
+                    "Esta ação não pode ser desfeita. A nota deixará de aparecer no Fio e não poderá ser recuperada pelo aplicativo. " +
+                        "O armazenamento do celular ainda pode manter vestígios temporários.",
+                )
+            },
             confirmButton = {
                 TextButton(
                     onClick = { authorizeFresh { viewModel.permanentlyDelete(entry.id) }; permanentDelete = null },
@@ -1024,190 +1272,520 @@ private fun SettingsScreen(
     rollbackBatch?.let { batch ->
         AlertDialog(
             onDismissRequest = { rollbackBatch = null },
-            title = { Text("Desfazer este lote?") },
+            title = { Text("Desfazer esta importação?") },
             text = { Text("Entradas importadas e não editadas irão para Excluídos recentemente. Entradas editadas depois da importação serão preservadas.") },
             confirmButton = {
                 TextButton(onClick = {
                     viewModel.rollbackImport(batch.id)
                     rollbackBatch = null
-                }) { Text("Desfazer lote") }
+                }) { Text("Desfazer importação") }
             },
             dismissButton = { TextButton(onClick = { rollbackBatch = null }) { Text("Cancelar") } },
         )
     }
 
+    when (page) {
+        SettingsPage.OVERVIEW -> SettingsOverview(
+            state = state,
+            padding = padding,
+            onBack = onBack,
+            onOpen = { page = it },
+        )
+        SettingsPage.PRIVACY -> PrivacySettingsPage(
+            state = state,
+            padding = padding,
+            authenticationAvailable = authenticationAvailable,
+            authorizeFresh = authorizeFresh,
+            onChoose = viewModel::setAppLockMode,
+            onBack = { page = SettingsPage.OVERVIEW },
+        )
+        SettingsPage.RETURNS -> ReturnsSettingsPage(
+            state = state,
+            padding = padding,
+            onAskEnable = { confirmReturnConsent = true },
+            onPause = viewModel::pauseReturns,
+            onResume = viewModel::resumeReturns,
+            onQuietHours = viewModel::setQuietHours,
+            onOpenPendingReturn = onOpenPendingReturn,
+            onBack = { page = SettingsPage.OVERVIEW },
+        )
+        SettingsPage.IMPORT -> ImportSettingsPage(
+            state = state,
+            padding = padding,
+            viewModel = viewModel,
+            onSelectImport = onSelectImport,
+            onRollback = { rollbackBatch = it },
+            onBack = { page = SettingsPage.OVERVIEW },
+        )
+        SettingsPage.EXPORT -> ExportSettingsPage(
+            padding = padding,
+            exportMessage = exportMessage,
+            onExportMarkdown = onExportMarkdown,
+            onExportText = onExportText,
+            onBack = { page = SettingsPage.OVERVIEW },
+        )
+        SettingsPage.DELETED -> DeletedSettingsPage(
+            entries = state.deletedEntries,
+            padding = padding,
+            onRecover = viewModel::recoverEntry,
+            onPurge = { permanentDelete = it },
+            onBack = { page = SettingsPage.OVERVIEW },
+        )
+    }
+}
+
+@Composable
+private fun SettingsOverview(
+    state: FioUiState,
+    padding: PaddingValues,
+    onBack: () -> Unit,
+    onOpen: (SettingsPage) -> Unit,
+) {
     LazyColumn(
         modifier = Modifier.fillMaxSize().padding(padding),
         contentPadding = PaddingValues(horizontal = FioSpace.s4, vertical = FioSpace.s5),
         verticalArrangement = Arrangement.spacedBy(FioSpace.s2),
     ) {
+        item { SettingsHeader("Ajustes", onBack, "Voltar") }
         item {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = "← ",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier
-                        .clickable(onClick = onBack)
-                        .heightIn(min = 48.dp)
-                        .widthIn(min = 48.dp)
-                        .padding(12.dp)
-                        .semantics { contentDescription = "Voltar" },
+            Text(
+                "Escolha o que você quer controlar. Cada item explica o efeito antes de mudar alguma coisa.",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(bottom = FioSpace.s3),
+            )
+        }
+        item { SectionTitle("Privacidade") }
+        item {
+            SettingsNavigationRow(
+                title = "Proteção ao abrir",
+                summary = appLockSummary(state.settings.appLockMode),
+                onClick = { onOpen(SettingsPage.PRIVACY) },
+            )
+        }
+        if (state.m2EngineeringEnabled) {
+            item { SectionTitle("Lembranças") }
+            item {
+                SettingsNavigationRow(
+                    title = "Lembranças que voltam",
+                    summary = returnsSummary(state.settings.returnConsentState),
+                    onClick = { onOpen(SettingsPage.RETURNS) },
                 )
-                Text("Configurações", style = MaterialTheme.typography.headlineMedium, modifier = Modifier.semantics { heading() })
             }
         }
-        item { Spacer(Modifier.height(FioSpace.s3)) }
-        item { SectionTitle("Privacidade") }
-        item { Text("O conteúdo é ocultado nas capturas e na tela de aplicativos recentes. O bloqueio é opcional e usa a proteção do seu aparelho.") }
-        item {
-            if (!authenticationAvailable) {
-                Text("Configure uma tela de bloqueio compatível no Android para usar o bloqueio do Fio.")
+        item { SectionTitle("Seus dados") }
+        if (state.m3EngineeringEnabled) {
+            item {
+                SettingsNavigationRow(
+                    title = "Importar notas",
+                    summary = "Trazer textos e datas de um arquivo TXT ou Markdown.",
+                    onClick = { onOpen(SettingsPage.IMPORT) },
+                )
             }
+        }
+        item {
+            SettingsNavigationRow(
+                title = "Exportar uma cópia",
+                summary = "Guardar todas as suas notas em um arquivo legível.",
+                onClick = { onOpen(SettingsPage.EXPORT) },
+            )
+        }
+        item {
+            SettingsNavigationRow(
+                title = "Excluídos recentemente",
+                summary = when (state.deletedEntries.size) {
+                    0 -> "Nenhuma nota esperando exclusão definitiva."
+                    1 -> "1 nota pode ser recuperada por até 30 dias."
+                    else -> "${state.deletedEntries.size} notas podem ser recuperadas por até 30 dias."
+                },
+                onClick = { onOpen(SettingsPage.DELETED) },
+            )
+        }
+        item {
+            Text(
+                buildString {
+                    append("Nesta versão, suas notas ficam neste aparelho. Não há conta, sincronização ou envio das suas palavras para análise de uso.")
+                    if (!state.m2EngineeringEnabled) append(" O recurso de fazer lembranças antigas voltarem ainda não está ativo neste aplicativo instalado.")
+                    if (!state.m3EngineeringEnabled) append(" A importação de arquivos ainda não está disponível aqui.")
+                },
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = FioSpace.s5),
+            )
+        }
+    }
+}
+
+@Composable
+private fun PrivacySettingsPage(
+    state: FioUiState,
+    padding: PaddingValues,
+    authenticationAvailable: Boolean,
+    authorizeFresh: (() -> Unit) -> Unit,
+    onChoose: (AppLockMode) -> Unit,
+    onBack: () -> Unit,
+) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize().padding(padding),
+        contentPadding = PaddingValues(horizontal = FioSpace.s4, vertical = FioSpace.s5),
+        verticalArrangement = Arrangement.spacedBy(FioSpace.s3),
+    ) {
+        item { SettingsHeader("Proteção ao abrir", onBack, "Voltar aos Ajustes") }
+        item {
+            Text(
+                "Escolha quando o Fio deve pedir a impressão digital, o rosto ou o código configurado no seu Android.",
+                style = MaterialTheme.typography.bodyLarge,
+            )
+        }
+        item {
+            Text(
+                "O conteúdo também fica oculto na tela de aplicativos recentes. Isso não substitui o bloqueio do próprio aparelho.",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        if (!authenticationAvailable) {
+            item {
+                Text(
+                    "Para ativar esta proteção, primeiro configure um bloqueio de tela no Android.",
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
+        }
+        item {
             AppLockChoices(
                 selected = state.settings.appLockMode,
                 enabled = authenticationAvailable,
-                onChoose = { mode -> authorizeFresh { viewModel.setAppLockMode(mode) } },
+                onChoose = { mode -> authorizeFresh { onChoose(mode) } },
             )
         }
-        item { HorizontalDivider(modifier = Modifier.padding(vertical = FioSpace.s2)) }
-        item { HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp)) }
-        if (state.m2EngineeringEnabled) {
-            item { SectionTitle("Devoluções — validação") }
-            item {
-                Text("Recurso isolado para testes sintéticos. Nenhuma palavra é colocada na notificação.")
+    }
+}
+
+@Composable
+private fun ReturnsSettingsPage(
+    state: FioUiState,
+    padding: PaddingValues,
+    onAskEnable: () -> Unit,
+    onPause: () -> Unit,
+    onResume: () -> Unit,
+    onQuietHours: (Int, Int) -> Unit,
+    onOpenPendingReturn: (String) -> Unit,
+    onBack: () -> Unit,
+) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize().padding(padding),
+        contentPadding = PaddingValues(horizontal = FioSpace.s4, vertical = FioSpace.s5),
+        verticalArrangement = Arrangement.spacedBy(FioSpace.s3),
+    ) {
+        item { SettingsHeader("Lembranças que voltam", onBack, "Voltar aos Ajustes") }
+        item {
+            Text(
+                "Quando uma nota antiga estiver disponível, o Fio pode mostrar uma notificação discreta: “Algo seu voltou.” A notificação nunca mostra suas palavras.",
+                style = MaterialTheme.typography.bodyLarge,
+            )
+        }
+        item {
+            Text(
+                "Estado atual: ${returnsSummary(state.settings.returnConsentState)}",
+                fontWeight = FontWeight.SemiBold,
+            )
+        }
+        when (state.settings.returnConsentState) {
+            ReturnConsentState.NOT_CONFIGURED -> item {
+                Button(
+                    onClick = onAskEnable,
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                ) { Text("Ativar") }
             }
-            when (state.settings.returnConsentState) {
-                ReturnConsentState.NOT_CONFIGURED -> item {
-                    OutlinedButton(
-                        onClick = { confirmReturnConsent = true },
-                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
-                    ) { Text("Conhecer e ativar") }
-                }
-                ReturnConsentState.ENABLED -> {
-                    item {
-                        OutlinedButton(
-                            onClick = viewModel::pauseReturns,
-                            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
-                        ) { Text("Pausar devoluções") }
-                    }
-                    item { Text("Horário silencioso atual: ${quietHoursLabel(state.settings.quietHoursStartMinute, state.settings.quietHoursEndMinute)}") }
-                    item {
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            OutlinedButton(onClick = { viewModel.setQuietHours(21 * 60, 8 * 60) }) { Text("21h–8h") }
-                            OutlinedButton(onClick = { viewModel.setQuietHours(22 * 60, 9 * 60) }) { Text("22h–9h") }
-                        }
-                    }
-                }
-                ReturnConsentState.PAUSED -> item {
-                    OutlinedButton(
-                        onClick = viewModel::resumeReturns,
-                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
-                    ) { Text("Retomar devoluções") }
-                }
-            }
-            if (state.settings.notificationPermissionObserved == NotificationPermissionObserved.DENIED) {
-                item { Text("Notificações estão desativadas. O Fio continuará funcionando normalmente e não pedirá novamente aqui.") }
-            }
-            state.pendingReturnId?.let { id ->
+            ReturnConsentState.ENABLED -> {
                 item {
                     OutlinedButton(
-                        onClick = { onOpenPendingReturn(id) },
+                        onClick = onPause,
                         modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
-                    ) { Text("Abrir devolução disponível") }
+                    ) { Text("Pausar lembranças") }
                 }
-            }
-            state.returnError?.let { error -> item { Text(error, color = MaterialTheme.colorScheme.error) } }
-            item { HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp)) }
-        }
-        if (state.m3EngineeringEnabled) {
-            item { SectionTitle("Importar — validação") }
-            item { Text("Escolha um TXT ou Markdown UTF-8 com blocos e datas explícitos. A prévia não altera o Arquivo.") }
-            item {
-                OutlinedButton(
-                    onClick = onSelectImport,
-                    enabled = !state.importing,
-                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
-                ) { Text(if (state.importing) "Preparando…" else "Escolher arquivo") }
-            }
-            state.importPreview?.let { preview ->
+                item { SectionTitle("Horário sem notificações") }
                 item {
                     Text(
-                        "Prévia: ${preview.importableCount} novas, ${preview.duplicateCount} duplicadas, ${preview.issues.size} erros.",
-                        fontWeight = FontWeight.SemiBold,
+                        "Atual: ${quietHoursSentence(state.settings.quietHoursStartMinute, state.settings.quietHoursEndMinute)}",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                items(preview.items, key = { "preview-${preview.id}-${it.candidate.sourceIndex}" }) { item ->
-                    Card(modifier = Modifier.fillMaxWidth()) {
-                        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                            Text(displayImportDate(item.candidate.originalCreatedAt, item.candidate.originalTimeZone))
-                            Text(item.candidate.content, maxLines = 4, overflow = TextOverflow.Ellipsis)
-                            if (item.duplicate) Text("Duplicada — não será importada.", color = MaterialTheme.colorScheme.primary)
-                        }
-                    }
-                }
-                items(preview.issues, key = { "issue-${preview.id}-${it.sourceIndex}-${it.code}" }) { issue ->
-                    Text(importIssueLabel(issue.code), color = MaterialTheme.colorScheme.error)
-                }
                 item {
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Button(
-                            onClick = viewModel::commitImport,
-                            enabled = preview.canCommit && !state.importing,
-                            modifier = Modifier.heightIn(min = 48.dp),
-                        ) { Text("Importar ${preview.importableCount}") }
-                        TextButton(onClick = viewModel::cancelImportPreview) { Text("Cancelar") }
+                    Column(verticalArrangement = Arrangement.spacedBy(FioSpace.s2)) {
+                        OutlinedButton(
+                            onClick = { onQuietHours(21 * 60, 8 * 60) },
+                            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                        ) { Text("Não avisar das 21h às 8h") }
+                        OutlinedButton(
+                            onClick = { onQuietHours(22 * 60, 9 * 60) },
+                            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                        ) { Text("Não avisar das 22h às 9h") }
                     }
                 }
             }
-            state.importMessage?.let { message ->
-                item { Text(message, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }) }
+            ReturnConsentState.PAUSED -> item {
+                Button(
+                    onClick = onResume,
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                ) { Text("Retomar lembranças") }
             }
-            items(state.importBatches, key = { "batch-${it.id}" }) { batch ->
-                if (batch.status.name == "COMMITTED") {
-                    Card(modifier = Modifier.fillMaxWidth()) {
-                        Column(Modifier.padding(16.dp)) {
-                            Text("Lote: ${batch.importedCount} entradas", fontWeight = FontWeight.SemiBold)
-                            Text(batch.sourceFileName ?: "Nome do arquivo não mantido")
-                            TextButton(onClick = { rollbackBatch = batch }) { Text("Desfazer este lote") }
-                        }
-                    }
-                }
-            }
-            item { HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp)) }
         }
-        item { SectionTitle("Exportar") }
-        item { Text("O arquivo escolhido ficará fora da proteção do Fio. A exportação é local e não envia uma cópia para o Fio.") }
+        if (state.settings.notificationPermissionObserved == NotificationPermissionObserved.DENIED) {
+            item {
+                Text(
+                    "As notificações do Fio estão desligadas no Android. Suas notas continuam guardadas e você pode usar o app normalmente.",
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
+        }
+        state.pendingReturnId?.let { id ->
+            item {
+                OutlinedButton(
+                    onClick = { onOpenPendingReturn(id) },
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                ) { Text("Abrir lembrança disponível") }
+            }
+        }
+        state.returnError?.let { error -> item { Text(error, color = MaterialTheme.colorScheme.error) } }
+    }
+}
+
+@Composable
+private fun ImportSettingsPage(
+    state: FioUiState,
+    padding: PaddingValues,
+    viewModel: FioViewModel,
+    onSelectImport: () -> Unit,
+    onRollback: (ImportBatch) -> Unit,
+    onBack: () -> Unit,
+) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize().padding(padding),
+        contentPadding = PaddingValues(horizontal = FioSpace.s4, vertical = FioSpace.s5),
+        verticalArrangement = Arrangement.spacedBy(FioSpace.s3),
+    ) {
+        item { SettingsHeader("Importar notas", onBack, "Voltar aos Ajustes") }
         item {
-            Row(horizontalArrangement = Arrangement.spacedBy(FioSpace.s2)) {
-                OutlinedButton(onClick = onExportMarkdown) { Text("Markdown") }
-                OutlinedButton(onClick = onExportText) { Text("Texto") }
+            Text(
+                "Traga notas de um arquivo TXT ou Markdown. O Fio mostra uma prévia antes de guardar qualquer coisa.",
+                style = MaterialTheme.typography.bodyLarge,
+            )
+        }
+        item {
+            Text(
+                "O arquivo precisa ter datas explícitas. Notas repetidas são identificadas e não são importadas novamente.",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        item {
+            Button(
+                onClick = onSelectImport,
+                enabled = !state.importing,
+                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+            ) { Text(if (state.importing) "Preparando prévia…" else "Escolher arquivo") }
+        }
+        state.importPreview?.let { preview ->
+            item {
+                Text(
+                    "Prévia: ${preview.importableCount} novas, ${preview.duplicateCount} repetidas, ${preview.issues.size} com problema.",
+                    fontWeight = FontWeight.SemiBold,
+                )
+            }
+            items(preview.items, key = { "preview-${preview.id}-${it.candidate.sourceIndex}" }) { item ->
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Text(displayImportDate(item.candidate.originalCreatedAt, item.candidate.originalTimeZone))
+                        Text(item.candidate.content, maxLines = 4, overflow = TextOverflow.Ellipsis)
+                        if (item.duplicate) Text("Repetida — não será importada.", color = MaterialTheme.colorScheme.primary)
+                    }
+                }
+            }
+            items(preview.issues, key = { "issue-${preview.id}-${it.sourceIndex}-${it.code}" }) { issue ->
+                Text(importIssueLabel(issue.code), color = MaterialTheme.colorScheme.error)
+            }
+            item {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Button(
+                        onClick = viewModel::commitImport,
+                        enabled = preview.canCommit && !state.importing,
+                        modifier = Modifier.heightIn(min = 48.dp),
+                    ) { Text("Importar ${preview.importableCount}") }
+                    TextButton(onClick = viewModel::cancelImportPreview) { Text("Cancelar") }
+                }
+            }
+        }
+        state.importMessage?.let { message ->
+            item { Text(message, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }) }
+        }
+        if (state.importBatches.any { it.status.name == "COMMITTED" }) {
+            item { SectionTitle("Importações anteriores") }
+        }
+        items(state.importBatches, key = { "batch-${it.id}" }) { batch ->
+            if (batch.status.name == "COMMITTED") {
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(16.dp)) {
+                        Text("${batch.importedCount} notas importadas", fontWeight = FontWeight.SemiBold)
+                        Text(batch.sourceFileName ?: "O nome do arquivo não foi guardado")
+                        TextButton(onClick = { onRollback(batch) }) { Text("Desfazer esta importação") }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ExportSettingsPage(
+    padding: PaddingValues,
+    exportMessage: String?,
+    onExportMarkdown: () -> Unit,
+    onExportText: () -> Unit,
+    onBack: () -> Unit,
+) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize().padding(padding),
+        contentPadding = PaddingValues(horizontal = FioSpace.s4, vertical = FioSpace.s5),
+        verticalArrangement = Arrangement.spacedBy(FioSpace.s3),
+    ) {
+        item { SettingsHeader("Exportar uma cópia", onBack, "Voltar aos Ajustes") }
+        item {
+            Text(
+                "Crie um único arquivo com todas as suas notas, em ordem de data. Você poderá abrir esse arquivo sem o Fio.",
+                style = MaterialTheme.typography.bodyLarge,
+            )
+        }
+        item {
+            Text(
+                "A cópia ficará no local que você escolher e não terá a proteção do Fio. O conteúdo não é enviado para nós.",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        item {
+            Text(
+                "Se estiver em dúvida, escolha Texto (.txt): é o formato mais simples e abre em quase qualquer aplicativo. " +
+                    "Markdown (.md) preserva melhor títulos e datas para levar as notas a outro aplicativo compatível.",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        item {
+            Column(verticalArrangement = Arrangement.spacedBy(FioSpace.s2)) {
+                OutlinedButton(
+                    onClick = onExportText,
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                ) { Text("Criar arquivo de texto (.txt)") }
+                OutlinedButton(
+                    onClick = onExportMarkdown,
+                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                ) { Text("Criar arquivo Markdown (.md)") }
             }
         }
         exportMessage?.let { message ->
             item { Text(message, modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }) }
         }
-        item { HorizontalDivider(modifier = Modifier.padding(vertical = FioSpace.s2)) }
-        item { SectionTitle("Excluídos recentemente") }
-        if (state.deletedEntries.isEmpty()) {
-            item { Text("Nenhuma entrada excluída.") }
-        }
-        items(state.deletedEntries, key = { "deleted-${it.id}" }) { entry ->
-            DeletedRow(
-                entry = entry,
-                onRecover = { viewModel.recoverEntry(entry.id) },
-                onPurge = { permanentDelete = entry },
-            )
-        }
-        item { Spacer(Modifier.height(FioSpace.s5)) }
+    }
+}
+
+@Composable
+private fun DeletedSettingsPage(
+    entries: List<Entry>,
+    padding: PaddingValues,
+    onRecover: (String) -> Unit,
+    onPurge: (Entry) -> Unit,
+    onBack: () -> Unit,
+) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize().padding(padding),
+        contentPadding = PaddingValues(horizontal = FioSpace.s4, vertical = FioSpace.s5),
+        verticalArrangement = Arrangement.spacedBy(FioSpace.s2),
+    ) {
+        item { SettingsHeader("Excluídos recentemente", onBack, "Voltar aos Ajustes") }
         item {
             Text(
-                "M1 local: sem conta, sincronização, analytics ou devoluções ativas.",
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                "Notas excluídas podem ser recuperadas por 30 dias. Depois desse prazo, são removidas automaticamente.",
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.padding(bottom = FioSpace.s3),
+            )
+        }
+        if (entries.isEmpty()) {
+            item { Text("Nenhuma nota excluída.", color = MaterialTheme.colorScheme.onSurfaceVariant) }
+        }
+        items(entries, key = { "deleted-${it.id}" }) { entry ->
+            DeletedRow(
+                entry = entry,
+                onRecover = { onRecover(entry.id) },
+                onPurge = { onPurge(entry) },
             )
         }
     }
+}
+
+@Composable
+private fun SettingsHeader(title: String, onBack: () -> Unit, backDescription: String) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            text = "← ",
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier
+                .clickable(onClick = onBack)
+                .heightIn(min = 48.dp)
+                .widthIn(min = 48.dp)
+                .padding(12.dp)
+                .semantics { contentDescription = backDescription },
+        )
+        Text(
+            title,
+            style = MaterialTheme.typography.headlineMedium,
+            modifier = Modifier.semantics {
+                heading()
+                contentDescription = "Tela $title"
+            },
+        )
+    }
+}
+
+@Composable
+private fun SettingsNavigationRow(title: String, summary: String, onClick: () -> Unit) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .heightIn(min = 72.dp)
+            .semantics(mergeDescendants = true) { contentDescription = "$title. $summary" },
+        color = MaterialTheme.colorScheme.surface,
+        shape = RoundedCornerShape(FioRadius.md),
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = FioSpace.s3, vertical = FioSpace.s3),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(title, style = MaterialTheme.typography.titleSmall)
+                Text(
+                    summary,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = FioSpace.s1),
+                )
+            }
+            Spacer(Modifier.width(FioSpace.s2))
+            Text("›", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+        }
+    }
+}
+
+private fun appLockSummary(mode: AppLockMode): String = when (mode) {
+    AppLockMode.OFF -> "O Fio não pede desbloqueio ao abrir."
+    AppLockMode.IMMEDIATE -> "O Fio pede desbloqueio sempre que é aberto."
+    AppLockMode.ONE_MINUTE -> "O Fio pede após 1 minuto fora do app."
+    AppLockMode.FIVE_MINUTES -> "O Fio pede após 5 minutos fora do app."
+}
+
+private fun returnsSummary(state: ReturnConsentState): String = when (state) {
+    ReturnConsentState.NOT_CONFIGURED -> "Desativadas — nenhuma notificação será enviada."
+    ReturnConsentState.ENABLED -> "Ativas — uma lembrança antiga pode voltar de vez em quando."
+    ReturnConsentState.PAUSED -> "Pausadas — nenhuma nova lembrança será avisada."
 }
 
 @Composable
@@ -1229,9 +1807,9 @@ private fun DeletedRow(entry: Entry, onRecover: () -> Unit, onPurge: () -> Unit)
 }
 
 
-private fun quietHoursLabel(startMinute: Int, endMinute: Int): String {
+private fun quietHoursSentence(startMinute: Int, endMinute: Int): String {
     fun fmt(m: Int): String = "${(m / 60) % 24}h${(m % 60).let { if (it == 0) "00" else String.format(Locale.ROOT, "%02d", it) }}"
-    return "${fmt(startMinute)}–${fmt(endMinute)}"
+    return "sem avisos das ${fmt(startMinute)} às ${fmt(endMinute)}"
 }
 
 private fun displayImportDate(instant: java.time.Instant, zone: String): String {
@@ -1263,6 +1841,8 @@ private fun importIssueLabel(code: ImportIssueCode): String = when (code) {
 // Verde-Sálvia design: Fraunces display date, quiet wording, primary close.
 @Composable
 private fun ReturnScreen(entry: Entry, onClose: () -> Unit, onNeverReturn: () -> Unit) {
+    var confirmNeverReturn by remember(entry.id) { mutableStateOf(false) }
+    BackHandler(onBack = onClose)
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         Column(
             modifier = Modifier.fillMaxSize().padding(horizontal = FioSpace.s6, vertical = FioSpace.s8),
@@ -1278,10 +1858,33 @@ private fun ReturnScreen(entry: Entry, onClose: () -> Unit, onNeverReturn: () ->
                 shape = RoundedCornerShape(FioRadius.lg),
             ) { Text("Fechar") }
             TextButton(
-                onClick = onNeverReturn,
+                onClick = { confirmNeverReturn = true },
                 modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
-            ) { Text("Não mostrar novamente") }
+            ) { Text("Não devolver esta nota novamente") }
         }
+    }
+    if (confirmNeverReturn) {
+        AlertDialog(
+            onDismissRequest = { confirmNeverReturn = false },
+            title = { Text("Não devolver esta nota novamente?") },
+            text = {
+                Text(
+                    "A nota continuará no Arquivo e poderá ser lida, editada ou excluída. " +
+                        "O Fio apenas deixará de escolhê-la para voltar. Esta opção não pode ser desfeita nesta versão.",
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        confirmNeverReturn = false
+                        onNeverReturn()
+                    },
+                ) { Text("Não devolver") }
+            },
+            dismissButton = {
+                TextButton(onClick = { confirmNeverReturn = false }) { Text("Cancelar") }
+            },
+        )
     }
 }
 
@@ -1289,10 +1892,10 @@ private fun ReturnScreen(entry: Entry, onClose: () -> Unit, onNeverReturn: () ->
 private fun AppLockChoices(selected: AppLockMode, enabled: Boolean, onChoose: (AppLockMode) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(FioSpace.s1), modifier = Modifier.padding(top = FioSpace.s2)) {
         listOf(
-            AppLockMode.OFF to "Desativado",
-            AppLockMode.IMMEDIATE to "Imediato",
-            AppLockMode.ONE_MINUTE to "Após 1 minuto",
-            AppLockMode.FIVE_MINUTES to "Após 5 minutos",
+            AppLockMode.OFF to "Não pedir desbloqueio",
+            AppLockMode.IMMEDIATE to "Pedir sempre que abrir",
+            AppLockMode.ONE_MINUTE to "Pedir após 1 minuto fora",
+            AppLockMode.FIVE_MINUTES to "Pedir após 5 minutos fora",
         ).forEach { (mode, label) ->
             val isSelected = mode == selected
             Surface(

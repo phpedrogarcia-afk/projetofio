@@ -552,7 +552,7 @@ Deferred entries do not authorize implementation.
   scheduling interface. Schedule one uniquely named, replaceable, one-time
   local Return opportunity; do not use exact alarms, periodic alarms, remote
   push, foreground services, or network constraints. Create one low-importance,
-  no-badge `Devoluções` notification channel using only `Algo seu voltou.` and
+  no-badge `Lembranças do Fio` notification channel using only `Algo seu voltou.` and
   an opaque local Return ID. On API 33+, request `POST_NOTIFICATIONS` only after
   explicit Return consent. Default quiet hours are 21:00–08:00 local time.
   Migrate Room schema 1→2 non-destructively. Until ADR-037 pre-pilot gates
@@ -784,4 +784,53 @@ Do not rewrite an Accepted ADR to hide its history. Add a superseding entry.
   since first entry must exist meaningfully before the ritual is offered.
 - Consequence: No implementation now; the idea is retained and re-evaluated
   when the gated dependencies are met.
+- Supersedes: none
+
+## ADR-048 — Guardar, Encontrar e Arquivo formam a navegação principal calma
+
+- Date: 2026-08-20
+- Status: Accepted
+- Decision: O aplicativo abre em Guardar e apresenta uma navegação inferior
+  persistente com três destinos nomeados: `Guardar`, `Encontrar` e
+  `Arquivo`. Encontrar deixa de ser um campo enterrado no Arquivo e recebe
+  superfície própria. Arquivo continua cronológico e não algorítmico.
+  Configurações e ações administrativas permanecem secundárias. Editar e
+  excluir deixam a lista e passam ao detalhe da nota.
+- Reason: O fundador identificou que Arquivo e Search estavam escondidos e sem
+  hierarquia compreensível. Duas referências fornecidas mostraram o valor de
+  navegação persistente, criação sempre acessível e coleções legíveis; sua
+  estética escura, IA, tarefas, tags, cadernos e recursos de produtividade não
+  são adotados.
+- Consequence: `MainSurface` separa WRITE/FIND/ARCHIVE/SETTINGS; a barra
+  inferior existe somente nos três destinos principais; trocar de destino
+  limpa foco/teclado, mas não persiste queries. A Home continua início e centro
+  do loop write-wait-return. Search continua read-only e não influencia
+  Returns. Testes de acessibilidade e fluxo devem tratar os três destinos como
+  alvos de no mínimo 48dp.
+- Supersedes: amplia ADR-004: “visualmente secundário” não pode significar
+  escondido em overflow; o Arquivo permanece secundário no conteúdo e no fato
+  de a Home ser a abertura, não na sua descobribilidade.
+
+## ADR-049 — Ajustes usa visão geral por intenção e divulgação progressiva
+
+- Date: 2026-08-20
+- Status: Accepted
+- Decision: `Ajustes` deixa de ser uma lista longa de controles técnicos. A
+  primeira tela mostra destinos curtos por intenção humana: Proteção ao abrir,
+  Lembranças que voltam, Importar notas, Exportar uma cópia e Excluídos
+  recentemente.
+  Cada destino abre uma página focada que explica primeiro o efeito e depois
+  oferece o controle. Termos de milestone, engenharia e validação não aparecem
+  como cópia de produto. Funcionalidade desabilitada por build não é descrita
+  como ativa.
+- Reason: O fundador não compreendeu a tela existente. Uma configuração que
+  exige conhecer M1/M2/M3 ou interpretar rótulos internos falha mesmo quando o
+  mecanismo técnico está correto.
+- Consequence: A navegação de Ajustes ganha estado somente de UI, sem schema ou
+  analytics. Ações sensíveis preservam autenticação e confirmação. Testes de
+  interface cobrem destinos e rótulos. `docs/NOTES-BASELINE-AUDIT.md` passa a
+  distinguir função existente de função encontrável/compreensível. “Devolução”
+  permanece termo de domínio; a interface usa “Lembranças que voltam”, explica
+  a diferença entre TXT/Markdown e evita “lote” ou linguagem de armazenamento
+  como conhecimento pressuposto.
 - Supersedes: none

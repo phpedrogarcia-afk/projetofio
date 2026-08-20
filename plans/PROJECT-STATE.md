@@ -15,12 +15,12 @@ Documento de estado vivo do ProjetoFio. O código vence quando divergir da docum
 | Encontrar | Busca lexical local scan-on-demand conectada à produção; query somente em memória; apagados excluídos | `LocalSearchService.kt`, `FioApplication.kt`, `FioDao.kt` |
 | Semântica | Protótipo híbrido removível, não conectado à aplicação e sem modelo ML embarcado | `SemanticSearchPrototype.kt`, ADR-040/041 |
 | Search × Returns | Sistemas separados; Search não seleciona nem comanda Returns | `FioApplication.kt`, `SearchRepository.kt`, `TimeReturnsService.kt` |
-| UI | Design v1 Verde-Sálvia, editor, Arquivo, busca e superfícies de devolução implementados | `FioApp.kt` |
+| UI | Guardar/Encontrar/Arquivo; Archive anuncia leitura/edição; Ajustes usa visão geral e páginas focadas em linguagem humana | `FioApp.kt`, ADR-048/049, `packets/FIO-P17.md`, `packets/FIO-P18.md` |
 | Importação/exportação | Import local Markdown/Texto com rollback; export Markdown/Texto + SHA-256 | serviços de import/export e testes correspondentes |
 | Rede/conta/sync | Ausentes; aplicativo permanece local-first | Manifest, dependências e wiring do aplicativo |
 | Analytics | Analytics remoto ausente e estado efetivo desabilitado | `RoomFioRepository.kt`, dependências |
 | Testes unitários | 134 testes verdes, 0 falhas, 0 erros e 0 ignorados em 2026-08-20, com dependency verification ativa | relatórios XML de `testDebugUnitTest`, `packets/FIO-PB-01.md` |
-| Testes instrumentados | 25 métodos presentes; execução em aparelho ainda não registrada como gate aprovado | `mobile/src/androidTest/` |
+| Testes instrumentados | 28/28 verdes no AVD Android 8/API 26 em 2026-08-20 | execução `AndroidJUnitRunner`, `packets/FIO-P18.md` |
 | Pilot | Material preparado; piloto não iniciado | `pilot/` |
 
 ## Missões herdadas
@@ -37,7 +37,7 @@ Documento de estado vivo do ProjetoFio. O código vence quando divergir da docum
 
 - Branch de transferência confirmada: `research/manus-fio-master-atlas-20260819`.
 - HEAD recebido do Atlas: `771074e069eed457aba1c9cda42e9c697f6d66d7`.
-- Packet documental atual: `integration/codex-pq01-project-state-20260820`.
+- Branch atual de UX: `feature/fio-primary-navigation-20260820`.
 - `main` permanece snapshot antigo e não é fonte do estado integrado atual.
 - A worktree anterior `codex/v0-time-only-checkpoint` contém alterações locais e deve permanecer preservada até integração deliberada.
 - Estados de PR descritos pelos relatórios do Atlas são históricos até consulta explícita ao GitHub.
@@ -46,8 +46,9 @@ Documento de estado vivo do ProjetoFio. O código vence quando divergir da docum
 
 1. O protótipo híbrido calcula candidatos exclusivamente vetoriais, mas a montagem atual dos resultados descarta candidatos sem hit lexical; ele não comprova recall semântico exclusivo no comportamento presente.
 2. Algumas assinaturas PGP de artefatos não puderam ser recuperadas; o metadata mantém hashes SHA-256 e registra explicitamente essas exceções para revisão futura.
-3. A interface interna do pacote principal após o gate biométrico ainda depende da autenticação do usuário.
+3. A interface interna do pacote principal no Poco após o gate biométrico ainda depende da autenticação do usuário; a mesma interface foi validada integralmente no AVD isolado.
 4. Evidência histórica de PR, teste ou aparelho não deve ser promovida a estado atual sem nova verificação.
+5. P0 de integridade: o seletor visual `InPeriod`/`OnDate` ainda não persiste a escolha; schema 3 armazena apenas `ELIGIBLE`/`NEVER`. Não descrever datas/períodos como funcionais até decisão e migration próprias.
 
 ## Gates abertos
 
@@ -55,20 +56,24 @@ Documento de estado vivo do ProjetoFio. O código vence quando divergir da docum
 - Segundo fabricante/modelo Android.
 - PrivacyCover em aparelho.
 - Revisão independente de criptografia.
-- Testes instrumentados completos em dispositivo/AVD.
 - Consentimento e execução do piloto.
-- Decisões de produto listadas em `docs/atlas/DECISION-INDEX.md`.
+- Decisões de produto listadas em `docs/atlas/DECISION-INDEX.md`, com FIO-P19 em prioridade P0.
 
 ## Instalação atual
 
-- `com.projetofio.app` 0.1.0-dev reinstalado com preservação de dados no Xiaomi M2103K19PG em 2026-08-20.
-- APK debug validado: SHA-256 `E83814E640DB8DF349FA2282337F676B4FE284614248E915C803B46E9EE84106`.
+- `com.projetofio.app` 0.1.0-dev atualizado com preservação de dados no Xiaomi M2103K19PG/API 33 em 2026-08-20.
+- APK debug da navegação FIO-P17: SHA-256 `FD35B1398DF8151A8DC0EF86D6A539346ED2E189EDA2D0A5089EFFA72DEC334A`.
 - Abertura confirmada até o gate biométrico, sem crash fatal observado.
-- A inspeção interna não contorna a impressão digital/PIN e permanece pendente de autenticação do usuário.
+- A inspeção interna completa foi executada no AVD `Fio_API26` (Android 8/API 26): 28 testes instrumentados; navegação, funções básicas e páginas de Ajustes confirmadas pela hierarquia real.
+- A inspeção no Poco não contorna a impressão digital/PIN e permanece pendente da autenticação do usuário.
+- O código FIO-P18 revisado foi instalado no Poco com preservação de dados em 2026-08-20; versão `0.1.0-dev`, MainActivity em primeiro plano, sem fatal recente. SHA-256 do APK atual: `52E7A8C289D4B5333E23860CFA353EB17997B2236A452A5367C92A13A44B4D85`.
 
 ## Próximo trabalho autorizado
 
-Seguir `packets/EXECUTION-QUEUE.md`. Após o fechamento de `FIO-PQ-01`, o próximo packet é `FIO-PQ-02`; nenhuma feature deve ser escolhida fora da fila.
+Seguir `packets/EXECUTION-QUEUE.md`. O FIO-P18 fechou os gates de engenharia; a
+observação de compreensão pelo fundador continua externa. O FIO-P19 é NOW e
+aguarda escolha explícita, sem autorizar schema 4 por si só. Depois dele, retomar
+FIO-PQ-03. Nenhuma feature deve ser escolhida fora da fila.
 
 ## Regras que permanecem
 

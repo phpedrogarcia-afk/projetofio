@@ -6,7 +6,9 @@ Este documento é um resumo humano. A escolha e a ordem do trabalho são governa
 
 ## NOW
 
-1. `FIO-PQ-03` — apresentar ao fundador as decisões D-1..D-5 com propostas escritas, sem implementar as opções.
+1. Decidir `FIO-P19`: corrigir a divergência P0 entre o seletor temporal e o que realmente é salvo. Nenhuma opção será implementada antes da aprovação.
+2. O `FIO-P18` concluiu engenharia e instalação no Poco; aguarda apenas a observação humana do fundador sobre a clareza de Ajustes.
+3. Depois, `FIO-PQ-03` — apresentar as demais decisões D-1..D-5 com propostas escritas, sem implementar as opções.
 
 ## READY técnico
 

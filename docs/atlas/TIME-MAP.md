@@ -1,15 +1,17 @@
 # TIME-MAP — como o Fio lida com o tempo
 
-**Estado examinado:** HEAD `9cfd5f1` · **Evidência:** `E4` (`TimeReturnEngine.kt`, `AndroidTimeReturns.kt`, `TimeReturnsService.kt`) + `E1` (`docs/07-RETURNS-ENGINE.md`, ADR-038, ADR-043).
+**Estado examinado:** working tree FIO-P18 em 2026-08-20 · **Evidência:** `E4` (`FioApp.kt`, `FioViewModel.kt`, `FioService.kt`, `Models.kt`, `TimeReturnEngine.kt`) + `E1` (`docs/07-RETURNS-ENGINE.md`, ADR-038, ADR-043).
 
 ## 1. Os conceitos canônicos
 
 | Conceito | Representação real | Significado |
 |---|---|---|
-| Someday | `ReturnPolicy.Someday` → `return_mode = ELIGIBLE` sem agendamento | devolvida quando o motor escolher (uniforme por bucket) |
-| Scheduled (calendário) | `ReturnPolicy.InPeriod(n)` ou DateSheet → política gravada | preferência de janela (7/30/90/365 dias); o motor respeita quiet hours e cap |
+| Someday | UI local `ReturnPolicy.Someday`; `saveEntry()` cria Entry default `ELIGIBLE` | funciona apenas porque coincide com o default do domínio |
+| Scheduled (calendário) | `ReturnPolicy.InPeriod(n)` / `OnDate` existem somente no estado Compose e não chegam a `saveEntry()` | **P0: não persistido e não honrado pelo motor; não descrever como funcional** |
 | Resting / paused | `returns_paused_at` + `ReturnConsentState.PAUSED` | engine retorna `Silent(CONSENT_DISABLED)`; attempts existentes cancelados |
-| Never | `ReturnPolicy.Never` → `return_mode = NEVER` | jamais devolvida |
+| Never ao guardar | UI local `ReturnPolicy.Never`; `saveEntry()` ainda cria Entry default `ELIGIBLE` | **P0: opção visual não aplicada** |
+| Never após uma Return | `TimeReturnsService.neverReturn(attemptId)` → `return_mode = NEVER` | funcional apenas no fluxo de Return já aberta |
+| “Devolver para agora” no detalhe | `NoteScreen.returning/returned` em `remember`; nenhuma chamada de domínio | **P0: encenação local, sem tentativa/histórico; remover até contrato real** |
 | Data-Âncora | `original_created_at` + `original_time_zone` na Entry | a data que o usuário associa ao momento vivido (não a data de gravação); usada no export e no display |
 | Return history | `ReturnEntity` (state machine: SELECTED→SCHEDULED→NOTIFIED→OPENED/DISMISSED/EXPIRED/CANCELLED) | evidência factual "já voltou N vezes" (usada pela busca M4) |
 | Quiet hours | `quiet_hours_start_minute` (default 1260 = 21:00) / `end_minute` (default 480 = 08:00) | janela proibida; **com wrap de meia-noite** o allowed window cruza o dia |
@@ -17,7 +19,7 @@
 | DST | `chooseAllowedDelivery` trabalha com `LocalDate`/`LocalTime` → `ZonedDateTime` → Instant; transições tratadas pela API java.time (não há ajuste manual no código; gaps documentados em `EngineTortureTest` com fusos extremos) |
 | Reboot | WorkManager persiste `OneTimeWorkRequest`; `TimeReturnsService.reconcile()` pós-boot cancela attempts de entradas que perderam elegibilidade (delete, never, import rollback) | sem alarmes perdidos silenciosos |
 | WorkManager | `WorkManagerReturnScheduler`: `OneTimeWorkRequest` com delay até o `Instant` alvo; `UNIQUE_WORK_NAME = fio-time-return-opportunity-v1`; `ExistingWorkPolicy.REPLACE`; tag `fio-time-return` | exato? **inexact por padrão Android 12+** para delay longos; acceptable per ADR-038 |
-| Notifications | canal "Devoluções" `IMPORTANCE_LOW` (sem som padrão disruptive); uma notificação genérica, sem lembrete repetido (ADR-011) | |
+| Notifications | canal "Lembranças do Fio" `IMPORTANCE_LOW` (sem som padrão disruptive); uma notificação genérica, sem lembrete repetido (ADR-011) | |
 
 ## 2. Precedência de regras (ordem real do `TimeReturnEngine.evaluate`)
 
@@ -55,6 +57,7 @@ O Fio não repete notificações após ignorar (ADR-011). Não há "On This Day"
 
 ## 5. Gaps de tempo (para KNOWLEDGE-GAPS)
 
-1. DST na **janela de 24h**: um `deliveryAt.plus(24h)` pode cair em hora "inexistente" em spring-forward; java.time resolve (offset fixo), mas o comportamento de notificação às 2h30 no dia do salto não foi testado em aparelho (`E5` missing; `EngineTortureTest` cobre fusos extremos em lógica).
-2. Exact alarms: o app usa inexact WorkManager; para um app de "reencontro" isso é aceitável hoje; se um dia o fundador quiser entrega em hora exata (ex.: o dia exato do calendário escolhido), precisaria `SCHEDULE_EXACT_ALARM` + decisão (ADR novo) — **não construir agora**.
-3. Reboot sem abertura do app: WorkManager reexecuta, mas `reconcile()` só roda quando o processo sobe; entre reboot e primeira abertura há um hiato em que nenhuma devolução acontece (documentado, aceitável).
+1. **P0 ReturnPolicy:** períodos, data e Nunca ao guardar são UI-only. ADR-043 define o contrato desejado, não evidência de implementação.
+2. DST na **janela de 24h**: um `deliveryAt.plus(24h)` pode cair em hora "inexistente" em spring-forward; java.time resolve (offset fixo), mas o comportamento de notificação às 2h30 no dia do salto não foi testado em aparelho (`E5` missing; `EngineTortureTest` cobre fusos extremos em lógica).
+3. Exact alarms: o app usa inexact WorkManager; para um app de "reencontro" isso é aceitável hoje; se um dia o fundador quiser entrega em hora exata (ex.: o dia exato do calendário escolhido), precisaria `SCHEDULE_EXACT_ALARM` + decisão (ADR novo) — **não construir agora**.
+4. Reboot sem abertura do app: WorkManager reexecuta, mas `reconcile()` só roda quando o processo sobe; entre reboot e primeira abertura há um hiato em que nenhuma devolução acontece (documentado, aceitável).

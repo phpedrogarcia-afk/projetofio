@@ -40,7 +40,7 @@ class M2AndroidContractTest {
     fun notificationChannelIsLowImportanceAndHasNoBadge() {
         notifications.createChannel()
         val channel = checkNotNull(manager.getNotificationChannel(AndroidReturnNotifications.CHANNEL_ID))
-        assertEquals("Devoluções", channel.name.toString())
+        assertEquals("Lembranças do Fio", channel.name.toString())
         assertEquals(NotificationManager.IMPORTANCE_LOW, channel.importance)
         assertFalse(channel.canShowBadge())
         // Channel visibility may remain VISIBILITY_NO_OVERRIDE so the user's

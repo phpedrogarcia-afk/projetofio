@@ -1,5 +1,7 @@
 # MANUS-PRE-CODEX-FINAL — Relatório final da Missão Manus 2
 
+> **Correção factual de 2026-08-20:** `ReturnPolicy` não é apenas uma dívida leve de arquitetura. Períodos, data e `Nunca` ao guardar são exibidos, mas não persistidos nem honrados. O estado atual é P0 de confiança; ver `packets/FIO-P19-TEMPORAL-INTEGRITY-DECISION.md`.
+
 **Missão:** Product Red Team, Pilot Readiness & Codex Handoff (MANUS MISSION 2)
 **Branch:** `integration/manus-pre-codex-20260817` · **Checkpoint final:** `c688cfb` · **Data:** 2026-08-17
 **Método:** red team em modo somente-leitura + correções triviais permitidas pela autonomia da missão; nenhuma feature criada; `main` intacta.
@@ -65,7 +67,7 @@ Os documentos de retomada estão em: `plans/PROJECT-STATE.md` (snapshot vivo), `
 | 1 | Merge do PR #1 e veículo das branches Manus | Estratégia de branches |
 | 2 | Atualizar título/corpo do PR #3 (texto pronto em `DOCUMENTATION-DRIFT-AND-PR-CLEANUP.md` §2) | Higiene |
 | 3 | Executar gates humanos: TalkBack real (~10 min), large font, dark mode, `M2AndroidContractTest` em AVD/API 36 | Evidência física |
-| 4 | `ReturnPolicy` UI-only até schema 4 (DECISION REQUIRED levíssima) | Arquitetura |
+| 4 | `ReturnPolicy` UI-only: escolhas não aplicadas (P0; FIO-P19) | Produto + arquitetura |
 | 5 | Conteúdo só-ZW aceito por `isBlank()` — aceitar ou rejeitar | Produto |
 | 6 | Analytics remoto do piloto — DECISION REQUIRED (quebraria fronteira local-first) | Privacidade |
 | 7 | Consentimento legal (`pilot/CONSENT-DRAFT.md`) | Jurídico |

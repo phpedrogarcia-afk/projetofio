@@ -1,5 +1,7 @@
 # MANUS Hardening Final — ProjetoFio MISSION 1
 
+> **Correção factual de 2026-08-20:** o trade-off `ReturnPolicy` UI-only não é aceitável como estava registrado. Períodos, data e `Nunca` ao guardar não são persistidos nem honrados; o achado é P0 e exige a decisão FIO-P19.
+
 **Branch de execução:** `integration/manus-rehearsal-20260817` (base: merge semântico `8be819a` de PR #1 codex + design-ux-v1)
 **Data:** 17/08/2026 · **Autor:** Manus AI
 **Escopo:** Integration Rehearsal + Failure Hunt completo (17 campanhas) — sem nenhuma feature nova; apenas confiança no código existente.
@@ -59,7 +61,7 @@ Nenhuma decisão bloqueante ficou pendente. Os itens abaixo são evoluções vol
 
 | # | Item | Severidade | Recomendação |
 |---|---|---|---|
-| 1 | `ReturnPolicy` só via UI até schema 4 | DECISION REQUIRED (levíssima) | Aceitar o trade-off atual; revisitar em schema 4 |
+| 1 | `ReturnPolicy` só via UI; escolha descartada ao guardar | DECISION REQUIRED (P0; FIO-P19) | Não aceitar como funcional; decidir A1/A2/B/C antes de alterar schema/engine |
 | 2 | Conteúdo só-zero-width aceito por `isBlank()` | P4 | Decisão de produto: aceitar ou rejeitar |
 | 3 | Sugestão de teclado do sistema nos TextFields | P4 | Trade-off UX já documentado; sem ação |
 | 4 | `biometric:1.1.0` legado | P3 | Avaliar `androidx.credentials` quando houver autenticação biométrica v2 |

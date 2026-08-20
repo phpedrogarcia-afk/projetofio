@@ -1,5 +1,7 @@
 # Product Integrity Audit — Red Team de Produto (Missão 2)
 
+> **Correção factual de 2026-08-20:** este relatório histórico classificou incorretamente o seletor temporal como funcional. No código atual, `ReturnPolicy` não sai do estado Compose: `saveEntry()` recebe somente texto e cria uma entrada `ELIGIBLE`. Assim, períodos, data e `Nunca` ao guardar não são persistidos nem honrados. Os PASS temporais abaixo devem ser lidos com esta correção; o achado atual é P0 e está no FIO-P19.
+
 **Branch:** `integration/manus-pre-codex-20260817` (derivada da `integration/manus-rehearsal-20260817`, HEAD `e0a7b7e`)
 **Método:** auditoria adversarial em modo somente-leitura do código-fonte (`FioApp.kt`, `AndroidTimeReturns.kt`, `MainActivity.kt`, `TimeReturnEngine.kt`, design tokens) contra os 12 princípios canônicos de `docs/02-PRINCIPLES.md` e os ADRs 043–047. **Nenhum código foi alterado nesta fase** (corretivas triviais seguem na fase seguinte, sob as regras de autonomia da missão).
 
@@ -11,7 +13,7 @@
 |---|-----------|----------|-----------|-------|--------------|
 | 1 | As palavras do usuário dominam | **PASS** | `ReturnScreen`: título + data + texto puro (`SelectionContainer`), sem decoração competindo; conteúdo original e data original têm precedência sobre ornamento (motivo botânico tem alfa 0.55, 32dp de largura, TalkBack o ignora) | Baixo | Manter |
 | 2 | Seleção sem interpretação | **PASS** | `TimeReturnEngine` seleciona por bucket/borda; nenhuma string no repo contém "evolui", "padrão", "insight", "sentimento", "percebemos", "você cresceu" (grep confirmou 0 ocorrências); notificação usa título fixo "Algo seu voltou."; ReturnScreen não interpreta | Baixo | Manter |
-| 3 | O tempo é uma feature | **PASS** | Engine por janelas/quiet-hours/cap; policy choices mapeiam vocabulário ADR-043 ("Algum dia", "Em 7/30/90 dias", "Escolher uma data", "Nunca"); texto honesto: "O Fio decide o momento exato. Sua escolha apenas guia o que pode voltar." | Baixo | Manter |
+| 3 | O tempo é uma feature | **FAIL P0 (correção 2026-08-20)** | A engine possui janelas/quiet-hours/cap, mas as choices ADR-043 não chegam ao domínio. “Algum dia” coincide com o default; períodos/data/Nunca são apenas visuais. | Alto | Decidir FIO-P19; não prometer comportamento inexistente |
 | 4 | Silêncio sobre engajamento | **PASS** | 0 streaks/badges/pontos/meta/contadores; confirmação "Guardado." some em 1.5s (pill, não tela); sem "continue escrevendo"; Pátina não depende de produtividade (só idade desde a 1ª entrada, determinística); sem notificação de ausência; notificação IMPORTANCE_LOW, visibilidade private | Baixo | Manter |
 | 5 | Autonomia antes de magia | **PASS** | Pausar/retomar devoluções (1 toque), "Nunca" (ineligível permanente), "Deixar descansar" implícito via Rest, "Não mostrar novamente" no ReturnScreen, exclusão e export sem barreiras; exclusão de 30 dias recuperável; exclusão permanente com confirmação | Baixo | Manter |
 | 6 | Privado por arquitetura | **PASS** | Missão 1 confirmou: backup cloud/transfer excluídos, FLAG_SECURE, zero Log., notificação sem conteúdo; conteúdo cifrado com AAD | Baixo | Manter |
@@ -44,7 +46,7 @@ Resultado: **PASS.** ADR-044 implementado: `isFirstSave = consent NOT_CONFIGURED
 
 ## Investigação específica 6 — Data-âncora (S-5)
 
-Resultado: **PASS.** "Escolher uma data" → `ReturnPolicy.OnDate` → candidatos do engine (nunca entregas forçadas), respeitando cap/rest/Never/consent. Copy factual única do engine: "Algo seu voltou." — sem interpretação. Data-âncora como obrigação anual ainda **não implementada** (correto: é futuro, ADR-047).
+Resultado corrigido em 2026-08-20: **FAIL P0.** “Escolher uma data” cria `ReturnPolicy.OnDate` apenas na tela; essa informação não chega à Entry nem aos candidatos do engine. Cap/rest/consent continuam funcionais para a engine existente, mas não tornam a escolha da tela efetiva. Data-âncora como obrigação anual também continua futura (ADR-047).
 
 ## Investigação específica 7 — S-2 revisado (data absoluta primária)
 

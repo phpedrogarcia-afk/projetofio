@@ -103,7 +103,7 @@ RETURNS PLATFORM BINDING
 ├── AndroidTimeReturns.kt     — WorkManagerReturnScheduler (OneTimeWorkRequest,
 │     UNIQUE_WORK_NAME=fio-time-return-opportunity-v1, ExistingWorkPolicy.REPLACE),
 │     TimeReturnWorker (CoroutineWorker, retry <3, depois failure),
-│     AndroidReturnNotifications (canal "Devoluções" IMPORTANCE_LOW)
+│     AndroidReturnNotifications (canal "Lembranças do Fio" IMPORTANCE_LOW)
 
 ROOT
 ├── FioApplication.kt         — FioGraph: composição manual (lazy): service, timeReturns,
@@ -150,7 +150,7 @@ WorkManagerReturnScheduler.schedule(at) [OneTimeWorkRequest, delay até Instant]
               (regras: consent ENABLED, sem pending, cap 7 dias, bootstrap wait,
                só ELIGIBLE, quiet hours wrap-meia-noite, age bucket uniforme)
           → reconcilePending / cancelIneligible (pausa, exclusão, never → cancela attempts)
-      → scheduleAfterSilence → post(notification canal "Devoluções", IMPORTANCE_LOW)
+      → scheduleAfterSilence → post(notification canal "Lembranças do Fio", IMPORTANCE_LOW)
   → notificação → intent MainActivity → ReturnScreen(entry, onClose, onNeverReturn)
   → openReturn / dismissReturn / neverReturn (ReturnState, ReturnEntity)
   → reboot: WorkManager reagenda; reconcile pós-boot cancela elegibilidade perdida

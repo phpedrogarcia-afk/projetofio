@@ -6,7 +6,7 @@ Regras: NOW tem exatamente UMA fatia. NEXT tem no máximo 3. CHECKPOINTs listam 
 
 - Missão Manus 2 concluída nesta branch (`integration/manus-pre-codex-20260817`): Red Team de produto (12 princípios, 11 PASS diretos), correções triviais (Reduce Motion na Pátina, copy neutra), documentação atualizada, pacote de piloto (`pilot/`) e handoff Codex. Próximo passo real: merge do PR #1 (decisão do fundador) e execução dos gates humanos descritos no `MANUS-PRE-CODEX-FINAL.md`.
 
-> Nota de drift corrigido: a antiga NOW (campo `returnPolicy` em Entry via schema 4) foi superada — o design v1 já mapeia os rótulos temporais ADR-043 ao vocabulário canônico (`ELIGIBLE` / períodos explícitos / data âncora / `NEVER`) por cima do engine existente, sem novo campo de schema. O trade-off UI-only permanece registrado como DECISION REQUIRED (levíssima) em `MANUS-HARDENING-FINAL.md`.
+> **Correção factual de 2026-08-20:** a conclusão abaixo estava errada. O design v1 criou `ReturnPolicy` somente no estado da tela; ao guardar, apenas o texto chega ao domínio e a entrada recebe o default `ELIGIBLE`. Períodos, data escolhida e `Nunca` não são persistidos nem honrados. A decisão deixou de ser “levíssima” e está isolada no `FIO-P19` como P0 de integridade, sem implementação automática.
 
 ## NEXT
 

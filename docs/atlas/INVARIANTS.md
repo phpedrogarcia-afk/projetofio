@@ -54,7 +54,7 @@
 |---|---|---|
 | I-27 | Retriever-not-interpreter: nenhuma resposta gerada, nenhuma interpretação emocional, nenhum chatbot | I-27: AGENTS.md + red team |
 | I-28 | Sem streaks, feeds, gamificação, ads, engagement loops | I-28: AGENTS.md rules |
-| I-29 | Home é o centro; Arquivo/Settings secundários (ADR-004) | I-29: UI |
+| I-29 | Guardar é abertura e centro; Encontrar/Arquivo são acessíveis em um toque e silenciosos; Settings permanece secundário (ADR-004/048) | I-29: UI |
 | I-30 | First Capsule: única confirmação estendida, nunca repetida | I-30: ADR-044 + código |
 | I-31 | ADR Accepted > Princípios > Produto > spec > Roadmap > Founder Vision em conflito | I-31: AGENTS.md |
 | I-32 | main nunca tocada; feature work em branches de integração/research; PRs antes de merge | I-32: ADR-032 + workflow |
@@ -69,3 +69,5 @@
 | I-36 | Benchmark sintético nunca entra no build do app | I-36: `research/` fora do source set |
 | I-37 | Schema migration: exportSchema=true, migration manual testada byte a byte, schema_version em entidades | I-37: `Migration2To3Test` |
 | I-38 | Feature flags Engineering para trabalho não estabilizado | I-38: pattern estabelecido |
+| I-39 | Editar/excluir existem no detalhe e são descobríveis pelo Arquivo; ações destrutivas não se repetem em cada linha | I-39: ADR-048/049 + UI test |
+| I-40 | Ajustes explica consequências antes dos controles e não expõe milestones/linguagem de engenharia | I-40: ADR-049 + UI test |

@@ -4,7 +4,7 @@ As nove evoluções voluntárias documentadas em `MANUS-HARDENING-FINAL.md` §4 
 
 | # | Item (Missão 1) | Valor | Risco | Esforço | Fazer agora? | Decisão desta missão |
 |---|------------------|-------|-------|---------|---------------|----------------------|
-| 1 | `ReturnPolicy` UI-only até schema 4 | Alta (coerência entre vocabulário ADR-043 e engine) | Baixo (trade-off já aceito; o engine honra as escolhas via UI) | Médio (schema 4 + migration torturada) | **Não** — depende de schema 4, que é decisão do fundador (schema-versioning) | Mantida como DECISION REQUIRED (levíssima); engine já honra; nada a apressar |
+| 1 | `ReturnPolicy` UI-only até schema 4 | **P0:** a tela oferece períodos/data/Nunca que são descartados ao guardar | Alto (quebra de confiança) | Alto (schema 4 + migration + engine + tortura) | **Não automaticamente** — depende da decisão FIO-P19 | Não dizer que a engine honra. Decidir A1/A2/B/C; A1 é a proposta recomendada. |
 | 2 | ZW-only content aceito por `isBlank()` | Baixa (conteúdo não recuperável visualmente) | Baixo (decisão de produto) | Trivial | **Não** — é decisão de produto, não de engenharia (autonomia P4 de produto não autoriza decidir pelo fundador) | Registrada no IDEA-INBOX; fundador decide |
 | 3 | Sugestão de teclado do sistema nos TextFields | Baixa (não é bug) | Nenhum | Trivial (keyboardOptions) | **Não** — trade-off documentado e intencional até decisão de produto | Sem ação |
 | 4 | `biometric:1.1.0` legado | Média (manutenção de segurança) | Baixo | Médio (credentials exige refator do app-lock) | **Não** — sem mudança de comportamento; só vale quando autenticação v2 for planejada | IDEA-INBOX |

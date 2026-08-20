@@ -1,5 +1,7 @@
 # Integration Readiness — ProjetoFio MANUS MISSION 1
 
+> **Correção factual de 2026-08-20:** este é um relatório histórico, mas sua antiga conclusão sobre `ReturnPolicy` não representa o código atual. A escolha temporal vive somente na UI; `saveEntry()` salva a entrada como `ELIGIBLE`. Períodos, data e `Nunca` ao guardar não são persistidos nem honrados. Ver `docs/atlas/TIME-MAP.md` e `packets/FIO-P19-TEMPORAL-INTEGRITY-DECISION.md`.
+
 **Branch de integração:** `integration/manus-rehearsal-20260817` (commit `8be819a`, pushada)
 **Data:** 2026-08-17 (3h UTC)
 **Escopo:** Merge semântico de `codex/v0-time-only-checkpoint` (engine temporal M2/M3/M4, 982ad53) + `feature/design-ux-v1` (redesign Verde-Sálvia, 7040b70) sobre `main` (Genesis, a4fc835). **Nada foi mergiado em `main`.**
@@ -53,7 +55,7 @@ O ensaio confirmou que as duas linhas são **compatíveis em nível de domínio*
 |---------|----------|-------|
 | Navegação sem bottom bar (nossa) prevalece sobre bottom bar (codex) | ADR aprovada pelo fundador; Home sem distração é a essência do produto | Nenhum — o codex apenas adicionava rotas; as rotas M2/M3 foram expostas via seções de Settings |
 | `ReturnScreen` do codex substitui o `ReturnDialog` simples nosso | Engine real (M4) com buckets, quiet hours e frequency cap — valor funcional real | Comportamental: o fluxo de devolução agora é uma tela dedicada; testado via UI no Failure Hunt (campanha Visual Regression) |
-| `ReturnPolicy` UI-only permanece até schema 4 | Política é escrita no Entry; o engine honra como candidata — compatibilidade garantida por design | **DECISION REQUIRED** do fundador: schema 4 (persistência da política como campo engine) ainda não foi autorizado |
+| `ReturnPolicy` UI-only permanece até schema 4 | **P0 confirmado:** a política não é escrita na Entry e o engine não a recebe; somente “Algum dia” coincide por acaso com o default `ELIGIBLE` | **DECISION REQUIRED:** FIO-P19; não apresentar períodos/data/Nunca como funcionais |
 | `acknowledgeSaved()` adicionado ao ViewModel codex | Necessário pela pill "Guardado" (ADR-014) do design; não altera o estado além do notice | Nenhum — apenas consome `savedNotice` já presente no `FioUiState` codex |
 | `PATINA_ENABLED` preservado (true) | Pátina determinística sem métrica nem streak — coerente com a filosofia | Nenhum |
 

@@ -41,6 +41,9 @@
 | FIO-P14 | On This Day determinístico (opcional): query por data, opt-in, sem engine overlap | decisão produto |
 | FIO-P15 | Sealed notes V1 (accessPolicy no schema): ADR + migration + cripto do envelope selado | D-1 + founder |
 | FIO-P16 | Analytics remoto (opcional): ADR transport + schema fechado ADR-017 | D-2 |
+| FIO-P17 | Navegação primária calma: Guardar / Encontrar / Arquivo; ações da nota no detalhe | solicitação explícita do fundador + ADR-048 |
+| FIO-P18 | Funções básicas de notas visíveis e Ajustes em linguagem humana | FIO-P17 + ADR-049 |
+| FIO-P19 | Integridade das escolhas temporais ao guardar (decisão A1/A2/B/C) | fundador; A1/A2 também FIO-P10 + schema 4 |
 
 ## 5. Packets do piloto (humano, não-código)
 
@@ -53,6 +56,6 @@
 
 - Pronto para execução agora: FIO-PQ-01, FIO-PQ-02, FIO-P06, FIO-P07, FIO-P10 (sem aparelho, sem decisão).
 - Bloqueado por aparelho: FIO-P01, P02, P03, P04, P05, P09.
-- Bloqueado por decisão: P08, P11, P12, P14, P15, P16.
+- Bloqueado por decisão: P08, P11, P12, P14, P15, P16, P19.
 - Bloqueado por humano: PILOT-01/02, PQ-04.
 - Template: `PACKET-TEMPLATE.md`.

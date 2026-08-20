@@ -1,6 +1,6 @@
 # DECISION-INDEX — índice de decisões (não repete os ADRs)
 
-**Fonte:** `docs/DECISIONS.md` (787 linhas, ADR-001..047) · **Examinado em:** 2026-08-19 · **Evidência:** `E4` (ledger lido integralmente).
+**Fonte:** `docs/DECISIONS.md` (832 linhas, ADR-001..049) · **Examinado em:** 2026-08-20 · **Evidência:** `E4` (ledger lido integralmente).
 
 ## 1. Índice
 
@@ -53,6 +53,8 @@
 | 045 | Pátina Temporal no motivo botânico (S-4 revisado) | Accepted | ui/ BotanicalMotif | 042 |
 | 046 | Promessa de longevidade do formato de export | Accepted | docs/export-format.md, FioService | 030 |
 | 047 | Ritual do Fio (S-1) Planned, gated em maturidade | **Planned** | — | 042, arquivo |
+| 048 | Guardar/Encontrar/Arquivo como navegação principal calma | Accepted | ui/, docs/03 | 004 |
+| 049 | Ajustes por intenção e divulgação progressiva | Accepted | ui/, docs/03, NOTES-BASELINE-AUDIT | 048 |
 
 ## 2. Decisões pendentes para o fundador (abertas no momento do exame)
 
@@ -62,7 +64,8 @@
 | D-2 | Analytics remoto de busca/app | local-only hoje; toggle local existe | Local-first até decisão; schema fechado ADR-017 |
 | D-3 | Semântica em produção (Embarcar EmbeddingGemma?) | ADR-024 Deferred; kill criterion documentado | Medir em aparelho com NPU antes (FIO-P12) |
 | D-4 | Download do modelo on-demand com consentimento explícito | modelo ~300–580MB fora do APK; gate HF | ADR próprio se D-3 for positiva |
-| D-5 (herdada) | ReturnPolicy schema 4 (UI-only), zero-width, analytics remoto transporte | registradas em PROJECT-STATE | — |
+| D-5a / FIO-P19 | ReturnPolicy UI-only: períodos/data/Nunca são exibidos mas não persistidos | P0 de confiança; proposta A1/A2/B/C escrita | A1 recomendada: janela calma de 7 dias + schema 4 |
+| D-5b (herdada) | zero-width e transporte de analytics remoto | registradas em PROJECT-STATE | manter sem implementação até proposta própria |
 
 ## 3. Regras de leitura para Codex
 

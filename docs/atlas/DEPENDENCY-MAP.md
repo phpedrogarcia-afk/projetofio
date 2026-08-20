@@ -14,7 +14,7 @@
 | androidx.work 2.11.2 | agendamento de devoluções (OneTimeWorkRequest) | produção |
 | androidx.biometric 1.1.0 | app lock (DeviceAuthenticator) | produção |
 | Android Keystore (API 23+) | chave AES, envelope GCM | produção |
-| NotificationManager | canal "Devoluções" | produção |
+| NotificationManager | canal "Lembranças do Fio" | produção |
 | SAF (ContentResolver / DocumentFile) | import e export | produção |
 | java.time | engine temporal (ZoneId, LocalDate, ZonedDateTime) | produção |
 | Manifest | `POST_NOTIFICATIONS` (API 33+), `allowBackup="false"`, extraction rules | produção |

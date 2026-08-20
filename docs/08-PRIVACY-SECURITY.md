@@ -200,7 +200,7 @@ Notification permission denial must not degrade writing, Archive access,
 export, or deletion.
 
 M2's Android notification adapter creates a low-importance, no-badge
-`Devoluções` channel only after explicit Return consent. The visible payload is
+`Lembranças do Fio` channel only after explicit Return consent. The visible payload is
 the canonical sentence above; the intent carries only an opaque local Return
 ID. WorkManager receives empty input/output/progress and no network constraint.
 The merged release manifest has no `INTERNET`, storage, exact-alarm, or

@@ -24,7 +24,7 @@ As duas branches compartilham a mesma base (`feature/design-ux-v1` integrada) e 
 - Não mergear nada em `main` — decisão do fundador.
 - Não reescrever o README sem o fundador (ele carrega a narrativa M1/M4 deliberada).
 - Não reformatar o repo inteiro para ktlint/detekt (regra da Missão 2); gate incremental apenas.
-- Não iniciar schema 4 (trade-off UI-only aceito, DECISION REQUIRED levíssima).
+- Não iniciar schema 4 sem aprovação do FIO-P19. O seletor UI-only é um P0 de confiança porque períodos/data/Nunca não são aplicados; não o descrever como aceito ou funcional.
 - Não reportar gates humanos como aprovados; eles permanecem `BLOCKED — HUMAN/DEVICE VALIDATION REQUIRED`.
 - Não iniciar o piloto — o pacote `pilot/` é preparação, não autorização.
 

@@ -18,6 +18,10 @@ FIO-P07 (independente)
 FIO-P08 (D) ──→ schema-4 (ADR) ──→ FIO-P10 (calibragem migration, pode ser adiantada)
 FIO-P10 (independente da migration real)
 FIO-P14 (D, independente dos demais)
+FIO-P17 (independente; preserva engine/schema e não depende das decisões D-1..D-5)
+FIO-P17 ──→ FIO-P18 (UI somente; preserva schema/engine)
+FIO-P18 ──→ FIO-P19 (D-fundador; P0 de integridade temporal)
+FIO-P10 ──→ FIO-P19 opção A1/A2 (migration 3→4 real)
 
 FIO-PILOT-01 (H-fundador) ──→ FIO-PILOT-02 ──→ K-06 mitigation report ──→ FIO-P08 (alimenta)
 ```
@@ -32,6 +36,7 @@ FIO-PILOT-01 (H-fundador) ──→ FIO-PILOT-02 ──→ K-06 mitigation repor
 2. P13 (índice vetorial) e P06 (scale lexical) mexem no `search/`: em paralelo é possível, mas o Atlas deve ser relido antes.
 3. P02 (privacy surfaces) e P09 (FLAG_SECURE) tocam as mesmas superfícies UI: sequenciar, P09 depois de P02.
 4. Qualquer packet + pilot ativo: o piloto congela feature changes na superfície Return durante a janela de coleta (ADR-016: within-participant).
+5. P19 opção A1/A2 e P15 mexem no schema 4: nunca executar em paralelo; uma única migration canônica deve incorporar ambas apenas se ambas forem aprovadas.
 
 ## 4. Regras de paralelismo
 

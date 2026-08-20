@@ -51,7 +51,7 @@ Texto original copiado do plaintext em memória durante o scan, cortado pelo tok
 
 ## 9. Notification metadata
 
-Canal "Devoluções" `IMPORTANCE_LOW` (ADR-011 — uma notificação genérica, sem lembrete). Notificação contém **sem texto íntimo** (só título genérico; intent abre MainActivity → ReturnScreen). `NotificationManager` + `POST_NOTIFICATIONS` (API 33+). Metadata persistida: none além do state em `returns`. Risco R2: notificação não expõe conteúdo; mitigação = canal low + sem body (verificado em código).
+Canal "Lembranças do Fio" `IMPORTANCE_LOW` (ADR-011 — uma notificação genérica, sem lembrete). Notificação contém **sem texto íntimo** (só título genérico; intent abre MainActivity → ReturnScreen). `NotificationManager` + `POST_NOTIFICATIONS` (API 33+). Metadata persistida: none além do state em `returns`. Risco R2: notificação não expõe conteúdo; mitigação = canal low + sem body (verificado em código).
 
 ## 10. Export
 

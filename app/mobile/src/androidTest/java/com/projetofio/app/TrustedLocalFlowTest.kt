@@ -4,6 +4,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
@@ -43,17 +44,17 @@ class TrustedLocalFlowTest {
         syntheticContent = content
 
         composeRule.onNode(hasSetTextAction()).performTextInput(content)
-        composeRule.onNodeWithText("Guardar").performClick()
+        composeRule.onNodeWithContentDescription("Guardar lembrança").performClick()
         composeRule.waitUntil(timeoutMillis = 10_000) {
             composeRule.onAllNodesWithText("Guardado.").fetchSemanticsNodes().isNotEmpty()
         }
         composeRule.onNodeWithText("Guardado.").assertExists()
 
-        composeRule.onNodeWithText("Arquivo").performClick()
+        composeRule.onNodeWithContentDescription("Abrir Arquivo").performClick()
         composeRule.onNodeWithText(content).assertIsDisplayed()
 
         composeRule.activityRule.scenario.recreate()
-        composeRule.onNodeWithText("Arquivo").performClick()
+        composeRule.onNodeWithContentDescription("Abrir Arquivo").performClick()
         composeRule.onNodeWithText(content).assertIsDisplayed()
     }
 }

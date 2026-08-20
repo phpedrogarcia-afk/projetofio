@@ -1,10 +1,12 @@
 package com.projetofio.app
 
 import androidx.compose.ui.test.assertHeightIsAtLeast
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertWidthIsAtLeast
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
-import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Rule
@@ -22,15 +24,29 @@ class AccessibilityContractTest {
             composeRule.onAllNodesWithText("Fio").fetchSemanticsNodes().isNotEmpty()
         }
 
-        listOf("Escrever", "Arquivo", "Configurações").forEach { label ->
+        listOf("Abrir Guardar", "Abrir Encontrar", "Abrir Arquivo").forEach { description ->
             composeRule
-                .onNodeWithText(label)
+                .onNodeWithContentDescription(description)
                 .assertWidthIsAtLeast(48.dp)
                 .assertHeightIsAtLeast(48.dp)
         }
         composeRule
-            .onNodeWithText("Guardar")
+            .onNodeWithContentDescription("Guardar lembrança")
             .assertWidthIsAtLeast(48.dp)
             .assertHeightIsAtLeast(48.dp)
+    }
+
+    @Test
+    fun primaryDestinationsAreAlwaysOneTapAway() {
+        composeRule.onNodeWithContentDescription("Tela Guardar").assertIsDisplayed()
+
+        composeRule.onNodeWithContentDescription("Abrir Encontrar").performClick()
+        composeRule.onNodeWithContentDescription("Tela Encontrar").assertIsDisplayed()
+
+        composeRule.onNodeWithContentDescription("Abrir Arquivo").performClick()
+        composeRule.onNodeWithContentDescription("Tela Arquivo").assertIsDisplayed()
+
+        composeRule.onNodeWithContentDescription("Abrir Guardar").performClick()
+        composeRule.onNodeWithContentDescription("Tela Guardar").assertIsDisplayed()
     }
 }

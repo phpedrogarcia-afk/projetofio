@@ -76,7 +76,7 @@ class AndroidReturnNotifications(
     override fun createChannel() {
         val channel = NotificationChannel(
             CHANNEL_ID,
-            "Devoluções",
+            "Lembranças do Fio",
             NotificationManager.IMPORTANCE_LOW,
         ).apply {
             description = "Uma devolução silenciosa das suas próprias palavras."
