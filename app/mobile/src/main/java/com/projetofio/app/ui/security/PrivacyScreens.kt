@@ -24,10 +24,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.projetofio.app.ui.theme.FioRadius
 import com.projetofio.app.ui.theme.FioSpace
+import com.projetofio.app.ui.theme.fioScreenContainerColor
 
 @Composable
 fun PrivacyCover() {
-    Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+    Surface(modifier = Modifier.fillMaxSize(), color = fioScreenContainerColor()) {
         Box(contentAlignment = Alignment.Center) {
             Text("Fio", style = MaterialTheme.typography.displayLarge, color = MaterialTheme.colorScheme.primary)
         }
@@ -55,7 +56,7 @@ fun LockedScreen(
             dismissButton = { TextButton(onClick = { confirmDisable = false }) { Text("Manter bloqueado") } },
         )
     }
-    Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+    Surface(modifier = Modifier.fillMaxSize(), color = fioScreenContainerColor()) {
         Column(
             modifier = Modifier.padding(FioSpace.s6),
             verticalArrangement = Arrangement.Center,
@@ -85,7 +86,7 @@ fun LockedScreen(
 
 @Composable
 fun SafeOpenFailure() {
-    Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+    Surface(modifier = Modifier.fillMaxSize(), color = fioScreenContainerColor()) {
         Column(modifier = Modifier.padding(FioSpace.s6), verticalArrangement = Arrangement.Center) {
             Text("Fio", style = MaterialTheme.typography.displayLarge, color = MaterialTheme.colorScheme.primary)
             Text(

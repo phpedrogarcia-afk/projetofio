@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import com.projetofio.app.domain.Entry
 import com.projetofio.app.ui.theme.FioRadius
 import com.projetofio.app.ui.theme.FioSpace
+import com.projetofio.app.ui.theme.fioScreenContainerColor
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.time.ZoneId
@@ -57,7 +58,7 @@ internal fun NoteScreen(
     var returned by remember { mutableStateOf(false) }
     Surface(
         modifier = Modifier.fillMaxSize().padding(contentPadding),
-        color = MaterialTheme.colorScheme.background,
+        color = fioScreenContainerColor(),
     ) {
         Column(
             modifier = Modifier

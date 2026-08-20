@@ -28,6 +28,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.projetofio.app.domain.Entry
 import com.projetofio.app.ui.theme.FioDisplayDate
+import com.projetofio.app.ui.theme.fioScreenContainerColor
 import com.projetofio.app.ui.theme.FioRadius
 import com.projetofio.app.ui.theme.FioSpace
 
@@ -35,7 +36,7 @@ import com.projetofio.app.ui.theme.FioSpace
 internal fun ReturnScreen(entry: Entry, onClose: () -> Unit, onNeverReturn: () -> Unit) {
     var confirmNeverReturn by remember(entry.id) { mutableStateOf(false) }
     BackHandler(onBack = onClose)
-    Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+    Surface(modifier = Modifier.fillMaxSize(), color = fioScreenContainerColor()) {
         Column(
             modifier = Modifier.fillMaxSize().padding(horizontal = FioSpace.s6, vertical = FioSpace.s8),
             verticalArrangement = Arrangement.spacedBy(FioSpace.s4),

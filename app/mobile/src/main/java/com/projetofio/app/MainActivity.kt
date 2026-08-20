@@ -14,6 +14,8 @@ import androidx.activity.viewModels
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.toArgb
+import androidx.core.view.WindowCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import com.projetofio.app.application.ExportCoordinator
@@ -36,6 +38,8 @@ import com.projetofio.app.ui.LockedScreen
 import com.projetofio.app.ui.PrivacyCover
 import com.projetofio.app.ui.SafeOpenFailure
 import com.projetofio.app.ui.theme.FioTheme
+import com.projetofio.app.ui.theme.FioVisualTheme
+import com.projetofio.app.ui.theme.CosmicBackground
 import kotlinx.coroutines.launch
 
 class MainActivity : FragmentActivity() {
@@ -91,10 +95,18 @@ class MainActivity : FragmentActivity() {
         } else {
             window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         }
+        if (ACTIVE_VISUAL_THEME == FioVisualTheme.CEU_NOTURNO) {
+            window.statusBarColor = CosmicBackground.toArgb()
+            window.navigationBarColor = CosmicBackground.toArgb()
+            WindowCompat.getInsetsController(window, window.decorView).apply {
+                isAppearanceLightStatusBars = false
+                isAppearanceLightNavigationBars = false
+            }
+        }
         authenticator = DeviceAuthenticator(this)
         captureReturnIntent(intent)
         setContent {
-            FioTheme {
+            FioTheme(visualTheme = ACTIVE_VISUAL_THEME) {
                 when {
                     privacyCover -> PrivacyCover()
                     safeOpenFailure -> SafeOpenFailure()
@@ -331,6 +343,7 @@ class MainActivity : FragmentActivity() {
     }
 
     companion object {
+        private val ACTIVE_VISUAL_THEME = FioVisualTheme.CEU_NOTURNO
         const val ACTION_OPEN_RETURN = "com.projetofio.app.action.OPEN_RETURN"
         const val EXTRA_RETURN_ID = "return_id"
     }

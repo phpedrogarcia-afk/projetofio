@@ -51,6 +51,29 @@ internal val DarkOnSurfaceVariant = Color(0xFFBDC2B8)
 internal val DarkError = Color(0xFFD08A72)
 internal val DarkOnError = Color(0xFF2D201C)
 
+// Céu Noturno — nocturnal teal glass, warm parchment and aged gold.
+// These are separate tokens: no Sereno value above is changed or aliased.
+internal val CosmicBackground = Color(0xFF071D20)
+internal val CosmicBackgroundDeep = Color(0xFF041417)
+internal val CosmicSurface = Color(0xE0112C2F)
+internal val CosmicElevatedSurface = Color(0xEB183638)
+internal val CosmicSurfaceVariant = Color(0xB8214044)
+internal val CosmicPrimary = Color(0xFFD5B773)
+internal val CosmicOnPrimary = Color(0xFF172124)
+internal val CosmicPrimaryContainer = Color(0xCC3C3D31)
+internal val CosmicOnPrimaryContainer = Color(0xFFF3E6C7)
+internal val CosmicSecondary = Color(0xFFE8D49B)
+internal val CosmicOnSecondary = Color(0xFF1C2425)
+internal val CosmicTertiary = Color(0xFF9AB7B2)
+internal val CosmicOnTertiary = Color(0xFF102325)
+internal val CosmicOutline = Color(0xB88F7A4D)
+internal val CosmicOutlineVariant = Color(0xB8426063)
+internal val CosmicOnBackground = Color(0xFFF0E6D2)
+internal val CosmicOnSurface = Color(0xFFF0E6D2)
+internal val CosmicOnSurfaceVariant = Color(0xFFB9AE99)
+internal val CosmicError = Color(0xFFD69A86)
+internal val CosmicOnError = Color(0xFF2D1F1B)
+
 // Legacy aliases (keep existing call sites working)
 internal val Sage = LightPrimary
 internal val SageDark = DarkPrimary

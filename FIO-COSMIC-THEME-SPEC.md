@@ -1,7 +1,9 @@
 # Fio — Especificação canônica do tema Céu Noturno
 
-Status: aprovado para FIO-PV-03  
-Referência visual canônica: `WhatsApp Image 2026-08-20 at 15.52.38.jpeg`  
+Status: aprovado para FIO-PV-03
+
+Referência visual canônica: `WhatsApp Image 2026-08-20 at 15.52.38.jpeg`
+
 Escopo: aparência das superfícies existentes; nenhuma nova função de produto.
 
 ## 1. Intenção

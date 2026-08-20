@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -63,6 +64,7 @@ import com.projetofio.app.domain.ReturnConsentState
 import com.projetofio.app.R
 import com.projetofio.app.ui.theme.FioRadius
 import com.projetofio.app.ui.theme.FioSpace
+import com.projetofio.app.ui.theme.FioThemeContext
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -252,6 +254,7 @@ internal fun HomeScreen(
 
         // Primary action — the tallest, warmest touch target in the app.
         val pressed by interactionSource.collectIsPressedAsState()
+        val cosmic = FioThemeContext.current.isCosmic
         Button(
             onClick = {
                 focusManager.clearFocus()
@@ -262,11 +265,12 @@ internal fun HomeScreen(
             interactionSource = interactionSource,
             shape = RoundedCornerShape(FioRadius.lg),
             colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary,
+                containerColor = if (cosmic) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.primary,
+                contentColor = if (cosmic) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onPrimary,
                 disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                 disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.58f),
             ),
+            border = if (cosmic) BorderStroke(1.dp, MaterialTheme.colorScheme.outline) else null,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = FioSpace.s4)

@@ -17,7 +17,7 @@ import com.projetofio.app.R
 // to 200% without clipping).
 // ---------------------------------------------------------------------------
 
-private val Fraunces = FontFamily(
+internal val Fraunces = FontFamily(
     Font(R.font.fraunces_regular, FontWeight.Normal),
     Font(R.font.fraunces_medium, FontWeight.Medium),
 )
@@ -95,4 +95,19 @@ val FioDisplayDate = TextStyle(
     fontWeight = FontWeight.Normal,
     fontSize = 22.sp,
     lineHeight = 28.sp,
+)
+
+// Céu Noturno keeps Inter for the user's words and controls, but lets screen
+// titles carry the editorial warmth visible in the canonical reference.
+val CosmicTypography = FioTypography.copy(
+    headlineMedium = FioTypography.headlineMedium.copy(
+        fontFamily = Fraunces,
+        fontWeight = FontWeight.Medium,
+        fontSize = 23.sp,
+        lineHeight = 30.sp,
+    ),
+    titleMedium = FioTypography.titleMedium.copy(
+        fontFamily = Fraunces,
+        fontWeight = FontWeight.Medium,
+    ),
 )

@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.projetofio.app.domain.Entry
 import com.projetofio.app.R
+import com.projetofio.app.ui.theme.fioScreenContainerColor
 import kotlinx.coroutines.delay
 
 private enum class MainSurface { SAVE, FIND, ARCHIVE, SETTINGS }
@@ -69,7 +70,7 @@ fun FioApp(
     }
 
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
+        containerColor = fioScreenContainerColor(),
         bottomBar = {
             if (surface != MainSurface.SETTINGS) {
                 FioPrimaryNavigation(
