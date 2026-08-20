@@ -11,7 +11,7 @@
 | 3 | FIO-P06 (busca lexical em escala 1k-10k) | code | READY |
 | 4 | FIO-P07 (import hardening OOM) | code | READY |
 | 5 | FIO-P10 (migration 3→4 simulação) | code | READY |
-| 6 | FIO-P01/P02/P04/P05/P09 (device gates) | device | READY (alguns exigem interação/aparelho) |
+| 6 | FIO-P01/P02/P04/P05/P09 (device gates) | device | BLOCKED — aparelho/humano; context pack requerido antes de executar |
 | 7 | FIO-PILOT-01/02 (piloto) | human | WAITING fundador |
 | 8 | FIO-P03 (crypto review) | device/review | depois de P01 |
 | 9 | FIO-P12 (device gate semântica) | device | depois de D-3 + licença HF |

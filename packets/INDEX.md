@@ -54,8 +54,10 @@
 
 ## 6. Estado consolidado (manter atualizado)
 
-- Pronto para execução agora: FIO-PQ-01, FIO-PQ-02, FIO-P06, FIO-P07, FIO-P10 (sem aparelho, sem decisão).
-- Bloqueado por aparelho: FIO-P01, P02, P03, P04, P05, P09.
+- NOW: FIO-P19, decisão requerida; nenhum código autorizado.
+- Context packs READY: FIO-PQ-03, FIO-P06, FIO-P07, FIO-P10.
+- DONE: FIO-PQ-01, FIO-PQ-02, FIO-PB-01, FIO-P17, FIO-P18.
+- Bloqueado por aparelho e ainda sem context pack executável: FIO-P01, P02, P03, P04, P05, P09.
 - Bloqueado por decisão: P08, P11, P12, P14, P15, P16, P19.
 - Bloqueado por humano: PILOT-01/02, PQ-04.
 - Template: `PACKET-TEMPLATE.md`.
