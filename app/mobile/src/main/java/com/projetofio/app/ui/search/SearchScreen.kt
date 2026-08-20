@@ -1,6 +1,8 @@
 package com.projetofio.app.ui
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -46,6 +48,7 @@ import com.projetofio.app.domain.Entry
 import com.projetofio.app.R
 import com.projetofio.app.ui.theme.FioRadius
 import com.projetofio.app.ui.theme.FioSpace
+import com.projetofio.app.ui.theme.FioThemeContext
 
 @Composable
 internal fun SearchScreen(
@@ -203,10 +206,12 @@ internal fun SearchScreen(
                     }
                     items(result.hits, key = { it.entry.id }) { hit ->
                         ArchiveSearchHitRow(hit = hit, onOpen = { reading = hit.entry })
-                        HorizontalDivider(
-                            color = MaterialTheme.colorScheme.outlineVariant,
-                            thickness = 0.5.dp,
-                        )
+                        if (!FioThemeContext.current.isCosmic) {
+                            HorizontalDivider(
+                                color = MaterialTheme.colorScheme.outlineVariant,
+                                thickness = 0.5.dp,
+                            )
+                        }
                     }
                 }
             }
@@ -262,12 +267,26 @@ private fun ArchiveSearchField(terms: String, onChanged: (String) -> Unit) {
 
 @Composable
 private fun ArchiveSearchHitRow(hit: com.projetofio.app.domain.SearchHit, onOpen: () -> Unit) {
+    val cosmic = FioThemeContext.current.isCosmic
+    val shape = RoundedCornerShape(FioRadius.md)
     SelectionContainer {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .then(
+                    if (cosmic) {
+                        Modifier
+                            .background(MaterialTheme.colorScheme.surface, shape)
+                            .border(0.5.dp, MaterialTheme.colorScheme.outlineVariant, shape)
+                    } else {
+                        Modifier
+                    },
+                )
                 .clickable(onClick = onOpen)
-                .padding(vertical = FioSpace.s3)
+                .padding(
+                    horizontal = if (cosmic) FioSpace.s3 else 0.dp,
+                    vertical = FioSpace.s3,
+                )
                 .semantics(mergeDescendants = true) {
                     contentDescription = buildString {
                         append(displayDay(hit.entry))

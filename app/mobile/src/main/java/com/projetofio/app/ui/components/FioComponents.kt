@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.projetofio.app.domain.Entry
+import com.projetofio.app.ui.theme.FioThemeContext
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.time.Instant
@@ -28,6 +29,10 @@ private const val PATINA_ENABLED = true
 @Composable
 internal fun BotanicalMotif(firstEntryAt: Instant? = null) {
     if (!PATINA_ENABLED) return
+    // The branch belongs to Sereno. Céu Noturno already carries its quiet
+    // celestial marks in the shared backdrop; adding a branch would mix the
+    // two visual languages and create decorative noise.
+    if (FioThemeContext.current.isCosmic) return
     val tertiary = MaterialTheme.colorScheme.tertiary
     val accent = MaterialTheme.colorScheme.secondary
     // Age in days since the first saved entry; deterministic seed from the

@@ -32,6 +32,7 @@ class FioThemeTokenTest {
         assertEquals(Color(0xFF071D20), CosmicBackground)
         assertEquals(Color(0xFF041417), CosmicBackgroundDeep)
         assertEquals(Color(0xFFD5B773), CosmicPrimary)
+        assertEquals(Color(0xD91C3838), CosmicPrimaryContainer)
         assertEquals(Color(0xFFE8D49B), CosmicSecondary)
         assertEquals(Color(0xFFF0E6D2), CosmicOnBackground)
         assertEquals(Color(0xFFB9AE99), CosmicOnSurfaceVariant)

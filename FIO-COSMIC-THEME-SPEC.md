@@ -75,9 +75,9 @@ cartografia celeste e ouro envelhecido.
 |---|---:|---|
 | `cosmicBackground` | `#071D20` | abismo azul-petróleo |
 | `cosmicBackgroundDeep` | `#041417` | profundidade e bordas externas |
-| `cosmicSurface` | `#112C2F` a 88% | vidro principal |
-| `cosmicSurfaceElevated` | `#183638` a 92% | folha, diálogo e seleção elevada |
-| `cosmicSurfaceSoft` | `#214044` a 72% | campos e grupos silenciosos |
+| `cosmicSurface` | `#0D282B` a 95% | vidro principal |
+| `cosmicSurfaceElevated` | `#123033` a 96% | folha, diálogo e seleção elevada |
+| `cosmicSurfaceSoft` | `#163538` a 92% | campos e grupos silenciosos |
 | `cosmicGold` | `#D5B773` | ação, seleção e símbolo principal |
 | `cosmicGoldBright` | `#E8D49B` | brilho focal mínimo |
 | `cosmicCream` | `#F0E6D2` | texto principal |

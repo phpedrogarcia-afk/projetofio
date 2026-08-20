@@ -1,6 +1,8 @@
 package com.projetofio.app.ui
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,6 +16,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
@@ -35,6 +38,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.projetofio.app.domain.Entry
 import com.projetofio.app.ui.theme.FioSpace
+import com.projetofio.app.ui.theme.FioRadius
+import com.projetofio.app.ui.theme.FioThemeContext
 import java.time.format.DateTimeFormatter
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
@@ -161,7 +166,9 @@ internal fun ArchiveScreen(
                         entry = entry,
                         onOpen = { reading = entry },
                     )
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
+                    if (!FioThemeContext.current.isCosmic) {
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
+                    }
                 }
             }
         }
@@ -199,15 +206,30 @@ private fun temporalDistance(entry: Entry): String {
 
 @Composable
 private fun ArchiveRow(entry: Entry, onOpen: () -> Unit) {
+    val cosmic = FioThemeContext.current.isCosmic
+    val shape = RoundedCornerShape(FioRadius.md)
+    val rowModifier = Modifier
+        .fillMaxWidth()
+        .then(
+            if (cosmic) {
+                Modifier
+                    .background(MaterialTheme.colorScheme.surface, shape)
+                    .border(0.5.dp, MaterialTheme.colorScheme.outlineVariant, shape)
+            } else {
+                Modifier
+            },
+        )
+        .clickable(onClick = onOpen)
+        .padding(
+            horizontal = if (cosmic) FioSpace.s3 else 0.dp,
+            vertical = FioSpace.s3,
+        )
+        .semantics(mergeDescendants = true) {
+            contentDescription = "Abrir lembrança de ${displayDay(entry)} para ler ou editar. ${entry.content}"
+        }
     SelectionContainer {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable(onClick = onOpen)
-                .padding(vertical = FioSpace.s3)
-                .semantics(mergeDescendants = true) {
-                    contentDescription = "Abrir lembrança de ${displayDay(entry)} para ler ou editar. ${entry.content}"
-                },
+            modifier = rowModifier,
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(modifier = Modifier.weight(1f)) {

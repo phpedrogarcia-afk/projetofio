@@ -102,12 +102,8 @@ val FioDisplayDate = TextStyle(
 val CosmicTypography = FioTypography.copy(
     headlineMedium = FioTypography.headlineMedium.copy(
         fontFamily = Fraunces,
-        fontWeight = FontWeight.Medium,
+        fontWeight = FontWeight.Normal,
         fontSize = 23.sp,
         lineHeight = 30.sp,
-    ),
-    titleMedium = FioTypography.titleMedium.copy(
-        fontFamily = Fraunces,
-        fontWeight = FontWeight.Medium,
     ),
 )

@@ -419,6 +419,7 @@ private fun TimeOption(
     selected: Boolean,
     onClick: () -> Unit,
 ) {
+    val cosmic = FioThemeContext.current.isCosmic
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -428,6 +429,7 @@ private fun TimeOption(
         shape = RoundedCornerShape(FioRadius.md),
         color = if (selected) MaterialTheme.colorScheme.primaryContainer
         else MaterialTheme.colorScheme.surface,
+        border = if (cosmic && selected) BorderStroke(1.dp, MaterialTheme.colorScheme.outline) else null,
     ) {
         Row(
             modifier = Modifier.padding(horizontal = FioSpace.s3, vertical = FioSpace.s2),

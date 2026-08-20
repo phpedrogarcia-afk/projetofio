@@ -71,6 +71,7 @@ fun FioApp(
 
     Scaffold(
         containerColor = fioScreenContainerColor(),
+        contentColor = MaterialTheme.colorScheme.onBackground,
         bottomBar = {
             if (surface != MainSurface.SETTINGS) {
                 FioPrimaryNavigation(
