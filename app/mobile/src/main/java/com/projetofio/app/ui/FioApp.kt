@@ -126,7 +126,7 @@ private fun FioPrimaryNavigation(
     onSelect: (MainSurface) -> Unit,
 ) {
     val destinations = listOf(
-        Triple(MainSurface.SAVE, "Guardar", R.drawable.ic_write),
+        Triple(MainSurface.SAVE, "Escrever", R.drawable.ic_write),
         Triple(MainSurface.FIND, "Encontrar", R.drawable.ic_find),
         Triple(MainSurface.ARCHIVE, "Arquivo", R.drawable.ic_archive),
     )
@@ -150,7 +150,7 @@ private fun FioPrimaryNavigation(
                     colors = NavigationBarItemDefaults.colors(
                         selectedIconColor = MaterialTheme.colorScheme.primary,
                         selectedTextColor = MaterialTheme.colorScheme.primary,
-                        indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                        indicatorColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.10f),
                         unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
                         unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
                     ),

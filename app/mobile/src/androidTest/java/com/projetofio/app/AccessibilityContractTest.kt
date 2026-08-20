@@ -24,7 +24,7 @@ class AccessibilityContractTest {
             composeRule.onAllNodesWithText("Fio").fetchSemanticsNodes().isNotEmpty()
         }
 
-        listOf("Abrir Guardar", "Abrir Encontrar", "Abrir Arquivo").forEach { description ->
+        listOf("Abrir Escrever", "Abrir Encontrar", "Abrir Arquivo").forEach { description ->
             composeRule
                 .onNodeWithContentDescription(description)
                 .assertWidthIsAtLeast(48.dp)
@@ -38,7 +38,7 @@ class AccessibilityContractTest {
 
     @Test
     fun primaryDestinationsAreAlwaysOneTapAway() {
-        composeRule.onNodeWithContentDescription("Tela Guardar").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Tela Escrever").assertIsDisplayed()
 
         composeRule.onNodeWithContentDescription("Abrir Encontrar").performClick()
         composeRule.onNodeWithContentDescription("Tela Encontrar").assertIsDisplayed()
@@ -46,7 +46,7 @@ class AccessibilityContractTest {
         composeRule.onNodeWithContentDescription("Abrir Arquivo").performClick()
         composeRule.onNodeWithContentDescription("Tela Arquivo").assertIsDisplayed()
 
-        composeRule.onNodeWithContentDescription("Abrir Guardar").performClick()
-        composeRule.onNodeWithContentDescription("Tela Guardar").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Abrir Escrever").performClick()
+        composeRule.onNodeWithContentDescription("Tela Escrever").assertIsDisplayed()
     }
 }

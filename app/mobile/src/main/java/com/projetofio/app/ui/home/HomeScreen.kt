@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -43,10 +44,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.contentDescription
@@ -55,7 +56,6 @@ import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.projetofio.app.domain.ReturnConsentState
 import com.projetofio.app.R
 import com.projetofio.app.ui.theme.FioRadius
@@ -82,6 +82,7 @@ internal fun HomeScreen(
 ) {
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
+    val largeText = LocalDensity.current.fontScale >= 1.2f
     var timeSheet by remember { mutableStateOf(false) }
     var dateSheet by remember { mutableStateOf(false) }
     var policy by remember { mutableStateOf<ReturnPolicy>(ReturnPolicy.Someday) }
@@ -93,12 +94,14 @@ internal fun HomeScreen(
             state.entries.isEmpty() && state.savedNotice
     val saveCopy = if (isFirstSave) "Guardado. O tempo cuida do resto." else "Guardado."
 
-    Column(
-        modifier = Modifier
+    val screenModifier = Modifier
             .fillMaxSize()
             .padding(padding)
-            .padding(horizontal = FioSpace.s6, vertical = FioSpace.s5),
-    ) {
+            .padding(horizontal = FioSpace.s6, vertical = FioSpace.s5)
+            .let { base ->
+                if (largeText) base.verticalScroll(rememberScrollState()) else base
+            }
+    Column(modifier = screenModifier) {
         // Top row: writing keeps the strongest brand treatment; only the
         // secondary Settings action stays outside primary navigation.
         Row(
@@ -111,7 +114,7 @@ internal fun HomeScreen(
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.semantics {
                     heading()
-                    contentDescription = "Tela Guardar"
+                    contentDescription = "Tela Escrever"
                 },
             )
             Spacer(Modifier.weight(1f))
@@ -137,66 +140,85 @@ internal fun HomeScreen(
         )
         Spacer(Modifier.height(FioSpace.s4))
 
-        // The writing surface: no container, no visible border. The user's
-        // words are the darkest, most present element on screen.
+        // Paper within paper: enough presence to feel intentional, without a
+        // heavy card competing with the person's words.
         val interactionSource = remember { MutableInteractionSource() }
-        BasicTextField(
-            value = state.draftText,
-            onValueChange = viewModel::onDraftChanged,
-            textStyle = MaterialTheme.typography.bodyMedium.copy(
-                color = MaterialTheme.colorScheme.onBackground,
-            ),
-            cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+        val editorModifier = if (largeText) {
+            Modifier.fillMaxWidth().heightIn(min = 280.dp)
+        } else {
+            Modifier.fillMaxWidth().weight(1f)
+        }
+        Surface(
+            modifier = editorModifier
+                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(FioRadius.md)),
+            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.48f),
+            shape = RoundedCornerShape(FioRadius.md),
+        ) {
+            BasicTextField(
+                value = state.draftText,
+                onValueChange = viewModel::onDraftChanged,
+                textStyle = MaterialTheme.typography.bodyMedium.copy(
+                    color = MaterialTheme.colorScheme.onBackground,
+                ),
+                cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(FioSpace.s4)
+                    .semantics(mergeDescendants = true) {
+                        contentDescription = "Área de escrita"
+                    },
+                decorationBox = { inner ->
+                    Box {
+                        if (state.draftText.isEmpty()) {
+                            Text(
+                                "Escreva quando quiser.",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.62f),
+                            )
+                        }
+                        inner()
+                    }
+                },
+            )
+        }
+
+        val policyLabel = when (val p = policy) {
+            ReturnPolicy.Someday -> "Algum dia"
+            is ReturnPolicy.InPeriod -> returnPolicyLabel(p.days)
+            is ReturnPolicy.OnDate -> p.date.format(Formatter.ptDate)
+            ReturnPolicy.Never -> "Nunca"
+        }
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f)
-                .semantics(mergeDescendants = true) {},
-            decorationBox = { inner ->
-                Box {
-                    if (state.draftText.isEmpty()) {
-                        Text(
-                            "Escreva quando quiser.",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                        )
-                    }
-                    inner()
-                }
-            },
-        )
-
-        // Temporal policy chip (shows the chosen return policy)
-        AnimatedVisibility(visible = state.draftText.isNotBlank()) {
-            val policyLabel = when (val p = policy) {
-                ReturnPolicy.Someday -> "Algum dia"
-                is ReturnPolicy.InPeriod -> returnPolicyLabel(p.days)
-                is ReturnPolicy.OnDate -> "Em ${p.date.format(Formatter.ptDate)}"
-                ReturnPolicy.Never -> "Nunca"
-            }
-            Row(
-                modifier = Modifier
-                    .padding(top = FioSpace.s3)
-                    .clickable(onClick = { timeSheet = true })
-                    .background(
-                        MaterialTheme.colorScheme.surfaceVariant,
-                        RoundedCornerShape(FioRadius.md),
-                    )
-                    .padding(horizontal = FioSpace.s3, vertical = FioSpace.s2),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_clock),
-                    contentDescription = null,
-                    modifier = Modifier.height(16.dp).width(16.dp),
-                )
-                Spacer(Modifier.width(FioSpace.s1))
-                Text(
-                    text = "Quando isso pode voltar? · $policyLabel",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.semantics { contentDescription = "Quando isso pode voltar? Escolhido: $policyLabel" },
-                )
-            }
+                .padding(top = FioSpace.s3)
+                .clickable(onClick = { timeSheet = true })
+                .heightIn(min = 48.dp)
+                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(FioRadius.md))
+                .padding(horizontal = FioSpace.s3, vertical = FioSpace.s2),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.ic_clock),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.height(18.dp).width(18.dp),
+            )
+            Spacer(Modifier.width(FioSpace.s2))
+            Text(
+                text = "Pode voltar · $policyLabel",
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.weight(1f),
+            )
+            Text(
+                text = "›",
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.semantics {
+                    contentDescription = "Escolher quando pode voltar. Escolhido: $policyLabel"
+                },
+            )
         }
 
         // Error pill (terracotta, discreet, with icon) — replaces the
@@ -288,26 +310,20 @@ internal fun HomeScreen(
                 verticalArrangement = Arrangement.spacedBy(FioSpace.s2),
             ) {
                 Text("Quando isso pode voltar?", style = MaterialTheme.typography.titleMedium)
-                Text(
-                    "O Fio decide o momento exato. Sua escolha apenas guia o que pode voltar.",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 13.sp,
-                )
-                Spacer(Modifier.height(FioSpace.s3))
+                Spacer(Modifier.height(FioSpace.s2))
                 TimeOption("Algum dia", policy is ReturnPolicy.Someday) {
                     policy = ReturnPolicy.Someday; timeSheet = false
                 }
-                TimeOption("Em 7 dias", (policy as? ReturnPolicy.InPeriod)?.days == 7) {
+                TimeOption("Daqui a 1 semana", (policy as? ReturnPolicy.InPeriod)?.days == 7) {
                     policy = ReturnPolicy.InPeriod(7); timeSheet = false
                 }
-                TimeOption("Em 30 dias", (policy as? ReturnPolicy.InPeriod)?.days == 30) {
+                TimeOption("Daqui a 1 mês", (policy as? ReturnPolicy.InPeriod)?.days == 30) {
                     policy = ReturnPolicy.InPeriod(30); timeSheet = false
                 }
-                TimeOption("Em 90 dias", (policy as? ReturnPolicy.InPeriod)?.days == 90) {
+                TimeOption("Daqui a 3 meses", (policy as? ReturnPolicy.InPeriod)?.days == 90) {
                     policy = ReturnPolicy.InPeriod(90); timeSheet = false
                 }
-                TimeOption("Em 1 ano", (policy as? ReturnPolicy.InPeriod)?.days == 365) {
+                TimeOption("Daqui a 1 ano", (policy as? ReturnPolicy.InPeriod)?.days == 365) {
                     policy = ReturnPolicy.InPeriod(365); timeSheet = false
                 }
                 TimeOption("Escolher uma data", policy is ReturnPolicy.OnDate) {
@@ -328,7 +344,8 @@ internal fun HomeScreen(
             // conversion shows the previous day for negative-offset zones
             // after 21:00 local time.
             initialSelectedDateMillis = (policy as? ReturnPolicy.OnDate)
-                ?.date?.atStartOfDay(ZoneId.systemDefault())?.toInstant()?.toEpochMilli(),
+                ?.date?.atStartOfDay(ZoneId.systemDefault())?.toInstant()?.toEpochMilli()
+                ?: LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli(),
         )
         DatePickerDialog(
             onDismissRequest = { dateSheet = false },
@@ -348,7 +365,24 @@ internal fun HomeScreen(
             },
             dismissButton = { TextButton(onClick = { dateSheet = false }) { Text("Cancelar") } },
         ) {
-            DatePicker(state = datePickerState)
+            DatePicker(
+                state = datePickerState,
+                title = {
+                    Text(
+                        "Escolher uma data",
+                        modifier = Modifier.padding(start = FioSpace.s5, top = FioSpace.s4),
+                    )
+                },
+                headline = {
+                    val selected = datePickerState.selectedDateMillis?.let { millis ->
+                        Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate()
+                    }
+                    Text(
+                        selected?.format(Formatter.ptDate) ?: "Escolha um dia",
+                        modifier = Modifier.padding(horizontal = FioSpace.s5, vertical = FioSpace.s3),
+                    )
+                },
+            )
         }
     }
 }
@@ -384,11 +418,11 @@ private fun TimeOption(label: String, selected: Boolean, onClick: () -> Unit) {
 }
 
 private fun returnPolicyLabel(days: Int): String = when (days) {
-    7 -> "Em 7 dias"
-    30 -> "Em 30 dias"
-    90 -> "Em 90 dias"
-    365 -> "Em 1 ano"
-    else -> "Em $days dias"
+    7 -> "Daqui a 1 semana"
+    30 -> "Daqui a 1 mês"
+    90 -> "Daqui a 3 meses"
+    365 -> "Daqui a 1 ano"
+    else -> "Daqui a $days dias"
 }
 
 // ===========================================================================
