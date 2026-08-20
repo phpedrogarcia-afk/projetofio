@@ -8,6 +8,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextReplacement
+import androidx.compose.ui.test.performScrollTo
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.flow.first
@@ -114,5 +115,32 @@ class NoteBasicsContractTest {
             .onNodeWithContentDescription("Excluídos recentemente", substring = true)
             .performClick()
         composeRule.onNodeWithContentDescription("Tela Excluídos recentemente").assertIsDisplayed()
+    }
+
+    @Test
+    fun longRealisticNoteKeepsWordsReadableAndActionsReachable() {
+        val longNote = """
+            Hoje eu percebi que algumas mudanças chegam devagar. Não houve uma grande resposta, apenas a sensação de que eu podia respirar um pouco melhor antes de decidir o próximo passo.
+
+            Caminhei sem pressa e reparei nas árvores, no barulho distante da rua e na maneira como a luz atravessava as folhas. Pensei nas pessoas que estiveram comigo em épocas diferentes e no que cada encontro deixou.
+
+            Ainda existem perguntas sem resposta. Algumas pedem coragem; outras talvez só precisem de tempo. Quero me lembrar de que nem todo silêncio é vazio e de que descansar também pode ser uma forma de continuar.
+
+            Se eu reencontrar estas palavras no futuro, espero não procurar uma conclusão perfeita. Basta reconhecer que, neste dia, eu estava tentando cuidar do que importava sem apagar o que senti.
+
+            No fim, quero guardar isto: eu não precisava resolver a vida inteira hoje. Precisava apenas estar presente o bastante para dar o próximo passo com gentileza.
+        """.trimIndent()
+        createdContents += longNote
+
+        composeRule.onNode(hasSetTextAction()).performTextInput(longNote)
+        composeRule.onNodeWithContentDescription("Guardar lembrança").performClick()
+        composeRule.onNodeWithContentDescription("Abrir Arquivo").performClick()
+        composeRule
+            .onNodeWithContentDescription("Hoje eu percebi", substring = true)
+            .performClick()
+
+        composeRule.onNodeWithText("Hoje eu percebi", substring = true).assertIsDisplayed()
+        composeRule.onNodeWithText("Editar").assertIsDisplayed()
+        composeRule.onNodeWithText("Excluir").performScrollTo().assertIsDisplayed()
     }
 }
