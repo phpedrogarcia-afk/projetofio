@@ -6,14 +6,14 @@
 
 | Nível | Fonte | Cobertura | Quando vence |
 |---|---|---|---|
-| 1 | **Código em produção** (branch `integration/*` aprovada + `AGENTS.md`) | comportamento real | Sempre que houver conflito com qualquer doc desatualizado |
-| 2 | **DECISIONS.md** (ADR ledger, ADR-001..047) | decisões aceitas | Sobre Roadmap, spec ou visão quando conflitarem |
-| 3 | **Princípios** (`docs/02-PRINCIPLES.md` + 11 princípios) | filosofia do produto | Sobre specs detalhadas |
+| 1 | **DECISIONS.md** (ADR ledger Accepted) | intenção normativa de produto, privacidade e arquitetura | Nunca é silenciosamente anulada por código divergente |
+| 2 | **Código + testes executados** | comportamento real comprovado | Vence descrições factuais desatualizadas; divergência com ADR é bug/stop condition |
+| 3 | **Princípios** (`docs/02-PRINCIPLES.md`) | filosofia do produto | Sobre specs detalhadas |
 | 4 | **Product docs** (`docs/01, 03, 04, 11`) | produto e UX | Sobre docs de engenharia |
 | 5 | **Specs de engenharia** (`docs/05, 06, 07, 08, 09`) | arquitetura, data, engine, privacidade | — |
 | 6 | **Roadmap** (`docs/10`) | direção | Nunca sobre um ADR Accepted |
-| 7 | **Founder Vision** (`docs/11`) | intenção | Registrada, mas ADR Accepted pode refletir decisão posterior documentada |
-| 8 | **Atlas** (`docs/atlas/*`, esta missão) | radiografia + pesquisa externa | Fonte de LENTE, nunca de NORMA; se atlas e código divergem, código vence e o atlas deve ser corrigido |
+| 7 | **Founder Vision** (`docs/11`) | intenção de longo prazo | Não autoriza item Frozen/Planned |
+| 8 | **Atlas** (`docs/atlas/*`) | radiografia + roteamento | Fonte de LENTE, nunca de NORMA; drift deve ser corrigido |
 
 ## 2. Arquivos por assunto (para onde olhar primeiro)
 
@@ -36,6 +36,6 @@
 
 1. O **ledger (DECISIONS.md) é a única fonte de decisões**; se uma decisão existe só em chat/documento solto, ela não existe até virar ADR.
 2. Docs superseded/frozen (ADR-005, 019, 022, 023, 028, 030) **não são fontes**; ler apenas para história.
-3. O Atlas (`docs/atlas/*`) é radiografia com timestamp; ele envelhece a cada commit. **Antes de seguir o Atlas, verifique o código** — o Atlas existe para acelerar, não para substituir a verificação.
+3. O Atlas (`docs/atlas/*`) é radiografia com timestamp; ele envelhece a cada commit. Verifique no código apenas a afirmação factual necessária à tarefa — não faça scan integral por padrão.
 4. `plans/PROJECT-STATE.md` declara o estado para o Codex; quando divergir do código, o código vence e o PROJECT-STATE deve ser corrigido (isso é a definição de drift que a missão auditou).
 5. Testes são evidência de comportamento; **evidência de execução** (output do gradle) vale mais que presença de arquivo de teste.

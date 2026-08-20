@@ -1,31 +1,51 @@
-# FIO-PXX — <título curto e acionável>
+# FIO-PXX — actionable title
 
 **Status:** NOW | READY | BLOCKED | DONE
-**Tipo:** code | research | doc | device
-**Branch:** `integration/<descrição-YYYYMMDD>`
-**Evidência mínima exigida:** (o que um agente novo deve ver para acreditar)
+**Type:** code | research | doc | device
+**Context:** SMALL (2–5 files) | MEDIUM (5–10) | LARGE (justified)
+**Branch:** `codex/<description-YYYYMMDD>`
 
-## 1. Objetivo (2-3 frases)
-O que muda no produto/código e por quê. Sem ambiguidade: uma entrega = um resultado verificável.
+## READ FIRST
 
-## 2. Contrato (o que é obrigatório)
-- Comportamentos e invariantes preservados (referenciar `docs/atlas/INVARIANTS.md` por número)
-- Comportamentos novos com testes de contrato (happy + adversarial)
-- O que explicitamente NÃO faz (escopo negativo)
+Only mandatory sources for this task.
 
-## 3. Contexto técnico (nomes reais)
-Arquivos/classes/queries que serão tocados; schema version; migrations se houver; flags se houver.
+## OPTIONAL
 
-## 4. Critérios de aceitação (verificáveis por script/teste)
-1. `./gradlew :mobile:testDebugUnitTest --no-daemon` verde, com N total crescente ou estável
-2. Testes novos do packet presentes e nomeados
-3. Nenhum drift novo em `PROJECT-STATE.md` (ou drift corrigido)
-4. ADR novo se mudar princípio/privacidade/produto
+Read only when a named condition occurs.
 
-## 5. Riscos e portas de escape
-O que pode dar errado e onde parar (kill switch do packet).
+## DO NOT READ FOR THIS TASK
 
-## 6. Evidence log
-| Data | O que | Output |
+Explicitly unrelated areas and historical reports.
+
+## FILES EXPECTED TO CHANGE
+
+Closed probable path list. Expansion requires explanation.
+
+## TESTS TO RUN
+
+Exact commands from `docs/TEST-LEVELS.md`; do not write “run tests”.
+
+## Objective
+
+One outcome in two or three sentences.
+
+## Contract
+
+- Refer to numbered invariants; do not duplicate them.
+- State new behavior and adversarial boundary.
+- State explicit negative scope.
+
+## Acceptance
+
+Verifiable results, including stable test count and documentation/ADR only when
+behavior or authority changed.
+
+## Risks and stop conditions
+
+Kill switch, scope-expansion boundary and rollback.
+
+## Evidence log
+
+| Date | Evidence | Output |
 |---|---|---|
 | | | |

@@ -2,8 +2,35 @@
 
 **Status:** DECISION REQUIRED — nenhum código autorizado
 **Tipo:** decisão de produto + schema/engine/UI se aprovada
+**Context:** SMALL para decidir (5 arquivos); LARGE somente após aprovação A1/A2
 **Branch prevista:** `feature/fio-temporal-integrity-20260820`
 **Severidade atual:** P0 de confiança — a interface oferece escolhas que não são aplicadas
+
+## READ FIRST
+
+- este packet
+- `docs/atlas/TIME-MAP.md`
+- ADR-043 em `docs/DECISIONS.md`
+- `ui/home/HomeScreen.kt` somente para confirmar as opções visuais
+- `domain/Models.kt` somente para confirmar o schema atual
+
+## OPTIONAL
+
+`docs/07-RETURNS-ENGINE.md` apenas para comparar A1/A2 com frequência, consentimento e quiet hours.
+
+## DO NOT READ FOR THIS TASK
+
+Search, crypto, design reports, research semântica, Manus reports e código de
+migration. A decisão vem antes da implementação.
+
+## FILES EXPECTED TO CHANGE
+
+Nenhum arquivo de código durante a decisão. Depois da aprovação, criar plano e
+packet de implementação com lista fechada própria.
+
+## TESTS TO RUN
+
+Nenhum antes da decisão. Não usar testes para escolher silenciosamente A1/A2/B/C.
 
 ## 1. Problema confirmado
 
@@ -106,8 +133,8 @@ validado separadamente porque não altera schema nem motor.
 
 | Data | Evidência | Resultado |
 |---|---|---|
-| 2026-08-20 | `FioApp.kt` | política é estado local e `viewModel.saveEntry()` não recebe argumento |
+| 2026-08-20 | `ui/home/HomeScreen.kt` | política é estado local e `viewModel.saveEntry()` não recebe argumento |
 | 2026-08-20 | `FioViewModel.kt` + `FioService.kt` | apenas conteúdo é passado; Entry usa default `ELIGIBLE` |
 | 2026-08-20 | `Entities.kt` + schema 3 | não existem colunas de janela solicitada |
 | 2026-08-20 | `TimeReturnEngine.kt` | elegibilidade usa somente `returnMode`, sem data pedida |
-| 2026-08-20 | `NoteScreen` em `FioApp.kt` | “Devolver para agora” usa somente `remember` local, sem serviço/histórico |
+| 2026-08-20 | `NoteScreen` em `ui/entry/EntryDetailScreen.kt` | “Devolver para agora” usa somente `remember` local, sem serviço/histórico |

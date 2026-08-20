@@ -834,3 +834,25 @@ Do not rewrite an Accepted ADR to hide its history. Add a superseding entry.
   a diferença entre TXT/Markdown e evita “lote” ou linguagem de armazenamento
   como conhecimento pressuposto.
 - Supersedes: none
+
+## ADR-050 — Permitir captura temporária somente em builds de desenvolvimento
+
+- Date: 2026-08-20
+- Status: Accepted
+- Decision: Enquanto o fundador estiver validando visualmente o aplicativo,
+  as variantes `debug` e `validation` permitem screenshot e gravação de tela
+  ao não aplicar `FLAG_SECURE`. A variante `release` mantém `FLAG_SECURE` e o
+  `PrivacyCover` normal. O `PrivacyCover` continua funcionando em todas as
+  variantes durante a resolução do bloqueio/acesso, pois também é uma barreira
+  contra exibição prematura de conteúdo.
+- Reason: O fundador solicitou capturas temporárias para acompanhar e avaliar
+  a interface durante o desenvolvimento, com reversão quando pedir.
+- Consequence: Capturas de desenvolvimento devem usar somente dados sintéticos
+  e nunca servem como evidência da proteção de release. A exceção é controlada
+  por `BuildConfig.SCREEN_CAPTURE_ALLOWED`; o valor deve ser `false` por padrão
+  e explicitamente em `release`. Quando o fundador pedir para voltar, remover a
+  permissão de `debug`/`validation`, restaurar os testes de bloqueio e registrar
+  a decisão que encerra esta exceção. Nenhuma mudança em criptografia, backup,
+  app lock, exportação ou política de produção é autorizada.
+- Supersedes: none; exceção temporária e limitada ao desenvolvimento sobre a
+  implementação de `ADR-035`.

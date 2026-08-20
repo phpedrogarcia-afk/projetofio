@@ -53,8 +53,9 @@ class ActivityPrivacyFlagTest {
     val activityRule = createAndroidComposeRule<MainActivity>()
 
     @Test
-    fun contentWindowAlwaysHasSecureFlag() {
+    fun contentWindowMatchesBuildCapturePolicy() {
         val flags = activityRule.activity.window.attributes.flags
-        org.junit.Assert.assertTrue(flags and WindowManager.LayoutParams.FLAG_SECURE != 0)
+        val hasSecureFlag = flags and WindowManager.LayoutParams.FLAG_SECURE != 0
+        org.junit.Assert.assertEquals(!BuildConfig.SCREEN_CAPTURE_ALLOWED, hasSecureFlag)
     }
 }

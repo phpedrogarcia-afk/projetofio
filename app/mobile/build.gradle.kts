@@ -18,9 +18,14 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("boolean", "TIME_RETURNS_ENGINEERING_ENABLED", "false")
         buildConfigField("boolean", "LOCAL_IMPORT_ENGINEERING_ENABLED", "false")
+        buildConfigField("boolean", "SCREEN_CAPTURE_ALLOWED", "false")
     }
 
     buildTypes {
+        debug {
+            // Temporary founder-authorized visual-validation aid. Release stays protected.
+            buildConfigField("boolean", "SCREEN_CAPTURE_ALLOWED", "true")
+        }
         create("validation") {
             initWith(getByName("debug"))
             applicationIdSuffix = ".validation"
@@ -28,9 +33,11 @@ android {
             matchingFallbacks += listOf("debug")
             buildConfigField("boolean", "TIME_RETURNS_ENGINEERING_ENABLED", "true")
             buildConfigField("boolean", "LOCAL_IMPORT_ENGINEERING_ENABLED", "true")
+            buildConfigField("boolean", "SCREEN_CAPTURE_ALLOWED", "true")
         }
         release {
             isMinifyEnabled = false
+            buildConfigField("boolean", "SCREEN_CAPTURE_ALLOWED", "false")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",

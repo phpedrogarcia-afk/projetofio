@@ -1,6 +1,13 @@
 # UX-SURFACE-MAP — cada tela, seu propósito e seus contratos
 
-**Estado examinado:** working tree FIO-P18 em 2026-08-20 · **Evidência:** `E4` (`ui/FioApp.kt`, `FioViewModel.kt`) + 28 testes instrumentados API 26 + `E1` (`docs/03-UX.md`, ADR-043/044/045/048/049).
+**Estado examinado:** branch de eficiência em 2026-08-20 · **Evidência:**
+`E4` (`ui/FioApp.kt`, arquivos por superfície, `FioViewModel.kt`) + 28 testes
+instrumentados no AVD API 26 + `E1` (`docs/03-UX.md`, ADR-043/044/045/048/049).
+
+Arquivos: Home `ui/home/HomeScreen.kt`; Encontrar
+`ui/search/SearchScreen.kt`; Arquivo `ui/archive/ArchiveScreen.kt`; nota
+`ui/entry/EntryDetailScreen.kt`; Return `ui/returns/ReturnScreen.kt`; Ajustes
+`ui/settings/SettingsScreen.kt`; privacidade `ui/security/PrivacyScreens.kt`.
 
 Navegação: **single activity, navegação por estado** (`MainSurface {SAVE, FIND, ARCHIVE, SETTINGS}`), sem NavController. Guardar abre o app; Guardar/Encontrar/Arquivo ficam na barra inferior; Ajustes é secundário no cabeçalho (ADR-048).
 
