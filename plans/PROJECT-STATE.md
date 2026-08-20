@@ -15,7 +15,7 @@ Documento de estado vivo do ProjetoFio. O código vence quando divergir da docum
 | Encontrar | Busca lexical local scan-on-demand conectada à produção; query somente em memória; apagados excluídos | `LocalSearchService.kt`, `FioApplication.kt`, `FioDao.kt` |
 | Semântica | Protótipo híbrido removível, não conectado à aplicação e sem modelo ML embarcado | `SemanticSearchPrototype.kt`, ADR-040/041 |
 | Search × Returns | Sistemas separados; Search não seleciona nem comanda Returns | `FioApplication.kt`, `SearchRepository.kt`, `TimeReturnsService.kt` |
-| UI | Guardar/Encontrar/Arquivo; Archive anuncia leitura/edição; Ajustes usa visão geral e páginas focadas em linguagem humana | `FioApp.kt`, ADR-048/049, `packets/FIO-P17.md`, `packets/FIO-P18.md` |
+| UI | Guardar/Encontrar/Arquivo; superfícies Compose separadas por pasta; Ajustes usa visão geral e páginas focadas em linguagem humana | `ui/FioApp.kt`, `ui/{home,search,archive,entry,returns,settings}/`, ADR-048/049 |
 | Importação/exportação | Import local Markdown/Texto com rollback; export Markdown/Texto + SHA-256 | serviços de import/export e testes correspondentes |
 | Rede/conta/sync | Ausentes; aplicativo permanece local-first | Manifest, dependências e wiring do aplicativo |
 | Analytics | Analytics remoto ausente e estado efetivo desabilitado | `RoomFioRepository.kt`, dependências |
@@ -37,7 +37,7 @@ Documento de estado vivo do ProjetoFio. O código vence quando divergir da docum
 
 - Branch de transferência confirmada: `research/manus-fio-master-atlas-20260819`.
 - HEAD recebido do Atlas: `771074e069eed457aba1c9cda42e9c697f6d66d7`.
-- Branch atual de UX: `feature/fio-primary-navigation-20260820`.
+- Branch atual de eficiência/contexto: `codex/context-efficiency-v1`, derivada da branch de UX.
 - `main` permanece snapshot antigo e não é fonte do estado integrado atual.
 - A worktree anterior `codex/v0-time-only-checkpoint` contém alterações locais e deve permanecer preservada até integração deliberada.
 - Estados de PR descritos pelos relatórios do Atlas são históricos até consulta explícita ao GitHub.
@@ -66,7 +66,10 @@ Documento de estado vivo do ProjetoFio. O código vence quando divergir da docum
 - Abertura confirmada até o gate biométrico, sem crash fatal observado.
 - A inspeção interna completa foi executada no AVD `Fio_API26` (Android 8/API 26): 28 testes instrumentados; navegação, funções básicas e páginas de Ajustes confirmadas pela hierarquia real.
 - A inspeção no Poco não contorna a impressão digital/PIN e permanece pendente da autenticação do usuário.
-- O código FIO-P18 revisado foi instalado no Poco com preservação de dados em 2026-08-20; versão `0.1.0-dev`, MainActivity em primeiro plano, sem fatal recente. SHA-256 do APK atual: `52E7A8C289D4B5333E23860CFA353EB17997B2236A452A5367C92A13A44B4D85`.
+- O build debug temporário de ADR-050 foi instalado no Poco com preservação de
+  dados em 2026-08-20; versão `0.1.0-dev`, MainActivity em primeiro plano e
+  captura validada sem reter a imagem. SHA-256 instalado:
+  `2EB546FDB42E14B2165BF48A7A5FA4B0E081C6D96464E5D708F29B87E4DFEFC5`.
 
 ## Próximo trabalho autorizado
 

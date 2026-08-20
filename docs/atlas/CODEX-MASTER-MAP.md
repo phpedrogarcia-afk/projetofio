@@ -1,6 +1,8 @@
-# CODEX-MASTER-MAP — o mapa que o Codex lê antes de tocar em qualquer arquivo
+# CODEX-MASTER-MAP — referência arquitetural do ProjetoFio
 
-Este documento é a visão única do sistema para um agente de código que nunca viu o ProjetoFio. Ele combina os nove mapas do Atlas em uma sequência de leitura obrigatória. **Ordem de leitura: esta página → INVARIANTS → os mapas indicados por assunto → o packet em fila → o código.**
+Este documento é a visão arquitetural ampla do sistema. O boot normal começa em
+`AI-START-HERE.md` e no packet atual; leia este mapa inteiro somente em auditoria,
+trabalho cross-cutting ou quando o roteamento dirigido for insuficiente.
 
 ## 1. O que é o Fio, em uma frase
 
@@ -10,7 +12,7 @@ Um diário autobiográfico Android, 100% local e criptografado antes do disco, c
 
 | Camada | Pacotes | O que faz | Arquivos-chave |
 |---|---|---|---|
-| UI (Compose, single-activity) | `ui/` | Home (editor+pátina+time sheet), Arquivo (+busca), Return, Settings; estado em `FioViewModel.FioUiState` | `FioApp.kt` (1.914 linhas — a tela inteira), `FioViewModel.kt` |
+| UI (Compose, single-activity) | `ui/` | Orquestração curta em `FioApp`; Home, Search, Archive, Note, Return, Settings e privacy em arquivos por superfície; estado em `FioViewModel.FioUiState` | `ui/FioApp.kt`, `ui/{home,search,archive,entry,returns,settings,security}/`, `FioViewModel.kt` |
 | Serviço de aplicação | `application/` | `FioService` (guarda: draft→cifra→insere, autosave), `ImportService` (preview→commit atômico), `ExportCoordinator` (Markdown+SHA-256, SAF), `TimeReturnsService` (orquestra devolução), `AndroidDocumentWriter` | `FioService.kt` |
 | Domínio puro (Kotlin, testável) | `domain/` | `TimeReturnEngine` (elegibilidade, cap 7d, bootstrap, quiet hours, buckets), `Models.kt` (Entry, ReturnAttempt, SearchQuery...), `LocalImportParser` | `TimeReturnEngine.kt` |
 | Devoluções (Android) | `returns/` | `AndroidTimeReturns` (WorkManager inexact; cancela on never/pause/delete) | `AndroidTimeReturns.kt` |
@@ -42,7 +44,10 @@ O catálogo completo está em `docs/atlas/INVARIANTS.md`. Os cinco que mais pega
 
 ## 5. Como trabalhar aqui (protocolo resumido)
 
-Branch de integração/research separada; `main` nunca tocada; PR antes de merge; testes unitários verdes antes de commit (134 hoje); instrumentados rodam só em aparelho; gates humanos nunca reportados como aprovados sem evidência; decisão nova = ADR novo. Detalhes completos em `docs/atlas/CODEX-EXECUTION-PROTOCOL.md`.
+Branch própria; `main` nunca tocada; PR antes de merge; testes definidos pelo
+packet e por `docs/TEST-LEVELS.md`; gates humanos nunca reportados como aprovados
+sem evidência; decisão nova = ADR novo. Protocolo detalhado permanece em
+`docs/atlas/CODEX-EXECUTION-PROTOCOL.md`.
 
 ## 6. O que NÃO existe (e que agentes tendem a inventar)
 
@@ -50,4 +55,8 @@ Não existe: servidor, conta, sync, LLM, chat, embeddings em produção, FTS5, h
 
 ## 7. Números que ancoram o mapa
 
-134 testes unitários verdes; Room schema 3; minSdk 26 / target 37 preview; com.projetofio.app; AES-256-GCM via Keystore; export v1.0 Markdown+SHA-256; 1 canal de notificação low; cap de 7 dias entre devoluções; busca: debounce 300ms, Option A scan-on-demand, RRF k=60 no protótipo.
+Room schema 3; minSdk 26 / targetSdk 36; `com.projetofio.app`; AES-256-GCM
+via Keystore; export v1.0 Markdown+SHA-256; um canal de notificação low; cap de
+7 dias entre devoluções; busca com debounce 300 ms, Option A scan-on-demand e
+RRF k=60 apenas no protótipo. Contagens de testes pertencem ao packet/evidência,
+não ao boot map.

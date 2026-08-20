@@ -1,6 +1,8 @@
-# TEST-MAP — o que está coberto, por quem, e onde estão as lacunas
+# TEST-MAP — referência de cobertura e lacunas
 
-**Estado examinado:** HEAD `9cfd5f1` · **Evidência:** `E4` — leitura das 31 suítes unit + 12 instrumentadas; execução real: **134 testes unitários verdes, 0 falhas** (2026-08-19).
+**Status:** REFERENCE. O router operacional atual é `docs/TEST-LEVELS.md`.
+Este mapa preserva o inventário do checkpoint examinado em HEAD `9cfd5f1`;
+resultados históricos não substituem a execução exigida pelo packet.
 
 ## 1. Mapa por sistema
 
