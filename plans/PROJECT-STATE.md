@@ -1,57 +1,68 @@
-# PROJECT-STATE — snapshot vivo (2026-08-17)
+# PROJECT-STATE — snapshot vivo (2026-08-20)
 
-Documento de estado vivo. O Codex deve ler este arquivo antes de tudo; os detalhes completos vivem nos relatórios das missões. Quando algo mudar, atualize este arquivo **e** o registro completo no relatório da missão correspondente.
+Documento de estado vivo do ProjetoFio. O código vence quando divergir da documentação; resultados históricos não substituem uma validação reproduzida no ambiente atual.
 
 ## Estado geral
 
-| Dimensão | Estado | Evidência |
-|----------|--------|-----------|
-| Especificação | v0.1 canônica (`docs/`), Android inicial-client (ADR-033) | `docs/01-PRODUCT.md` |
-| Plataforma | Android nativo, Kotlin/Compose/Room/KSP, minSdk 26, ID `com.projetofio.app` | `app/` |
-| Engine | Temporal M2/M3/M4 implementado e endurecido (bootstrap, cap, quiet-hours, DST, fusos extremos) | `TimeReturnEngine.kt`, `EngineTortureTest.kt` (18 testes) |
-| Criptografia | Keystore AES-256-GCM; finding P0 (surrogate halves → `0x3F`) corrigido na Missão 1 | `AesGcmContentCipher.kt`, `CRYPTO-REVIEW-PACKET.md` |
-| UI | Design v1 Verde-Sálvia implementado (Home, editor, picker ADR-043, arquivo tipográfico, pátina temporal, pill "Guardado.") | branch `feature/design-ux-v1` integrada ao branch de integração |
-| Testes unitários | **99 verdes, 0 falhas** (51 → 99 durante a Missão 1) | `mobile/build/test-results/testDebugUnitTest/*.xml` |
-| Testes instrumentados | **Não executados** — sem AVD no ambiente; `M2AndroidContractTest` é o gate CI | `BLOCKED — HUMAN/DEVICE VALIDATION REQUIRED` |
-| Export | Markdown/Texto + checksum SHA-256 ADR-046, round-trip verificado, resiliente a falhas de SAF | `ExportRoundTripTest.kt`, `StorageFailureTest.kt` |
-| Migração | Room 2→3 verificada byte a byte (500 entries); schema 4 **não existe** | `Migration2To3Test.kt` |
-| Pilot | Pacote preparado em `pilot/`, **não iniciado** (gate humano do fundador) | `PILOT-PROTOCOL.md` |
-| Semantic M4 | Encerrado sem modelo selecionado (ADR-041); corpus/rubric v1 congelados; nenhuma reconexão | `docs/DECISIONS.md` |
-| Missões Manus | Missão 1 (hardening) e Missão 2 (red team + piloto + handoff) concluídas em branches de integração; `main` intacta | `MANUS-HARDENING-FINAL.md`, `MANUS-PRE-CODEX-FINAL.md` |
+| Dimensão | Estado atual | Evidência |
+|---|---|---|
+| Especificação | Fio v0.1 canônico; Android é o cliente inicial | `docs/01-PRODUCT.md`, ADR-033 |
+| Plataforma | Android nativo, Kotlin, Compose, Room e KSP; minSdk 26; ID `com.projetofio.app` | `app/mobile/build.gradle.kts` |
+| Persistência | Room schema 3; conteúdo e fingerprints sensíveis em envelopes criptografados | `FioDatabase.kt`, `Entities.kt`, schemas Room |
+| Criptografia | AES-256-GCM apoiado pelo Android Keystore; revisão independente ainda aberta | `AesGcmContentCipher.kt`, `CRYPTO-REVIEW-PACKET.md` |
+| Guardar | Editor, draft criptografado e transação Entry+clearDraft implementados | `FioService.kt`, `RoomFioRepository.kt` |
+| Reencontrar | Engine temporal, consentimento, cap, quiet hours e notificação discreta implementados | `TimeReturnEngine.kt`, `TimeReturnsService.kt` |
+| Encontrar | Busca lexical local scan-on-demand conectada à produção; query somente em memória; apagados excluídos | `LocalSearchService.kt`, `FioApplication.kt`, `FioDao.kt` |
+| Semântica | Protótipo híbrido removível, não conectado à aplicação e sem modelo ML embarcado | `SemanticSearchPrototype.kt`, ADR-040/041 |
+| Search × Returns | Sistemas separados; Search não seleciona nem comanda Returns | `FioApplication.kt`, `SearchRepository.kt`, `TimeReturnsService.kt` |
+| UI | Design v1 Verde-Sálvia, editor, Arquivo, busca e superfícies de devolução implementados | `FioApp.kt` |
+| Importação/exportação | Import local Markdown/Texto com rollback; export Markdown/Texto + SHA-256 | serviços de import/export e testes correspondentes |
+| Rede/conta/sync | Ausentes; aplicativo permanece local-first | Manifest, dependências e wiring do aplicativo |
+| Analytics | Analytics remoto ausente e estado efetivo desabilitado | `RoomFioRepository.kt`, dependências |
+| Testes unitários | 134 métodos presentes; última execução verde documentada em 2026-08-19. Revalidação de 2026-08-20 bloqueada antes da suíte pela verificação de dependências | `docs/atlas/TEST-MAP.md`, fontes de teste |
+| Testes instrumentados | 25 métodos presentes; execução em aparelho ainda não registrada como gate aprovado | `mobile/src/androidTest/` |
+| Pilot | Material preparado; piloto não iniciado | `pilot/` |
 
-## Branches vivas
+## Missões herdadas
 
-| Branch | Conteúdo | Status |
-|--------|----------|--------|
-| `main` | Snapshot original (M1 baseline) | Intacta — nada mergeado |
-| `codex/v0-time-only-checkpoint` | PR #1 (DRAFT): M1 baseline + checkpoints M2/M3/M4, 100 arquivos | Aguarda merge do fundador |
-| `feature/design-ux-v1` | PR #3 (OPEN): design v1 + implementação Verde-Sálvia, 50 arquivos | Título/corpo desatualizados — atualização redigida em `DOCUMENTATION-DRIFT-AND-PR-CLEANUP.md` |
-| `integration/manus-rehearsal-20260817` | Missão 1: 17 campanhas, fix P0, relatórios | Completa, pushada |
-| `integration/manus-pre-codex-20260817` | Missão 2: red team, correções triviais, drift, piloto, handoff | Completa, pushada |
+| Missão | Resultado | Estado |
+|---|---|---|
+| M1 | Hardening e failure hunting | Concluída |
+| M2 | Product Red Team, preparação de piloto e handoff | Concluída; gates humanos permanecem abertos |
+| M3 | Refinamento de UX e interação | Concluída |
+| M4 | Busca lexical, arquitetura semântica removível e histórico factual de reencontros | Concluída |
+| M5 | FIO Master Atlas, mapas, invariantes, riscos e fila de packets | Concluída |
 
-## Números exatos (em 2026-08-17)
+## Git e transferência
 
-- Commits totais no branch de integração: 20+ (lista em `git log`)
-- Testes: 99 unitários verdes
-- Findings: 1 P0 corrigido; 7 recomendações P3/P4 documentadas; 9 ideias no `IDEA-INBOX.md`
-- ADRs aceitos: 033–047 (+ ledger `docs/DECISIONS.md`)
-- Documentos de missão: `MANUS-HARDENING-FINAL.md` (raiz), `MANUS-PRE-CODEX-FINAL.md` (raiz)
+- Branch de transferência confirmada: `research/manus-fio-master-atlas-20260819`.
+- HEAD recebido do Atlas: `771074e069eed457aba1c9cda42e9c697f6d66d7`.
+- Packet documental atual: `integration/codex-pq01-project-state-20260820`.
+- `main` permanece snapshot antigo e não é fonte do estado integrado atual.
+- A worktree anterior `codex/v0-time-only-checkpoint` contém alterações locais e deve permanecer preservada até integração deliberada.
+- Estados de PR descritos pelos relatórios do Atlas são históricos até consulta explícita ao GitHub.
 
-## O que está bloqueado e por quê
+## Drifts e riscos conhecidos
 
-1. **Merge do PR #1** — decisão do fundador.
-2. **Gates humanos** (TalkBack real, segundo OEM, AVD/instrumentados, revisão independente de cripto) — exigem dispositivo físico.
-3. **Piloto** — exige consentimento legal, recrutamento e APK de distribuição (decisão do fundador).
-4. **Schema 4** — trade-off UI-only aceito; reavaliar só com decisão nova.
-5. **PR #3** — descrição desatualizada; atualização redigida, aplicação autorizada pelo fundador.
+1. O protótipo híbrido calcula candidatos exclusivamente vetoriais, mas a montagem atual dos resultados descarta candidatos sem hit lexical; ele não comprova recall semântico exclusivo no comportamento presente.
+2. A reexecução unitária precisa incorporar de forma auditável os novos artefatos ao metadata de verificação do Gradle; a segurança não deve ser desabilitada para obter build verde.
+3. `NEXT-WORK.md` e a fila de hardening ainda precisam da sincronização governada por `FIO-PQ-02`.
+4. Evidência histórica de PR, teste ou aparelho não deve ser promovida a estado atual sem nova verificação.
 
-## O que NUNCA fazer (regras herdadas)
+## Gates abertos
 
-Não adicionar streaks/pontos/badges, feeds/sociais, ads, chat de IA/profiling/labels sentimentais, notificações de engajamento, produtividade disfarçada, acesso server-side a plaintext/embeddings, Book/Legacy congelados, nem nova dependência de produção com fluxo de rede de conteúdo privado. Não executar o plano iOS superado (ADR-033). Não reportar gates humanos como aprovados. Não reabrir M4 sem nova decisão (ADR-040/041).
+- TalkBack em aparelho físico.
+- Segundo fabricante/modelo Android.
+- PrivacyCover em aparelho.
+- Revisão independente de criptografia.
+- Testes instrumentados completos em dispositivo/AVD.
+- Consentimento e execução do piloto.
+- Decisões de produto listadas em `docs/atlas/DECISION-INDEX.md`.
 
-## Próximos passos reais (ver `NEXT-WORK.md`)
+## Próximo trabalho autorizado
 
-1. Fundador executa gates humanos do handoff.
-2. Fundador mergeia PR #1.
-3. Fundador atualiza PR #3 e decide veículo das branches Manus.
-4. Fundador decide as 3 decisões abertas (ReturnPolicy schema 4, zero-width, analytics remoto).
+Seguir `packets/EXECUTION-QUEUE.md`. Após o fechamento de `FIO-PQ-01`, o próximo packet é `FIO-PQ-02`; nenhuma feature deve ser escolhida fora da fila.
+
+## Regras que permanecem
+
+Não adicionar gamificação, feed/social, publicidade, IA interpretativa, profiling, histórico de queries, rede de conteúdo privado ou comando semântico sobre Returns. Não declarar gates humanos aprovados sem evidência e não integrar em `main` sem decisão explícita.

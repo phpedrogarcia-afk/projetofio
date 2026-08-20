@@ -1,13 +1,12 @@
 # EXECUTION-QUEUE — fila de execução atual (manter no topo sempre verdadeiro)
 
-**Atualizado em:** 2026-08-19 (Missão 5 — Atlas). A fila é viva: quando um packet vira NOW, mover para o topo e remover de DONE do topo. Histórico de packets concluídos fica em `plans/` (M1-M4 execution queues históricas).
+**Atualizado em:** 2026-08-20 (FIO-PQ-01 concluído). A fila é viva: quando um packet vira NOW, mover para o topo e remover de DONE do topo. Histórico de packets concluídos fica em `plans/` e nos documentos `packets/FIO-*.md`.
 
 ## Fila atual
 
 | Ordem | Packet | Tipo | Status |
 |---|---|---|---|
-| 1 | FIO-PQ-01 (PROJECT-STATE atualizado) | doc | **NOW** |
-| 2 | FIO-PQ-02 (NEXT-WORK/HARDENING-QUEUE sincronizados) | doc | READY |
+| 1 | FIO-PQ-02 (NEXT-WORK/HARDENING-QUEUE sincronizados) | doc | **NOW** |
 | 3 | FIO-PQ-03 (D-1..D-5 propostas ao fundador) | doc | READY |
 | 4 | FIO-P06 (busca lexical em escala 1k-10k) | code | READY |
 | 5 | FIO-P07 (import hardening OOM) | code | READY |
@@ -17,6 +16,12 @@
 | 9 | FIO-P03 (crypto review) | device/review | depois de P01 |
 | 10 | FIO-P12 (device gate semântica) | device | depois de D-3 + licença HF |
 | 11 | FIO-P08/P11/P14/P15/P16 | product | depois das decisões D-* |
+
+## Concluídos nesta fila
+
+| Packet | Tipo | Estado | Evidência |
+|---|---|---|---|
+| FIO-PQ-01 (PROJECT-STATE atualizado) | doc | DONE | `packets/FIO-PQ-01.md`, `plans/PROJECT-STATE.md` |
 
 ## Histórico (contexto)
 
