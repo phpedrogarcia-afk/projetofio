@@ -22,6 +22,7 @@
 |---|---|---|---|
 | FIO-PQ-01 (PROJECT-STATE atualizado) | doc | DONE | `packets/FIO-PQ-01.md`, `plans/PROJECT-STATE.md` |
 | FIO-PQ-02 (NEXT-WORK/HARDENING-QUEUE sincronizados) | doc | DONE | `packets/FIO-PQ-02.md`, `plans/NEXT-WORK.md`, `plans/HARDENING-QUEUE.md` |
+| FIO-PB-01 (build verificável + reinstalação autorizada) | device | DONE | `packets/FIO-PB-01.md`, 134 unitários verdes, instalação ADB preservando dados |
 
 ## Histórico (contexto)
 

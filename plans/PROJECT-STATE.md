@@ -19,7 +19,7 @@ Documento de estado vivo do ProjetoFio. O código vence quando divergir da docum
 | Importação/exportação | Import local Markdown/Texto com rollback; export Markdown/Texto + SHA-256 | serviços de import/export e testes correspondentes |
 | Rede/conta/sync | Ausentes; aplicativo permanece local-first | Manifest, dependências e wiring do aplicativo |
 | Analytics | Analytics remoto ausente e estado efetivo desabilitado | `RoomFioRepository.kt`, dependências |
-| Testes unitários | 134 métodos presentes; última execução verde documentada em 2026-08-19. Revalidação de 2026-08-20 bloqueada antes da suíte pela verificação de dependências | `docs/atlas/TEST-MAP.md`, fontes de teste |
+| Testes unitários | 134 testes verdes, 0 falhas, 0 erros e 0 ignorados em 2026-08-20, com dependency verification ativa | relatórios XML de `testDebugUnitTest`, `packets/FIO-PB-01.md` |
 | Testes instrumentados | 25 métodos presentes; execução em aparelho ainda não registrada como gate aprovado | `mobile/src/androidTest/` |
 | Pilot | Material preparado; piloto não iniciado | `pilot/` |
 
@@ -45,8 +45,8 @@ Documento de estado vivo do ProjetoFio. O código vence quando divergir da docum
 ## Drifts e riscos conhecidos
 
 1. O protótipo híbrido calcula candidatos exclusivamente vetoriais, mas a montagem atual dos resultados descarta candidatos sem hit lexical; ele não comprova recall semântico exclusivo no comportamento presente.
-2. A reexecução unitária precisa incorporar de forma auditável os novos artefatos ao metadata de verificação do Gradle; a segurança não deve ser desabilitada para obter build verde.
-3. `NEXT-WORK.md` e a fila de hardening ainda precisam da sincronização governada por `FIO-PQ-02`.
+2. Algumas assinaturas PGP de artefatos não puderam ser recuperadas; o metadata mantém hashes SHA-256 e registra explicitamente essas exceções para revisão futura.
+3. A interface interna do pacote principal após o gate biométrico ainda depende da autenticação do usuário.
 4. Evidência histórica de PR, teste ou aparelho não deve ser promovida a estado atual sem nova verificação.
 
 ## Gates abertos
@@ -58,6 +58,13 @@ Documento de estado vivo do ProjetoFio. O código vence quando divergir da docum
 - Testes instrumentados completos em dispositivo/AVD.
 - Consentimento e execução do piloto.
 - Decisões de produto listadas em `docs/atlas/DECISION-INDEX.md`.
+
+## Instalação atual
+
+- `com.projetofio.app` 0.1.0-dev reinstalado com preservação de dados no Xiaomi M2103K19PG em 2026-08-20.
+- APK debug validado: SHA-256 `E83814E640DB8DF349FA2282337F676B4FE284614248E915C803B46E9EE84106`.
+- Abertura confirmada até o gate biométrico, sem crash fatal observado.
+- A inspeção interna não contorna a impressão digital/PIN e permanece pendente de autenticação do usuário.
 
 ## Próximo trabalho autorizado
 
