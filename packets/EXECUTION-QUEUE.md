@@ -1,13 +1,12 @@
 # EXECUTION-QUEUE — fila de execução atual (manter no topo sempre verdadeiro)
 
-**Atualizado em:** 2026-08-20 (FIO-PQ-01 concluído). A fila é viva: quando um packet vira NOW, mover para o topo e remover de DONE do topo. Histórico de packets concluídos fica em `plans/` e nos documentos `packets/FIO-*.md`.
+**Atualizado em:** 2026-08-20 (FIO-PQ-02 concluído). A fila é viva: quando um packet vira NOW, mover para o topo e remover de DONE do topo. Histórico de packets concluídos fica em `plans/` e nos documentos `packets/FIO-*.md`.
 
 ## Fila atual
 
 | Ordem | Packet | Tipo | Status |
 |---|---|---|---|
-| 1 | FIO-PQ-02 (NEXT-WORK/HARDENING-QUEUE sincronizados) | doc | **NOW** |
-| 3 | FIO-PQ-03 (D-1..D-5 propostas ao fundador) | doc | READY |
+| 1 | FIO-PQ-03 (D-1..D-5 propostas ao fundador) | doc | **NOW** |
 | 4 | FIO-P06 (busca lexical em escala 1k-10k) | code | READY |
 | 5 | FIO-P07 (import hardening OOM) | code | READY |
 | 6 | FIO-P10 (migration 3→4 simulação) | code | READY |
@@ -22,6 +21,7 @@
 | Packet | Tipo | Estado | Evidência |
 |---|---|---|---|
 | FIO-PQ-01 (PROJECT-STATE atualizado) | doc | DONE | `packets/FIO-PQ-01.md`, `plans/PROJECT-STATE.md` |
+| FIO-PQ-02 (NEXT-WORK/HARDENING-QUEUE sincronizados) | doc | DONE | `packets/FIO-PQ-02.md`, `plans/NEXT-WORK.md`, `plans/HARDENING-QUEUE.md` |
 
 ## Histórico (contexto)
 
