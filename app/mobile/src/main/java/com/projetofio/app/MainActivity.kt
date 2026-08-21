@@ -2,6 +2,7 @@ package com.projetofio.app
 
 import android.Manifest
 import android.content.Intent
+import android.content.res.Configuration
 import android.os.Build
 import android.net.Uri
 import android.provider.OpenableColumns
@@ -40,6 +41,9 @@ import com.projetofio.app.ui.SafeOpenFailure
 import com.projetofio.app.ui.theme.FioTheme
 import com.projetofio.app.ui.theme.FioVisualTheme
 import com.projetofio.app.ui.theme.CosmicBackground
+import com.projetofio.app.ui.theme.AppearanceThemeStore
+import com.projetofio.app.ui.theme.DarkBackground
+import com.projetofio.app.ui.theme.LightBackground
 import kotlinx.coroutines.launch
 
 class MainActivity : FragmentActivity() {
@@ -67,6 +71,8 @@ class MainActivity : FragmentActivity() {
     private val exportCoordinator = ExportCoordinator()
     private val documentWriter by lazy { AndroidDocumentWriter(contentResolver) }
     private val importReader by lazy { AndroidImportDocumentReader(contentResolver) }
+    private val appearanceThemeStore by lazy { AppearanceThemeStore(this) }
+    private var visualTheme by mutableStateOf(FioVisualTheme.SERENO)
     private var pendingReturnIntentId: String? = null
 
     private val notificationPermissionLauncher = registerForActivityResult(
@@ -95,18 +101,12 @@ class MainActivity : FragmentActivity() {
         } else {
             window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         }
-        if (ACTIVE_VISUAL_THEME == FioVisualTheme.CEU_NOTURNO) {
-            window.statusBarColor = CosmicBackground.toArgb()
-            window.navigationBarColor = CosmicBackground.toArgb()
-            WindowCompat.getInsetsController(window, window.decorView).apply {
-                isAppearanceLightStatusBars = false
-                isAppearanceLightNavigationBars = false
-            }
-        }
+        visualTheme = appearanceThemeStore.load()
+        applySystemBars(visualTheme)
         authenticator = DeviceAuthenticator(this)
         captureReturnIntent(intent)
         setContent {
-            FioTheme(visualTheme = ACTIVE_VISUAL_THEME) {
+            FioTheme(visualTheme = visualTheme) {
                 when {
                     privacyCover -> PrivacyCover()
                     safeOpenFailure -> SafeOpenFailure()
@@ -131,6 +131,8 @@ class MainActivity : FragmentActivity() {
                         onSelectImport = {
                             authorizeFresh { importLauncher.launch(arrayOf("text/plain", "text/markdown")) }
                         },
+                        visualTheme = visualTheme,
+                        onVisualThemeSelected = ::selectVisualTheme,
                     )
                 }
             }
@@ -342,8 +344,30 @@ class MainActivity : FragmentActivity() {
         viewModel.openReturn(id)
     }
 
+    private fun selectVisualTheme(theme: FioVisualTheme) {
+        if (theme == visualTheme) return
+        appearanceThemeStore.save(theme)
+        visualTheme = theme
+        applySystemBars(theme)
+    }
+
+    private fun applySystemBars(theme: FioVisualTheme) {
+        val isSerenoDark = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK ==
+            Configuration.UI_MODE_NIGHT_YES
+        val background = when (theme) {
+            FioVisualTheme.CEU_NOTURNO -> CosmicBackground
+            FioVisualTheme.SERENO -> if (isSerenoDark) DarkBackground else LightBackground
+        }
+        window.statusBarColor = background.toArgb()
+        window.navigationBarColor = background.toArgb()
+        val useLightIcons = theme == FioVisualTheme.CEU_NOTURNO || isSerenoDark
+        WindowCompat.getInsetsController(window, window.decorView).apply {
+            isAppearanceLightStatusBars = !useLightIcons
+            isAppearanceLightNavigationBars = !useLightIcons
+        }
+    }
+
     companion object {
-        private val ACTIVE_VISUAL_THEME = FioVisualTheme.CEU_NOTURNO
         const val ACTION_OPEN_RETURN = "com.projetofio.app.action.OPEN_RETURN"
         const val EXTRA_RETURN_ID = "return_id"
     }

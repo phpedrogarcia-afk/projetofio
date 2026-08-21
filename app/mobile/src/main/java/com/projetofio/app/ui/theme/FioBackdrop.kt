@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.DrawScope
 
 private data class SkyPoint(val x: Float, val y: Float, val size: Float)
 
@@ -25,6 +26,14 @@ private val stars = listOf(
     SkyPoint(.09f, .82f, .8f), SkyPoint(.28f, .89f, 1.2f), SkyPoint(.71f, .87f, .9f),
     SkyPoint(.86f, .95f, .7f),
 )
+
+private val distantStars = List(72) { index ->
+    SkyPoint(
+        x = ((index * 37 + 11) % 97 + 1) / 99f,
+        y = ((index * 53 + 17) % 89 + 3) / 94f,
+        size = if (index % 13 == 0) .85f else if (index % 5 == 0) .55f else .34f,
+    )
+}
 
 @Composable
 internal fun FioBackdrop(content: @Composable () -> Unit) {
@@ -42,22 +51,38 @@ internal fun FioBackdrop(content: @Composable () -> Unit) {
                 )
                 drawCircle(
                     brush = Brush.radialGradient(
-                        colors = listOf(mist.copy(alpha = .11f), Color.Transparent),
-                        center = Offset(size.width * .79f, size.height * .18f),
-                        radius = size.minDimension * .72f,
+                        colors = listOf(CosmicMistBlue.copy(alpha = .19f), mist.copy(alpha = .07f), Color.Transparent),
+                        center = Offset(size.width * .82f, size.height * .17f),
+                        radius = size.minDimension * .82f,
                     ),
-                    radius = size.minDimension * .72f,
-                    center = Offset(size.width * .79f, size.height * .18f),
+                    radius = size.minDimension * .82f,
+                    center = Offset(size.width * .82f, size.height * .17f),
                 )
                 drawCircle(
                     brush = Brush.radialGradient(
-                        colors = listOf(gold.copy(alpha = .055f), Color.Transparent),
-                        center = Offset(size.width * .12f, size.height * .78f),
-                        radius = size.minDimension * .58f,
+                        colors = listOf(CosmicMistWarm.copy(alpha = .12f), gold.copy(alpha = .07f), Color.Transparent),
+                        center = Offset(size.width * .10f, size.height * .78f),
+                        radius = size.minDimension * .72f,
                     ),
-                    radius = size.minDimension * .58f,
+                    radius = size.minDimension * .72f,
                     center = Offset(size.width * .12f, size.height * .78f),
                 )
+                drawCircle(
+                    brush = Brush.radialGradient(
+                        colors = listOf(CosmicMistBlue.copy(alpha = .10f), Color.Transparent),
+                        center = Offset(size.width * .50f, size.height * .55f),
+                        radius = size.minDimension * .55f,
+                    ),
+                    radius = size.minDimension * .55f,
+                    center = Offset(size.width * .50f, size.height * .55f),
+                )
+                distantStars.forEach { star ->
+                    drawCircle(
+                        CosmicSecondary.copy(alpha = if (star.size > .7f) .34f else .18f),
+                        radius = star.size * density,
+                        center = Offset(size.width * star.x, size.height * star.y),
+                    )
+                }
                 stars.forEach { star ->
                     val center = Offset(size.width * star.x, size.height * star.y)
                     val radius = star.size * density
@@ -104,8 +129,38 @@ internal fun FioBackdrop(content: @Composable () -> Unit) {
                     center = orbitCenter,
                     style = Stroke(width = .5f * density),
                 )
+                drawVignette()
+                drawBackdropObservatory()
             }
         }
         Box(modifier = Modifier.fillMaxSize()) { content() }
     }
+}
+
+private fun DrawScope.drawVignette() {
+    drawRect(
+        brush = Brush.radialGradient(
+            colors = listOf(Color.Transparent, CosmicBackgroundDeep.copy(alpha = .58f)),
+            center = Offset(size.width * .52f, size.height * .46f),
+            radius = size.maxDimension * .78f,
+        ),
+    )
+}
+
+private fun DrawScope.drawBackdropObservatory() {
+    val baseY = size.height * .88f
+    val left = size.width * .66f
+    val width = size.width * .34f
+    val line = CosmicPrimary.copy(alpha = .075f)
+    val stroke = Stroke(width = .7f * density)
+    for (step in 0..4) {
+        val inset = width * step * .09f
+        val y = baseY - step * size.height * .035f
+        drawLine(line, Offset(left + inset, y), Offset(left + width - inset, y), stroke.width)
+    }
+    drawLine(line, Offset(left, baseY), Offset(left + width * .5f, baseY - size.height * .20f), stroke.width)
+    drawLine(line, Offset(left + width, baseY), Offset(left + width * .5f, baseY - size.height * .20f), stroke.width)
+    val center = Offset(left + width * .5f, baseY - size.height * .23f)
+    drawCircle(line, radius = width * .11f, center = center, style = stroke)
+    drawLine(line, Offset(center.x - width * .16f, center.y), Offset(center.x + width * .16f, center.y), stroke.width)
 }

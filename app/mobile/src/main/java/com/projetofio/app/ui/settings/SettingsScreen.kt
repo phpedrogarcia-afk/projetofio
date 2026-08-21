@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -55,6 +56,10 @@ import com.projetofio.app.domain.ReturnConsentState
 import com.projetofio.app.R
 import com.projetofio.app.ui.theme.FioRadius
 import com.projetofio.app.ui.theme.FioSpace
+import com.projetofio.app.ui.theme.FioVisualTheme
+import com.projetofio.app.ui.theme.FioThemeContext
+import com.projetofio.app.ui.theme.cosmic.CosmicOrnament
+import com.projetofio.app.ui.theme.cosmic.CosmicOrnament as CosmicOrnamentType
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.time.Instant
@@ -77,6 +82,8 @@ internal fun SettingsScreen(
     onEnableReturns: () -> Unit,
     onOpenPendingReturn: (String) -> Unit,
     onSelectImport: () -> Unit,
+    visualTheme: FioVisualTheme,
+    onVisualThemeSelected: (FioVisualTheme) -> Unit,
 ) {
     var page by remember { mutableStateOf(SettingsPage.OVERVIEW) }
     BackHandler {
@@ -145,6 +152,8 @@ internal fun SettingsScreen(
             padding = padding,
             onBack = onBack,
             onOpen = { page = it },
+            visualTheme = visualTheme,
+            onVisualThemeSelected = onVisualThemeSelected,
         )
         SettingsPage.PRIVACY -> PrivacySettingsPage(
             state = state,
@@ -195,6 +204,8 @@ private fun SettingsOverview(
     padding: PaddingValues,
     onBack: () -> Unit,
     onOpen: (SettingsPage) -> Unit,
+    visualTheme: FioVisualTheme,
+    onVisualThemeSelected: (FioVisualTheme) -> Unit,
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize().padding(padding),
@@ -228,6 +239,13 @@ private fun SettingsOverview(
                 summary = appLockSummary(state.settings.appLockMode),
                 icon = R.drawable.ic_privacy,
                 onClick = { onOpen(SettingsPage.PRIVACY) },
+            )
+        }
+        item { SectionTitle("Aparência") }
+        item {
+            AppearanceThemeSelector(
+                selectedTheme = visualTheme,
+                onSelect = onVisualThemeSelected,
             )
         }
         item { SectionTitle("Seus dados") }
@@ -278,7 +296,91 @@ private fun SettingsOverview(
                     modifier = Modifier.weight(1f),
                 )
                 Spacer(Modifier.width(FioSpace.s4))
-                BotanicalMotif(firstEntryAt = state.entries.lastOrNull()?.originalCreatedAt)
+                if (FioThemeContext.current.isCosmic) {
+                    CosmicOrnament(
+                        ornament = CosmicOrnamentType.ASTROLABE,
+                        modifier = Modifier.width(74.dp).height(74.dp),
+                        opacity = .34f,
+                    )
+                } else {
+                    BotanicalMotif(firstEntryAt = state.entries.lastOrNull()?.originalCreatedAt)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+internal fun AppearanceThemeSelector(
+    selectedTheme: FioVisualTheme,
+    onSelect: (FioVisualTheme) -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(FioSpace.s2)) {
+        Text("Tema", style = MaterialTheme.typography.titleSmall)
+        AppearanceThemeOption(
+            theme = FioVisualTheme.SERENO,
+            title = "Sereno",
+            summary = "Visual claro, orgânico e discreto.",
+            selectedTheme = selectedTheme,
+            onSelect = onSelect,
+        )
+        AppearanceThemeOption(
+            theme = FioVisualTheme.CEU_NOTURNO,
+            title = "Céu Noturno",
+            summary = "Atmosfera cósmica, vidro e símbolos do tempo.",
+            selectedTheme = selectedTheme,
+            onSelect = onSelect,
+        )
+    }
+}
+
+@Composable
+private fun AppearanceThemeOption(
+    theme: FioVisualTheme,
+    title: String,
+    summary: String,
+    selectedTheme: FioVisualTheme,
+    onSelect: (FioVisualTheme) -> Unit,
+) {
+    val selected = theme == selectedTheme
+    val state = if (selected) "Selecionado." else "Não selecionado."
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(enabled = !selected) { onSelect(theme) }
+            .heightIn(min = 72.dp)
+            .border(
+                width = if (selected) 1.dp else 0.5.dp,
+                color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
+                shape = RoundedCornerShape(FioRadius.md),
+            )
+            .semantics(mergeDescendants = true) {
+                contentDescription = "Tema $title. $summary $state"
+            },
+        color = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
+        shape = RoundedCornerShape(FioRadius.md),
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = FioSpace.s3, vertical = FioSpace.s3),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(title, style = MaterialTheme.typography.titleSmall)
+                Text(
+                    summary,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = FioSpace.s1),
+                )
+            }
+            if (selected) {
+                Spacer(Modifier.width(FioSpace.s2))
+                Icon(
+                    painter = painterResource(R.drawable.ic_check),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.width(22.dp),
+                )
             }
         }
     }

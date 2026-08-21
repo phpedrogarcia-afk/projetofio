@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -40,6 +41,8 @@ import com.projetofio.app.domain.Entry
 import com.projetofio.app.ui.theme.FioSpace
 import com.projetofio.app.ui.theme.FioRadius
 import com.projetofio.app.ui.theme.FioThemeContext
+import com.projetofio.app.ui.theme.cosmic.CosmicOrnament
+import com.projetofio.app.ui.theme.cosmic.CosmicOrnament as CosmicOrnamentType
 import java.time.format.DateTimeFormatter
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
@@ -143,14 +146,26 @@ internal fun ArchiveScreen(
             item { Text("O Arquivo não pôde ser aberto com segurança. Nada foi apagado.", color = MaterialTheme.colorScheme.error) }
         } else if (!state.loading && state.entries.isEmpty()) {
             item {
-                Column(modifier = Modifier.padding(vertical = FioSpace.s7)) {
-                    BotanicalMotif(firstEntryAt = state.entries.lastOrNull()?.originalCreatedAt)
-                    Spacer(Modifier.height(FioSpace.s3))
-                    Text(
-                        "Quando quiser, suas palavras podem ficar aqui.",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+                if (FioThemeContext.current.isCosmic) {
+                    Box(modifier = Modifier.fillMaxWidth().height(190.dp).padding(vertical = FioSpace.s4)) {
+                        CosmicOrnament(CosmicOrnamentType.OBSERVATORY, opacity = .20f)
+                        Text(
+                            "Quando quiser, suas palavras podem ficar aqui.",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.align(Alignment.Center),
+                        )
+                    }
+                } else {
+                    Column(modifier = Modifier.padding(vertical = FioSpace.s7)) {
+                        BotanicalMotif(firstEntryAt = state.entries.lastOrNull()?.originalCreatedAt)
+                        Spacer(Modifier.height(FioSpace.s3))
+                        Text(
+                            "Quando quiser, suas palavras podem ficar aqui.",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 }
             }
         } else {

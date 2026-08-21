@@ -32,12 +32,14 @@ cartografia celeste e ouro envelhecido.
 
 ### MATCH — reproduzir com fidelidade
 
-- fundo azul-petróleo quase preto, com profundidade atmosférica;
-- névoas muito discretas, estrelas pequenas e constelações esparsas;
-- superfícies de vidro escuro translúcido, com separação por luz e contorno;
+- fundo azul-petróleo quase preto, com profundidade atmosférica e vinheta;
+- névoas em camadas, estrelas de escalas distintas e constelações esparsas;
+- superfícies de vidro escuro translúcido, com separação por luz, contorno e
+  highlight superior muito leve;
 - detalhes em ouro suave e creme quente, nunca amarelo saturado;
 - títulos serifados, texto de leitura sereno e hierarquia editorial;
-- ícones lineares e símbolos temporais já existentes;
+- ícones lineares e símbolos temporais já existentes, mais bússola,
+  astrolábio, órbitas e observatório original somente como ornamentos;
 - botões primários escuros/translúcidos com borda e texto dourado;
 - cantos arredondados, divisores silenciosos e seleção luminosa contida;
 - atmosfera consistente em Home, folha de tempo, calendário, Encontrar,
@@ -48,6 +50,8 @@ cartografia celeste e ouro envelhecido.
 - A composição de cada tela segue sua superfície atual e responsiva.
 - O motivo cósmico deve passar por trás das superfícies compartilhadas; não é
   um wallpaper ilustrado por tela.
+- Ornamentos por superfície são line-art original de baixa opacidade e nunca
+  são anunciados por acessibilidade, interpretam uma nota ou criam ação.
 - O calendário permanece Material 3 maduro e mantém o contrato de data civil
   em UTC corrigido no FIO-PV-02.
 - A confirmação de Guardar continua no fluxo atual; o mockup não autoriza uma
@@ -58,7 +62,6 @@ cartografia celeste e ouro envelhecido.
 ### IGNORE — não autorizado pelo mockup
 
 - perfil/conta;
-- seletor de tema dentro de Ajustes;
 - lembretes;
 - sugestões e chips de busca;
 - busca por temas inferidos;

@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -49,6 +50,8 @@ import com.projetofio.app.R
 import com.projetofio.app.ui.theme.FioRadius
 import com.projetofio.app.ui.theme.FioSpace
 import com.projetofio.app.ui.theme.FioThemeContext
+import com.projetofio.app.ui.theme.cosmic.CosmicOrnament
+import com.projetofio.app.ui.theme.cosmic.CosmicOrnament as CosmicOrnamentType
 
 @Composable
 internal fun SearchScreen(
@@ -145,14 +148,26 @@ internal fun SearchScreen(
 
         if (state.searchTerms.isBlank()) {
             item {
-                Column(modifier = Modifier.padding(top = FioSpace.s4)) {
-                    Text(
-                        "O Fio encontra suas palavras como foram guardadas.\nEle não responde por você nem interpreta o que viveu.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Spacer(Modifier.height(FioSpace.s5))
-                    BotanicalMotif(firstEntryAt = state.entries.lastOrNull()?.originalCreatedAt)
+                if (FioThemeContext.current.isCosmic) {
+                    Box(modifier = Modifier.fillMaxWidth().height(154.dp).padding(top = FioSpace.s3)) {
+                        CosmicOrnament(CosmicOrnamentType.ORBIT, opacity = .14f)
+                        Text(
+                            "O Fio encontra suas palavras como foram guardadas.\nEle não responde por você nem interpreta o que viveu.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.align(Alignment.CenterStart),
+                        )
+                    }
+                } else {
+                    Column(modifier = Modifier.padding(top = FioSpace.s4)) {
+                        Text(
+                            "O Fio encontra suas palavras como foram guardadas.\nEle não responde por você nem interpreta o que viveu.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Spacer(Modifier.height(FioSpace.s5))
+                        BotanicalMotif(firstEntryAt = state.entries.lastOrNull()?.originalCreatedAt)
+                    }
                 }
             }
         } else {

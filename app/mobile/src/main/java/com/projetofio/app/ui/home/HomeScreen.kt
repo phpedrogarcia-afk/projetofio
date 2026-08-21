@@ -65,6 +65,8 @@ import com.projetofio.app.R
 import com.projetofio.app.ui.theme.FioRadius
 import com.projetofio.app.ui.theme.FioSpace
 import com.projetofio.app.ui.theme.FioThemeContext
+import com.projetofio.app.ui.theme.cosmic.CosmicOrnament
+import com.projetofio.app.ui.theme.cosmic.CosmicOrnament as CosmicOrnamentType
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -91,6 +93,7 @@ internal fun HomeScreen(
     var timeSheet by remember { mutableStateOf(false) }
     var dateSheet by remember { mutableStateOf(false) }
     var policy by remember { mutableStateOf<ReturnPolicy>(ReturnPolicy.Someday) }
+    val cosmic = FioThemeContext.current.isCosmic
 
     // First-capsule copy (ADR-044): the single extended confirmation appears
     // only for the very first save of the life of this installation.
@@ -106,7 +109,17 @@ internal fun HomeScreen(
             .let { base ->
                 if (largeText) base.verticalScroll(rememberScrollState()) else base
             }
-    Column(modifier = screenModifier) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        CosmicOrnament(
+            ornament = CosmicOrnamentType.COMPASS,
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(start = 2.dp, bottom = 72.dp)
+                .height(170.dp)
+                .width(170.dp),
+            opacity = .28f,
+        )
+        Column(modifier = screenModifier) {
         // Top row: writing keeps the strongest brand treatment; only the
         // secondary Settings action stays outside primary navigation.
         Row(
@@ -156,7 +169,7 @@ internal fun HomeScreen(
         Surface(
             modifier = editorModifier
                 .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(FioRadius.md)),
-            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.48f),
+            color = MaterialTheme.colorScheme.surface.copy(alpha = if (cosmic) 0.68f else 0.48f),
             shape = RoundedCornerShape(FioRadius.md),
         ) {
             BasicTextField(
@@ -199,6 +212,10 @@ internal fun HomeScreen(
                 .padding(top = FioSpace.s3)
                 .clickable(onClick = { timeSheet = true })
                 .heightIn(min = 48.dp)
+                .background(
+                    MaterialTheme.colorScheme.surface.copy(alpha = if (cosmic) .58f else 0f),
+                    RoundedCornerShape(FioRadius.md),
+                )
                 .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(FioRadius.md))
                 .testTag("fio-return-policy")
                 .padding(horizontal = FioSpace.s3, vertical = FioSpace.s2),
@@ -254,7 +271,6 @@ internal fun HomeScreen(
 
         // Primary action — the tallest, warmest touch target in the app.
         val pressed by interactionSource.collectIsPressedAsState()
-        val cosmic = FioThemeContext.current.isCosmic
         Button(
             onClick = {
                 focusManager.clearFocus()
@@ -280,6 +296,7 @@ internal fun HomeScreen(
                 .semantics { contentDescription = "Guardar lembrança" },
         ) {
             Text(if (state.saving) "Guardando…" else "Guardar", style = MaterialTheme.typography.labelMedium)
+        }
         }
     }
 
@@ -310,6 +327,8 @@ internal fun HomeScreen(
         ModalBottomSheet(
             onDismissRequest = { timeSheet = false },
             shape = RoundedCornerShape(topStart = FioRadius.lg, topEnd = FioRadius.lg),
+            containerColor = if (cosmic) MaterialTheme.colorScheme.surface.copy(alpha = .88f) else MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface,
         ) {
             Column(
                 modifier = Modifier

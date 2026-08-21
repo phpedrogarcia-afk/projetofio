@@ -4,6 +4,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
@@ -65,8 +66,15 @@ class NoteBasicsContractTest {
         composeRule.onNode(hasSetTextAction()).performTextReplacement(edited)
         composeRule.onNodeWithText("Guardar alterações").performClick()
 
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule
+                .onAllNodesWithContentDescription(edited, substring = true)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
         composeRule
             .onNodeWithContentDescription(edited, substring = true)
+            .performScrollTo()
             .assertIsDisplayed()
             .performClick()
         composeRule.onNodeWithText("Excluir").performClick()
@@ -84,8 +92,15 @@ class NoteBasicsContractTest {
         composeRule.onNodeWithContentDescription("Voltar aos Ajustes").performClick()
         composeRule.onNodeWithContentDescription("Voltar").performClick()
         composeRule.onNodeWithContentDescription("Abrir Arquivo").performClick()
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule
+                .onAllNodesWithContentDescription(edited, substring = true)
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
         composeRule
             .onNodeWithContentDescription(edited, substring = true)
+            .performScrollTo()
             .assertIsDisplayed()
     }
 

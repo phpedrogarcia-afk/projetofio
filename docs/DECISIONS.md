@@ -856,3 +856,22 @@ Do not rewrite an Accepted ADR to hide its history. Add a superseding entry.
   app lock, exportação ou política de produção é autorizada.
 - Supersedes: none; exceção temporária e limitada ao desenvolvimento sobre a
   implementação de `ADR-035`.
+
+## ADR-051 — Dois temas visuais locais, sem duplicar o produto
+
+- Date: 2026-08-20
+- Status: Accepted
+- Decision: Ajustes oferece apenas `Aparência > Tema` com Sereno (visual claro,
+  orgânico e discreto) e Céu Noturno (atmosfera cósmica, vidro e símbolos do
+  tempo). A escolha persiste somente nas preferências privadas desta instalação
+  e é aplicada pela raiz visual compartilhada. Uma instalação sem escolha
+  anterior inicia em Sereno.
+- Reason: O fundador autorizou a seleção explícita depois de validar a
+  infraestrutura única de temas da FIO-PV-03. A preferência torna as duas
+  expressões disponíveis sem transformar tema em conteúdo autobiográfico.
+- Consequence: Não há Automático, terceiro tema, personalização avançada,
+  duplicação de telas, alteração de navegação principal, Room/schema, Search,
+  Returns, entidades, analytics, exportação ou backup. Regressões devem cobrir
+  o conjunto fechado de temas, a seleção e a persistência local.
+- Supersedes: a limitação de persistência da FIO-PV-03; preserva os demais
+  invariantes da arquitetura de temas.

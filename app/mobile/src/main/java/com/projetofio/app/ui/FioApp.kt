@@ -30,6 +30,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.projetofio.app.domain.Entry
 import com.projetofio.app.R
 import com.projetofio.app.ui.theme.fioScreenContainerColor
+import com.projetofio.app.ui.theme.FioVisualTheme
 import kotlinx.coroutines.delay
 
 private enum class MainSurface { SAVE, FIND, ARCHIVE, SETTINGS }
@@ -45,6 +46,8 @@ fun FioApp(
     onEnableReturns: () -> Unit,
     onOpenPendingReturn: (String) -> Unit,
     onSelectImport: () -> Unit,
+    visualTheme: FioVisualTheme,
+    onVisualThemeSelected: (FioVisualTheme) -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var surface by remember { mutableStateOf(MainSurface.SAVE) }
@@ -117,6 +120,8 @@ fun FioApp(
                 onEnableReturns = onEnableReturns,
                 onOpenPendingReturn = onOpenPendingReturn,
                 onSelectImport = onSelectImport,
+                visualTheme = visualTheme,
+                onVisualThemeSelected = onVisualThemeSelected,
             )
         }
     }

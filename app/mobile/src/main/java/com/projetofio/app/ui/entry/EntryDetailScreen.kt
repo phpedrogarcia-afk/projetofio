@@ -39,6 +39,7 @@ import com.projetofio.app.domain.Entry
 import com.projetofio.app.ui.theme.FioRadius
 import com.projetofio.app.ui.theme.FioSpace
 import com.projetofio.app.ui.theme.fioScreenContainerColor
+import com.projetofio.app.ui.theme.FioThemeContext
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.time.ZoneId
@@ -56,9 +57,13 @@ internal fun NoteScreen(
     BackHandler(onBack = onBack)
     var returning by remember { mutableStateOf(false) }
     var returned by remember { mutableStateOf(false) }
+    val cosmic = FioThemeContext.current.isCosmic
     Surface(
         modifier = Modifier.fillMaxSize().padding(contentPadding),
-        color = fioScreenContainerColor(),
+        // Reading is intentionally quieter than the other cosmic surfaces.
+        // The translucent veil retains depth at the edges without placing
+        // bright stars or line-art behind the person's full text.
+        color = if (cosmic) MaterialTheme.colorScheme.background.copy(alpha = .84f) else fioScreenContainerColor(),
     ) {
         Column(
             modifier = Modifier
