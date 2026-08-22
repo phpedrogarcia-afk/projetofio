@@ -63,6 +63,7 @@ import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.annotation.DrawableRes
 import com.projetofio.app.domain.ReturnConsentState
 import com.projetofio.app.domain.ReturnPolicy
@@ -167,15 +168,27 @@ internal fun HomeScreen(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(
-                text = "Fio",
-                style = MaterialTheme.typography.displayLarge,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.semantics {
-                    heading()
-                    contentDescription = "Tela Escrever"
-                },
-            )
+            Column {
+                Text(
+                    text = "Fio",
+                    style = MaterialTheme.typography.displayLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.semantics {
+                        heading()
+                        contentDescription = "Tela Escrever"
+                    },
+                )
+                if (cosmic) {
+                    Text(
+                        text = "SEUS PENSAMENTOS. GUARDADOS NO TEMPO.",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            letterSpacing = 1.6.sp,
+                        ),
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.82f),
+                        modifier = Modifier.padding(top = 2.dp),
+                    )
+                }
+            }
             Spacer(Modifier.weight(1f))
             TextButton(
                 onClick = onOpenSettings,
@@ -189,7 +202,7 @@ internal fun HomeScreen(
             }
         }
 
-        Spacer(Modifier.height(FioSpace.s6))
+        Spacer(Modifier.height(if (cosmic) FioSpace.s5 else FioSpace.s6))
 
         // The prompt — small, calm, in the body scale.
         Text(
@@ -209,8 +222,8 @@ internal fun HomeScreen(
         }
         Surface(
             modifier = editorModifier
-                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(FioRadius.md)),
-            color = MaterialTheme.colorScheme.surface.copy(alpha = if (cosmic) 0.68f else 0.48f),
+                .border(1.dp, if (cosmic) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(FioRadius.md)),
+            color = MaterialTheme.colorScheme.surface.copy(alpha = if (cosmic) 0.65f else 0.48f),
             shape = RoundedCornerShape(FioRadius.md),
             shadowElevation = if (cosmic) 6.dp else 0.dp,
         ) {
@@ -258,7 +271,7 @@ internal fun HomeScreen(
                     MaterialTheme.colorScheme.surface.copy(alpha = if (cosmic) .58f else 0f),
                     RoundedCornerShape(FioRadius.md),
                 )
-                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(FioRadius.md))
+                .border(1.dp, if (cosmic) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(FioRadius.md))
                 .testTag("fio-return-policy")
                 .padding(horizontal = FioSpace.s3, vertical = FioSpace.s2),
             verticalAlignment = Alignment.CenterVertically,
@@ -266,7 +279,7 @@ internal fun HomeScreen(
             Icon(
                 painter = painterResource(R.drawable.ic_time_return),
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                tint = if (cosmic) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.height(18.dp).width(18.dp),
             )
             Spacer(Modifier.width(FioSpace.s2))
@@ -279,7 +292,7 @@ internal fun HomeScreen(
             Text(
                 text = "›",
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = if (cosmic) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.semantics {
                     contentDescription = "Escolher quando pode voltar. Escolhido: $policyLabel"
                 },
@@ -324,10 +337,10 @@ internal fun HomeScreen(
             interactionSource = interactionSource,
             shape = RoundedCornerShape(FioRadius.lg),
             colors = ButtonDefaults.buttonColors(
-                containerColor = if (cosmic) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.primary,
+                containerColor = if (cosmic) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.primary,
                 contentColor = if (cosmic) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onPrimary,
-                disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.58f),
+                disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.40f),
             ),
             border = if (cosmic) BorderStroke(1.dp, MaterialTheme.colorScheme.outline) else null,
             modifier = Modifier
@@ -343,27 +356,68 @@ internal fun HomeScreen(
         }
     }
 
-    // Floating "Guardado." pill (ADR-014: immediate, restrained, gone in 1.5s)
+    // Floating "Guardado." feedback (ADR-014: immediate, restrained, gone in 1.5s)
     AnimatedVisibility(
         visible = state.savedNotice,
         enter = fadeIn(),
         exit = fadeOut(),
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 88.dp)
-                .background(
-                    MaterialTheme.colorScheme.surface,
-                    RoundedCornerShape(FioRadius.full),
-                )
-                .padding(horizontal = FioSpace.s4, vertical = FioSpace.s2)
-                .semantics { liveRegion = LiveRegionMode.Polite },
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(saveCopy, style = MaterialTheme.typography.labelMedium)
+        if (cosmic) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.65f))
+                    .padding(FioSpace.s5)
+                    .semantics { liveRegion = LiveRegionMode.Polite },
+                contentAlignment = Alignment.Center,
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            MaterialTheme.colorScheme.surface.copy(alpha = 0.92f),
+                            RoundedCornerShape(FioRadius.lg),
+                        )
+                        .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(FioRadius.lg))
+                        .padding(horizontal = FioSpace.s5, vertical = FioSpace.s6),
+                ) {
+                    Box(modifier = Modifier.height(130.dp).width(130.dp)) {
+                        CosmicOrnament(CosmicOrnamentType.MANDALA, opacity = 0.70f)
+                    }
+                    Spacer(Modifier.height(FioSpace.s4))
+                    Text(
+                        "Guardado",
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                    Spacer(Modifier.height(FioSpace.s2))
+                    Text(
+                        "Seu pensamento foi guardado no tempo com cuidado.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                    )
+                }
+            }
+        } else {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 88.dp)
+                    .background(
+                        MaterialTheme.colorScheme.surface,
+                        RoundedCornerShape(FioRadius.full),
+                    )
+                    .padding(horizontal = FioSpace.s4, vertical = FioSpace.s2)
+                    .semantics { liveRegion = LiveRegionMode.Polite },
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(saveCopy, style = MaterialTheme.typography.labelMedium)
+            }
         }
     }
+
 
     // Temporal picker sheet (ADR-043)
     if (timeSheet) {

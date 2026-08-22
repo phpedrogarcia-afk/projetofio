@@ -173,7 +173,11 @@ internal fun ArchiveScreen(
             grouped.forEach { (label, entries) ->
                 item {
                     Column(modifier = Modifier.padding(top = FioSpace.s4, bottom = FioSpace.s2)) {
-                        Text(label, style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            text = label,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = if (FioThemeContext.current.isCosmic) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                        )
                     }
                 }
                 items(entries, key = { it.id }) { entry ->
@@ -228,8 +232,8 @@ private fun ArchiveRow(entry: Entry, onOpen: () -> Unit) {
         .then(
             if (cosmic) {
                 Modifier
-                    .background(MaterialTheme.colorScheme.surface, shape)
-                    .border(0.5.dp, MaterialTheme.colorScheme.outlineVariant, shape)
+                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.70f), shape)
+                    .border(0.6.dp, MaterialTheme.colorScheme.outlineVariant, shape)
             } else {
                 Modifier
             },
@@ -269,12 +273,21 @@ private fun ArchiveRow(entry: Entry, onOpen: () -> Unit) {
                     overflow = TextOverflow.Ellipsis,
                 )
             }
-            Text(
-                "›",
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(start = FioSpace.s3),
-            )
+            if (cosmic) {
+                Text(
+                    "✦",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.70f),
+                    modifier = Modifier.padding(start = FioSpace.s2),
+                )
+            } else {
+                Text(
+                    "›",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.padding(start = FioSpace.s3),
+                )
+            }
         }
     }
 }

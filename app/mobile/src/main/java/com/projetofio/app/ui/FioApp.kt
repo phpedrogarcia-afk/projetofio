@@ -1,6 +1,7 @@
 package com.projetofio.app.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -26,11 +27,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.projetofio.app.domain.Entry
 import com.projetofio.app.R
 import com.projetofio.app.ui.theme.fioScreenContainerColor
 import com.projetofio.app.ui.theme.FioVisualTheme
+import com.projetofio.app.ui.theme.FioThemeContext
 import kotlinx.coroutines.delay
 
 private enum class MainSurface { SAVE, FIND, ARCHIVE, SETTINGS }
@@ -132,16 +135,32 @@ private fun FioPrimaryNavigation(
     selected: MainSurface,
     onSelect: (MainSurface) -> Unit,
 ) {
+    val isCosmic = FioThemeContext.current.isCosmic
     val destinations = listOf(
         Triple(MainSurface.SAVE, "Escrever", R.drawable.ic_write),
         Triple(MainSurface.FIND, "Encontrar", R.drawable.ic_find),
         Triple(MainSurface.ARCHIVE, "Arquivo", R.drawable.ic_archive),
     )
     Column {
-        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
+        if (!isCosmic) {
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
+        }
         NavigationBar(
-            containerColor = MaterialTheme.colorScheme.surface,
+            containerColor = if (isCosmic) {
+                MaterialTheme.colorScheme.surface.copy(alpha = .82f)
+            } else {
+                MaterialTheme.colorScheme.surface
+            },
             tonalElevation = 0.dp,
+            modifier = if (isCosmic) {
+                Modifier.border(
+                    width = 0.8.dp,
+                    color = MaterialTheme.colorScheme.outlineVariant,
+                    shape = RoundedCornerShape(topStart = 18.dp, topEnd = 18.dp),
+                )
+            } else {
+                Modifier
+            },
         ) {
             destinations.forEach { (destination, label, icon) ->
                 NavigationBarItem(

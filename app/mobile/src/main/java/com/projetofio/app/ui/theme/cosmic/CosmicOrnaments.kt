@@ -11,7 +11,7 @@ import com.projetofio.app.ui.theme.CosmicGoldSoft
 import com.projetofio.app.ui.theme.FioThemeContext
 
 /** Decorative, semantic-free line art used only when Céu Noturno is active. */
-internal enum class CosmicOrnament { COMPASS, ASTROLABE, OBSERVATORY, ORBIT }
+internal enum class CosmicOrnament { COMPASS, ASTROLABE, OBSERVATORY, ORBIT, MANDALA, STAR, CONSTELLATION_NODE }
 
 @Composable
 internal fun CosmicOrnament(
@@ -68,6 +68,43 @@ internal fun CosmicOrnament(
                 drawOval(line.copy(alpha = .72f), topLeft = Offset(center.x - radius * .72f, center.y - radius), size = androidx.compose.ui.geometry.Size(radius * 1.44f, radius * 2f), style = fine)
                 drawCircle(CosmicGoldSoft.copy(alpha = .72f), radius * .07f, Offset(center.x + radius * .82f, center.y))
             }
+            CosmicOrnament.MANDALA -> {
+                // Outer celestial rings
+                drawCircle(line, radius * 1.15f, center, style = fine)
+                drawCircle(line.copy(alpha = .72f), radius * 0.95f, center, style = fine)
+                drawCircle(line.copy(alpha = .55f), radius * 0.65f, center, style = fine)
+                drawCircle(line.copy(alpha = .80f), radius * 0.35f, center, style = fine)
+                // 12 Astrological ray spokes
+                repeat(12) { index ->
+                    val angle = Math.toRadians(index * 30.0)
+                    val outer = Offset(
+                        center.x + kotlin.math.cos(angle).toFloat() * radius * 1.15f,
+                        center.y + kotlin.math.sin(angle).toFloat() * radius * 1.15f,
+                    )
+                    val inner = Offset(
+                        center.x + kotlin.math.cos(angle).toFloat() * radius * 0.65f,
+                        center.y + kotlin.math.sin(angle).toFloat() * radius * 0.65f,
+                    )
+                    drawLine(line.copy(alpha = .40f), inner, outer, fine.width)
+                }
+                // Central bright star core
+                drawCircle(CosmicGoldSoft.copy(alpha = .90f), radius * .08f, center)
+            }
+            CosmicOrnament.STAR -> {
+                val r = radius * 0.8f
+                // 4-pointed radiant star
+                drawLine(line, center - Offset(r, 0f), center + Offset(r, 0f), fine.width)
+                drawLine(line, center - Offset(0f, r), center + Offset(0f, r), fine.width)
+                val diagR = r * 0.45f
+                drawLine(line.copy(alpha = .6f), center - Offset(diagR, diagR), center + Offset(diagR, diagR), fine.width)
+                drawLine(line.copy(alpha = .6f), center - Offset(diagR, -diagR), center + Offset(diagR, -diagR), fine.width)
+                drawCircle(CosmicGoldSoft.copy(alpha = .85f), r * 0.12f, center)
+            }
+            CosmicOrnament.CONSTELLATION_NODE -> {
+                drawCircle(line.copy(alpha = .4f), radius * 0.8f, center, style = fine)
+                drawCircle(CosmicGoldSoft.copy(alpha = .8f), radius * 0.3f, center)
+            }
         }
     }
 }
+

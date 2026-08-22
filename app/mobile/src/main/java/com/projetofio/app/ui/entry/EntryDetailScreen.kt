@@ -79,6 +79,14 @@ internal fun NoteScreen(
                         .semantics { contentDescription = "Voltar" },
                 )
                 Spacer(Modifier.weight(1f))
+                if (cosmic) {
+                    Text(
+                        text = "✦",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.70f),
+                        modifier = Modifier.padding(end = FioSpace.s3),
+                    )
+                }
                 if (onEdit != null) {
                     TextButton(onClick = onEdit, modifier = Modifier.heightIn(min = 48.dp)) {
                         Text("Editar", style = MaterialTheme.typography.labelLarge)
@@ -90,27 +98,42 @@ internal fun NoteScreen(
                 Column {
                     Text(
                         text = noteDate(entry),
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = if (cosmic) MaterialTheme.typography.titleMedium else MaterialTheme.typography.labelLarge,
+                        color = if (cosmic) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Text(
                         text = noteRelativeDate(entry),
                         style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        color = MaterialTheme.colorScheme.tertiary,
                         modifier = Modifier.padding(top = FioSpace.s1),
                     )
                     Spacer(Modifier.height(FioSpace.s6))
-                    Text(
-                        text = entry.content,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onBackground,
-                    )
+                    val paragraphs = entry.content.split("\n\n", limit = 2)
+                    if (cosmic && paragraphs.isNotEmpty()) {
+                        Text(
+                            text = paragraphs[0],
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                color = MaterialTheme.colorScheme.onBackground,
+                            ),
+                        )
+                        if (paragraphs.size > 1) {
+                            Spacer(Modifier.height(FioSpace.s4))
+                            Text(
+                                text = paragraphs[1],
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.90f),
+                            )
+                        }
+                    } else {
+                        Text(
+                            text = entry.content,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onBackground,
+                        )
+                    }
                 }
             }
             Spacer(Modifier.height(FioSpace.s6))
-            // FIO-P19 A1: "Devolver para agora" removed — it was local-only state (remember)
-            // with no domain operation. Will be restored in a future mission with a real
-            // RememberLater domain contract (docs/07-RETURNS-ENGINE.md § Remember later — V1).
             if (onDelete != null) {
                 Spacer(Modifier.height(FioSpace.s4))
                 TextButton(
@@ -124,6 +147,7 @@ internal fun NoteScreen(
         }
     }
 }
+
 
 private fun noteDate(entry: Entry): String {
     val zone = runCatching { ZoneId.of(entry.originalTimeZone ?: "UTC") }.getOrDefault(ZoneId.of("UTC"))

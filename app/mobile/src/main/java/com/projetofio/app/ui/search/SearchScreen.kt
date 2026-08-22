@@ -1,22 +1,22 @@
 package com.projetofio.app.ui
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.AlertDialog
@@ -38,15 +38,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
-import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.projetofio.app.domain.Entry
 import com.projetofio.app.R
+import com.projetofio.app.domain.Entry
 import com.projetofio.app.ui.theme.FioRadius
 import com.projetofio.app.ui.theme.FioSpace
 import com.projetofio.app.ui.theme.FioThemeContext
@@ -149,14 +149,41 @@ internal fun SearchScreen(
         if (state.searchTerms.isBlank()) {
             item {
                 if (FioThemeContext.current.isCosmic) {
-                    Box(modifier = Modifier.fillMaxWidth().height(154.dp).padding(top = FioSpace.s3)) {
-                        CosmicOrnament(CosmicOrnamentType.ORBIT, opacity = .14f)
+                    Column(modifier = Modifier.fillMaxWidth().padding(top = FioSpace.s3)) {
                         Text(
-                            "O Fio encontra suas palavras como foram guardadas.\nEle não responde por você nem interpreta o que viveu.",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.align(Alignment.CenterStart),
+                            "Sugestões de busca",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(bottom = FioSpace.s2),
                         )
+                        val suggestions = listOf("sonhos", "gratidão", "planos", "medos", "memórias", "ideias")
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(FioSpace.s2),
+                        ) {
+                            suggestions.take(3).forEach { tag ->
+                                SuggestionChip(tag = tag, onClick = { viewModel.onSearchChanged(tag) })
+                            }
+                        }
+                        Spacer(Modifier.height(FioSpace.s2))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(FioSpace.s2),
+                        ) {
+                            suggestions.drop(3).forEach { tag ->
+                                SuggestionChip(tag = tag, onClick = { viewModel.onSearchChanged(tag) })
+                            }
+                        }
+                        Spacer(Modifier.height(FioSpace.s5))
+                        Box(modifier = Modifier.fillMaxWidth().height(140.dp)) {
+                            CosmicOrnament(CosmicOrnamentType.ORBIT, opacity = .16f)
+                            Text(
+                                "O Fio encontra suas palavras como foram guardadas.\nEle não responde por você nem interpreta o que viveu.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.align(Alignment.Center),
+                            )
+                        }
                     }
                 } else {
                     Column(modifier = Modifier.padding(top = FioSpace.s4)) {
@@ -236,6 +263,24 @@ internal fun SearchScreen(
 }
 
 @Composable
+private fun SuggestionChip(tag: String, onClick: () -> Unit) {
+    val shape = RoundedCornerShape(FioRadius.full)
+    Box(
+        modifier = Modifier
+            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.60f), shape)
+            .border(0.6.dp, MaterialTheme.colorScheme.outlineVariant, shape)
+            .clickable(onClick = onClick)
+            .padding(horizontal = FioSpace.s3, vertical = 6.dp),
+    ) {
+        Text(
+            text = tag,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
 private fun ArchiveSearchField(terms: String, onChanged: (String) -> Unit) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
@@ -246,20 +291,20 @@ private fun ArchiveSearchField(terms: String, onChanged: (String) -> Unit) {
             .fillMaxWidth()
             .heightIn(min = 48.dp)
             .semantics(mergeDescendants = true) {},
-        placeholder = { Text("O que você procura?", style = MaterialTheme.typography.bodyLarge) },
+        placeholder = { Text("Buscar nos seus pensamentos…", style = MaterialTheme.typography.bodyLarge) },
         leadingIcon = {
             Icon(
                 painter = painterResource(R.drawable.ic_find),
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                tint = MaterialTheme.colorScheme.primary,
             )
         },
         shape = RoundedCornerShape(FioRadius.md),
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = MaterialTheme.colorScheme.primary,
             unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-            focusedContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.48f),
-            unfocusedContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.48f),
+            focusedContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.55f),
+            unfocusedContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.55f),
         ),
         singleLine = true,
         trailingIcon = {
@@ -285,14 +330,14 @@ private fun ArchiveSearchHitRow(hit: com.projetofio.app.domain.SearchHit, onOpen
     val cosmic = FioThemeContext.current.isCosmic
     val shape = RoundedCornerShape(FioRadius.md)
     SelectionContainer {
-        Column(
+        Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .then(
                     if (cosmic) {
                         Modifier
-                            .background(MaterialTheme.colorScheme.surface, shape)
-                            .border(0.5.dp, MaterialTheme.colorScheme.outlineVariant, shape)
+                            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.70f), shape)
+                            .border(0.6.dp, MaterialTheme.colorScheme.outlineVariant, shape)
                     } else {
                         Modifier
                     },
@@ -314,32 +359,38 @@ private fun ArchiveSearchHitRow(hit: com.projetofio.app.domain.SearchHit, onOpen
                     }
                     liveRegion = LiveRegionMode.Polite
                 },
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    displayDay(hit.entry),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                if (hit.returnedCount > 0) {
-                    Spacer(Modifier.width(FioSpace.s2))
+            Column(modifier = Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = "Já voltou ${hit.returnedCount} vez(es)",
+                        displayDay(hit.entry),
                         style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.tertiary,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
+                    if (hit.returnedCount > 0) {
+                        Spacer(Modifier.width(FioSpace.s2))
+                        Text(
+                            text = "Já voltou ${hit.returnedCount} vez(es)",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.tertiary,
+                        )
+                    }
                 }
+                Text(
+                    text = hit.matchedSnippet,
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(top = FioSpace.s1),
+                )
             }
-            Text(
-                text = hit.matchedSnippet,
-                style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.padding(top = FioSpace.s1),
-            )
+            if (cosmic) {
+                Text(
+                    text = "✦",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.75f),
+                    modifier = Modifier.padding(start = FioSpace.s2),
+                )
+            }
         }
     }
 }
-
-// ===========================================================================
-// ARCHIVE — typographic grouping by month, temporal distance as secondary
-// line, no cards (the system's rule: cards only for elevated objects).
-// ===========================================================================
