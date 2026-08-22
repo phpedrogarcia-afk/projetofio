@@ -14,7 +14,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         ImportBatchEntity::class,
         ImportBatchItemEntity::class,
     ],
-    version = 3,
+    version = 4,
     exportSchema = true,
 )
 abstract class FioDatabase : RoomDatabase() {
@@ -62,6 +62,8 @@ val MIGRATION_2_3 = object : Migration(2, 3) {
     override fun migrate(db: SupportSQLiteDatabase) {
         db.execSQL("ALTER TABLE entries ADD COLUMN import_batch_id TEXT")
         db.execSQL("ALTER TABLE entries ADD COLUMN import_fingerprint_envelope BLOB")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_entries_deleted_at_original_created_at ON entries(deleted_at, original_created_at)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_entries_purge_after ON entries(purge_after)")
         db.execSQL(
             """
             CREATE TABLE IF NOT EXISTS import_batches (
@@ -100,3 +102,15 @@ val MIGRATION_2_3 = object : Migration(2, 3) {
         db.execSQL("CREATE INDEX IF NOT EXISTS index_import_batch_items_entry_id ON import_batch_items(entry_id)")
     }
 }
+
+// FIO-P19 A1: additive migration — two nullable columns for the requested delivery window.
+// Existing entries get NULL in both fields; they remain ELIGIBLE and are drawn from the organic pool.
+val MIGRATION_3_4 = object : Migration(3, 4) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE entries ADD COLUMN requested_window_start INTEGER")
+        db.execSQL("ALTER TABLE entries ADD COLUMN requested_window_end INTEGER")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_entries_deleted_at_original_created_at ON entries(deleted_at, original_created_at)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_entries_purge_after ON entries(purge_after)")
+    }
+}
+

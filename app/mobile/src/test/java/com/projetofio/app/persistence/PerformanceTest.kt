@@ -74,7 +74,9 @@ class PerformanceTest {
               NULL,
               ${if (deleted) (now - 100) else "NULL"},
               ${if (deleted) (now + 86_400) else "NULL"},
-              3)
+              NULL,
+              NULL,
+              4)
             """.trimIndent(),
             arrayOf("cipher:$i:conteúdo de teste do registro número $i com algumas palavras".encodeToByteArray()),
         )
@@ -86,13 +88,13 @@ class PerformanceTest {
         try {
             for (i in 1..10_000) db.insertEntry(i, deleted = i > 9_000)
             db.execSQL(
-                "INSERT INTO drafts VALUES ('draft-1', 1, $now, ?, 'PLAIN_TEXT', 3)",
+                "INSERT INTO drafts VALUES ('draft-1', 1, $now, ?, 'PLAIN_TEXT', 4)",
                 arrayOf("rascunho".encodeToByteArray()),
             )
             db.execSQL(
                 """
                 INSERT INTO app_settings VALUES (1, 'GIVEN', NULL, 'OPTIONAL',
-                  1, 0, 1320, 420, 'DENIED', 3)
+                  1, 0, 1320, 420, 'DENIED', 4)
                 """.trimIndent(),
             )
             db.setTransactionSuccessful()
@@ -100,6 +102,7 @@ class PerformanceTest {
             db.endTransaction()
         }
     }
+
 
     // -------------------------------------------------------------------------
     // 1. Ordered list scans — history rendering paths

@@ -123,6 +123,8 @@ class RoomFioRepository(
         },
         deletedAt = entry.deletedAt?.toEpochMilli(),
         purgeAfter = entry.purgeAfter?.toEpochMilli(),
+        requestedWindowStart = entry.requestedWindowStart?.toEpochMilli(),
+        requestedWindowEnd = entry.requestedWindowEnd?.toEpochMilli(),
         schemaVersion = entry.schemaVersion,
     )
 
@@ -144,6 +146,8 @@ class RoomFioRepository(
         },
         deletedAt = row.deletedAt?.let(Instant::ofEpochMilli),
         purgeAfter = row.purgeAfter?.let(Instant::ofEpochMilli),
+        requestedWindowStart = row.requestedWindowStart?.let(Instant::ofEpochMilli),
+        requestedWindowEnd = row.requestedWindowEnd?.let(Instant::ofEpochMilli),
         schemaVersion = row.schemaVersion,
     )
 

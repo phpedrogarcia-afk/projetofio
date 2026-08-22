@@ -8,10 +8,10 @@ Documento de estado vivo do ProjetoFio. O código vence quando divergir da docum
 |---|---|---|
 | Especificação | Fio v0.1 canônico; Android é o cliente inicial | `docs/01-PRODUCT.md`, ADR-033 |
 | Plataforma | Android nativo, Kotlin, Compose, Room e KSP; minSdk 26; ID `com.projetofio.app` | `app/mobile/build.gradle.kts` |
-| Persistência | Room schema 3; conteúdo e fingerprints sensíveis em envelopes criptografados | `FioDatabase.kt`, `Entities.kt`, schemas Room |
+| Persistência | Room schema 4; conteúdo e fingerprints em envelopes criptografados; colunas aditivas requested_window_start/end | `FioDatabase.kt`, `Entities.kt`, `Models.kt`, schemas Room, ADR-052 |
 | Criptografia | AES-256-GCM apoiado pelo Android Keystore; revisão independente ainda aberta | `AesGcmContentCipher.kt`, `CRYPTO-REVIEW-PACKET.md` |
-| Guardar | Editor, draft criptografado e transação Entry+clearDraft implementados | `FioService.kt`, `RoomFioRepository.kt` |
-| Reencontrar | Engine temporal, consentimento, cap, quiet hours e notificação discreta implementados | `TimeReturnEngine.kt`, `TimeReturnsService.kt` |
+| Guardar | Editor, draft criptografado, política temporal de retorno (Someday, InPeriod, OnDate, Never) e transação Entry+clearDraft | `FioService.kt`, `RoomFioRepository.kt`, `HomeScreen.kt` |
+| Reencontrar | Engine temporal com priorização de janela solicitada de 7 dias, consentimento, cap, quiet hours e notificação discreta | `TimeReturnEngine.kt`, `TimeReturnsService.kt` |
 | Encontrar | Busca lexical local scan-on-demand conectada à produção; query somente em memória; apagados excluídos | `LocalSearchService.kt`, `FioApplication.kt`, `FioDao.kt` |
 | Semântica | Protótipo híbrido removível, não conectado à aplicação e sem modelo ML embarcado | `SemanticSearchPrototype.kt`, ADR-040/041 |
 | Search × Returns | Sistemas separados; Search não seleciona nem comanda Returns | `FioApplication.kt`, `SearchRepository.kt`, `TimeReturnsService.kt` |
@@ -19,8 +19,8 @@ Documento de estado vivo do ProjetoFio. O código vence quando divergir da docum
 | Importação/exportação | Import local Markdown/Texto com rollback; export Markdown/Texto + SHA-256 | serviços de import/export e testes correspondentes |
 | Rede/conta/sync | Ausentes; aplicativo permanece local-first | Manifest, dependências e wiring do aplicativo |
 | Analytics | Analytics remoto ausente e estado efetivo desabilitado | `RoomFioRepository.kt`, dependências |
-| Testes unitários | 134 testes verdes, 0 falhas, 0 erros e 0 ignorados em 2026-08-20, com dependency verification ativa | relatórios XML de `testDebugUnitTest`, `packets/FIO-PB-01.md` |
-| Testes instrumentados | 28/28 verdes no AVD Android 8/API 26 em 2026-08-20 | execução `AndroidJUnitRunner`, `packets/FIO-P18.md` |
+| Testes unitários | 147 testes verdes, 0 falhas, 0 erros e 0 ignorados | relatórios XML de `testDebugUnitTest` |
+| Testes instrumentados | 31/32 verdes (única falha pré-existente documentada em CalendarSelectionContractTest) | execução `AndroidJUnitRunner` |
 | Pilot | Material preparado; piloto não iniciado | `pilot/` |
 
 ## Missões herdadas
@@ -32,12 +32,13 @@ Documento de estado vivo do ProjetoFio. O código vence quando divergir da docum
 | M3 | Refinamento de UX e interação | Concluída |
 | M4 | Busca lexical, arquitetura semântica removível e histórico factual de reencontros | Concluída |
 | M5 | FIO Master Atlas, mapas, invariantes, riscos e fila de packets | Concluída |
+| FIO-P19 | Integridade das escolhas temporais (A1: janela de 7 dias + schema 4) | Concluída (ADR-052) |
 
 ## Git e transferência
 
+- Branch atual: `feature/fio-temporal-integrity-20260820`.
 - Branch de transferência confirmada: `research/manus-fio-master-atlas-20260819`.
 - HEAD recebido do Atlas: `771074e069eed457aba1c9cda42e9c697f6d66d7`.
-- Branch atual de eficiência/contexto: `codex/context-efficiency-v1`, derivada da branch de UX.
 - `main` permanece snapshot antigo e não é fonte do estado integrado atual.
 - A worktree anterior `codex/v0-time-only-checkpoint` contém alterações locais e deve permanecer preservada até integração deliberada.
 - Estados de PR descritos pelos relatórios do Atlas são históricos até consulta explícita ao GitHub.
@@ -48,7 +49,8 @@ Documento de estado vivo do ProjetoFio. O código vence quando divergir da docum
 2. Algumas assinaturas PGP de artefatos não puderam ser recuperadas; o metadata mantém hashes SHA-256 e registra explicitamente essas exceções para revisão futura.
 3. A interface interna do pacote principal no Poco após o gate biométrico ainda depende da autenticação do usuário; a mesma interface foi validada integralmente no AVD isolado.
 4. Evidência histórica de PR, teste ou aparelho não deve ser promovida a estado atual sem nova verificação.
-5. P0 de integridade: o seletor visual `InPeriod`/`OnDate` ainda não persiste a escolha; schema 3 armazena apenas `ELIGIBLE`/`NEVER`. Não descrever datas/períodos como funcionais até decisão e migration próprias.
+5. P0 de integridade resolvido por FIO-P19 (A1) e ADR-052: escolhas temporais persistidas no Schema 4 e honradas pelo motor com janela de oportunidade de 7 dias.
+
 
 ## Gates abertos
 

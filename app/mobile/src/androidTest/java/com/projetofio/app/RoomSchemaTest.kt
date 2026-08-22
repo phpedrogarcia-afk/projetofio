@@ -7,6 +7,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import com.projetofio.app.persistence.FioDatabase
 import com.projetofio.app.persistence.MIGRATION_1_2
 import com.projetofio.app.persistence.MIGRATION_2_3
+import com.projetofio.app.persistence.MIGRATION_3_4
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Rule
@@ -24,7 +25,7 @@ class RoomSchemaTest {
     )
 
     @Test
-    fun versionOneMigratesThroughThreeWithoutConsentReturnOrImport() {
+    fun versionOneMigratesThroughFourWithoutConsentReturnOrImport() {
         helper.createDatabase(TEST_DATABASE, 1).apply {
             execSQL(
                 "INSERT INTO entries (id, created_at, original_created_at, original_time_zone, updated_at, source, content_envelope, content_format, return_mode, deleted_at, purge_after, schema_version) " +
@@ -41,14 +42,16 @@ class RoomSchemaTest {
             close()
         }
 
-        val migrated = helper.runMigrationsAndValidate(TEST_DATABASE, 3, true, MIGRATION_1_2, MIGRATION_2_3)
-        migrated.query("SELECT COUNT(*), last_returned_at, return_count, import_batch_id, import_fingerprint_envelope FROM entries").use {
+        val migrated = helper.runMigrationsAndValidate(TEST_DATABASE, 4, true, MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+        migrated.query("SELECT COUNT(*), last_returned_at, return_count, import_batch_id, import_fingerprint_envelope, requested_window_start, requested_window_end FROM entries").use {
             assertEquals(true, it.moveToFirst())
             assertEquals(1, it.getInt(0))
             assertEquals(true, it.isNull(1))
             assertEquals(0, it.getInt(2))
             assertEquals(true, it.isNull(3))
             assertEquals(true, it.isNull(4))
+            assertEquals(true, it.isNull(5))
+            assertEquals(true, it.isNull(6))
         }
         migrated.query("SELECT return_consent_state, quiet_hours_start_minute, quiet_hours_end_minute, notification_permission_observed FROM app_settings").use {
             assertEquals(true, it.moveToFirst())
@@ -77,7 +80,7 @@ class RoomSchemaTest {
     }
 
     @Test
-    fun versionTwoMigratesToThreeWithoutChangingM2Rows() {
+    fun versionTwoMigratesToFourWithoutChangingM2Rows() {
         helper.createDatabase(SECOND_DATABASE, 2).apply {
             execSQL(
                 "INSERT INTO entries (id, created_at, original_created_at, original_time_zone, updated_at, source, content_envelope, content_format, return_mode, last_returned_at, return_count, deleted_at, purge_after, schema_version) " +
@@ -89,8 +92,8 @@ class RoomSchemaTest {
             )
             close()
         }
-        val migrated = helper.runMigrationsAndValidate(SECOND_DATABASE, 3, true, MIGRATION_2_3)
-        migrated.query("SELECT original_created_at, updated_at, last_returned_at, return_count, hex(content_envelope), import_batch_id FROM entries WHERE id = 'm2-entry'").use {
+        val migrated = helper.runMigrationsAndValidate(SECOND_DATABASE, 4, true, MIGRATION_2_3, MIGRATION_3_4)
+        migrated.query("SELECT original_created_at, updated_at, last_returned_at, return_count, hex(content_envelope), import_batch_id, requested_window_start, requested_window_end FROM entries WHERE id = 'm2-entry'").use {
             assertEquals(true, it.moveToFirst())
             assertEquals(900L, it.getLong(0))
             assertEquals(1100L, it.getLong(1))
@@ -98,6 +101,8 @@ class RoomSchemaTest {
             assertEquals(2, it.getInt(3))
             assertEquals("010203", it.getString(4))
             assertEquals(true, it.isNull(5))
+            assertEquals(true, it.isNull(6))
+            assertEquals(true, it.isNull(7))
         }
         migrated.query("SELECT return_consent_state, quiet_hours_start_minute, quiet_hours_end_minute, notification_permission_observed FROM app_settings").use {
             assertEquals(true, it.moveToFirst())

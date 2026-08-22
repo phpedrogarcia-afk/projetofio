@@ -14,11 +14,13 @@ import com.projetofio.app.domain.AppSettings
 import com.projetofio.app.domain.Entry
 import com.projetofio.app.domain.NotificationPermissionObserved
 import com.projetofio.app.domain.ReturnConsentState
+import com.projetofio.app.domain.ReturnPolicy
 import com.projetofio.app.domain.ImportBatch
 import com.projetofio.app.domain.ImportSource
 import com.projetofio.app.domain.SearchQuery
 import com.projetofio.app.domain.SearchResult
 import com.projetofio.app.domain.SearchService
+
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -164,13 +166,13 @@ class FioViewModel(
         mutableState.update { it.copy(savedNotice = false) }
     }
 
-    fun saveEntry() {
+    fun saveEntry(policy: ReturnPolicy = ReturnPolicy.Someday) {
         val content = state.value.draftText
         if (content.isBlank() || !saveInProgress.compareAndSet(false, true)) return
         mutableState.update { it.copy(saving = true, savedNotice = false, recoverableError = null) }
         viewModelScope.launch {
             try {
-                service.saveEntry(content)
+                service.saveEntry(content, policy)
                 draftChanges.value = ""
                 mutableState.update { it.copy(draftText = "", saving = false, savedNotice = true) }
                 if (m2EngineeringEnabled) {
@@ -192,6 +194,7 @@ class FioViewModel(
             }
         }
     }
+
 
     fun editEntry(id: String, content: String) = launchAction {
         service.editEntry(id, content)

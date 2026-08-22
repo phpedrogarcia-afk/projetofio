@@ -7,14 +7,18 @@ import com.projetofio.app.domain.Entry
 import com.projetofio.app.domain.FioRepository
 import com.projetofio.app.domain.IdGenerator
 import com.projetofio.app.domain.RECENTLY_DELETED_RETENTION_DAYS
+import com.projetofio.app.domain.ReturnMode
+import com.projetofio.app.domain.ReturnPolicy
 import java.security.MessageDigest
 import java.time.Clock
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+
 
 class FioService(
     private val repository: FioRepository,
@@ -44,23 +48,57 @@ class FioService(
 
     suspend fun clearDraft() = repository.clearDraft()
 
-    suspend fun saveEntry(content: String): Entry {
+    suspend fun saveEntry(content: String, policy: ReturnPolicy = ReturnPolicy.Someday): Entry {
         require(content.isNotBlank()) { "Blank entries are not persisted" }
         // Close the debounce gap: the exact editor state becomes a recoverable,
         // encrypted Draft before the Entry transaction is attempted.
         autosaveDraft(content)
         val now = clock.instant()
+        val zone = clock.zone
+
+        // FIO-P19 A1: map the user's explicit return policy to domain fields.
+        val (returnMode, windowStart, windowEnd) = mapPolicy(policy, now, zone)
+
         val entry = Entry(
             id = ids.newId(),
             createdAt = now,
             originalCreatedAt = now,
-            originalTimeZone = clock.zone.id,
+            originalTimeZone = zone.id,
             updatedAt = now,
             content = content,
+            returnMode = returnMode,
+            requestedWindowStart = windowStart,
+            requestedWindowEnd = windowEnd,
         )
         repository.insertEntryAndClearDraft(entry)
         return entry
     }
+
+    /**
+     * Maps a [ReturnPolicy] chosen at save time to the three domain fields that
+     * persist the intent: [ReturnMode], an optional window start, and an optional
+     * window end. The 7-day window is a delivery opportunity, never a guarantee.
+     */
+    private fun mapPolicy(
+        policy: ReturnPolicy,
+        now: Instant,
+        zone: java.time.ZoneId,
+    ): Triple<ReturnMode, Instant?, Instant?> = when (policy) {
+        is ReturnPolicy.Someday -> Triple(ReturnMode.ELIGIBLE, null, null)
+        is ReturnPolicy.Never   -> Triple(ReturnMode.NEVER, null, null)
+        is ReturnPolicy.InPeriod -> {
+            val start = now.plus(policy.days.toLong(), ChronoUnit.DAYS)
+            Triple(ReturnMode.ELIGIBLE, start, start.plus(7, ChronoUnit.DAYS))
+        }
+        is ReturnPolicy.OnDate -> {
+            // Anchor to start-of-day in local time; same UTC-midnight contract as DatePicker.
+            val start = policy.date
+                .atStartOfDay(zone)
+                .toInstant()
+            Triple(ReturnMode.ELIGIBLE, start, start.plus(7, ChronoUnit.DAYS))
+        }
+    }
+
 
     suspend fun editEntry(id: String, content: String) {
         require(content.isNotBlank()) { "Blank entries are not persisted" }

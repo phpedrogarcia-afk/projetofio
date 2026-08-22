@@ -8,12 +8,12 @@
 
 | Conceito | Representação real | Significado |
 |---|---|---|
-| Someday | UI local `ReturnPolicy.Someday`; `saveEntry()` cria Entry default `ELIGIBLE` | funciona apenas porque coincide com o default do domínio |
-| Scheduled (calendário) | `ReturnPolicy.InPeriod(n)` / `OnDate` existem somente no estado Compose e não chegam a `saveEntry()` | **P0: não persistido e não honrado pelo motor; não descrever como funcional** |
+| Someday | `ReturnPolicy.Someday`; `saveEntry()` cria Entry `ELIGIBLE` sem janela (`requestedWindowStart/End = null`) | Elegibilidade orgânica pura pelo pool de idade |
+| Scheduled (período/data) | `ReturnPolicy.InPeriod(n)` / `OnDate(date)`; persistido em `requested_window_start/end` (Schema 4, FIO-P19 A1) | Janela de oportunidade de 7 dias a partir da data-alvo; tratada como candidata prioritária pelo motor sem forçar entrega |
 | Resting / paused | `returns_paused_at` + `ReturnConsentState.PAUSED` | engine retorna `Silent(CONSENT_DISABLED)`; attempts existentes cancelados |
-| Never ao guardar | UI local `ReturnPolicy.Never`; `saveEntry()` ainda cria Entry default `ELIGIBLE` | **P0: opção visual não aplicada** |
-| Never após uma Return | `TimeReturnsService.neverReturn(attemptId)` → `return_mode = NEVER` | funcional apenas no fluxo de Return já aberta |
-| “Devolver para agora” no detalhe | `NoteScreen.returning/returned` em `remember`; nenhuma chamada de domínio | **P0: encenação local, sem tentativa/histórico; remover até contrato real** |
+| Never ao guardar | `ReturnPolicy.Never`; `saveEntry()` persiste `return_mode = NEVER` (FIO-P19 A1) | Nunca retorna |
+| Never após uma Return | `TimeReturnsService.neverReturn(attemptId)` → `return_mode = NEVER` | funcional no fluxo de Return já aberta |
+| “Devolver para agora” no detalhe | Removido em FIO-P19 A1 | Removido até que um contrato de domínio real seja aprovado em missão própria |
 | Data-Âncora | `original_created_at` + `original_time_zone` na Entry | a data que o usuário associa ao momento vivido (não a data de gravação); usada no export e no display |
 | Return history | `ReturnEntity` (state machine: SELECTED→SCHEDULED→NOTIFIED→OPENED/DISMISSED/EXPIRED/CANCELLED) | evidência factual "já voltou N vezes" (usada pela busca M4) |
 | Quiet hours | `quiet_hours_start_minute` (default 1260 = 21:00) / `end_minute` (default 480 = 08:00) | janela proibida; **com wrap de meia-noite** o allowed window cruza o dia |
@@ -32,8 +32,10 @@
 4. bootstrap wait (0/30/60/90 dias conforme contagem de entradas)
                                   → Silent(BOOTSTRAP_WAIT)
 5. nenhuma entry ELIGIBLE       → Silent(NO_ELIGIBLE_ENTRY)
-6. sorteia bucket de idade (uniforme, nunca-retornadas preferidas),
-   sorteia entry dentro do bucket
+6. Candidato solicitado prioritário (FIO-P19 A1):
+   se houver entry com requestedWindowStart <= now < requestedWindowEnd,
+   seleciona o candidato com requestedWindowStart mais antigo.
+   Caso contrário, sorteia bucket de idade do pool orgânico/expirado e entry dentro do bucket.
 7. chooseAllowedDelivery: próxima janela fora das quiet hours (wrap meia-noite)
 8. windowStart = deliveryAt; windowEnd = deliveryAt + 24h
 9. schedule(at=windowStart) via WorkManager
@@ -59,7 +61,6 @@ O Fio não repete notificações após ignorar (ADR-011). Não há "On This Day"
 
 ## 5. Gaps de tempo (para KNOWLEDGE-GAPS)
 
-1. **P0 ReturnPolicy:** períodos, data e Nunca ao guardar são UI-only. ADR-043 define o contrato desejado, não evidência de implementação.
-2. DST na **janela de 24h**: um `deliveryAt.plus(24h)` pode cair em hora "inexistente" em spring-forward; java.time resolve (offset fixo), mas o comportamento de notificação às 2h30 no dia do salto não foi testado em aparelho (`E5` missing; `EngineTortureTest` cobre fusos extremos em lógica).
-3. Exact alarms: o app usa inexact WorkManager; para um app de "reencontro" isso é aceitável hoje; se um dia o fundador quiser entrega em hora exata (ex.: o dia exato do calendário escolhido), precisaria `SCHEDULE_EXACT_ALARM` + decisão (ADR novo) — **não construir agora**.
-4. Reboot sem abertura do app: WorkManager reexecuta, mas `reconcile()` só roda quando o processo sobe; entre reboot e primeira abertura há um hiato em que nenhuma devolução acontece (documentado, aceitável).
+1. **DST na janela de 24h**: um `deliveryAt.plus(24h)` pode cair em hora "inexistente" em spring-forward; java.time resolve (offset fixo), mas o comportamento de notificação às 2h30 no dia do salto não foi testado em aparelho (`E5` missing; `EngineTortureTest` cobre fusos extremos em lógica).
+2. **Exact alarms**: o app usa inexact WorkManager; para um app de "reencontro" isso é aceitável hoje; se um dia o fundador quiser entrega em hora exata (ex.: o dia exato do calendário escolhido), precisaria `SCHEDULE_EXACT_ALARM` + decisão (ADR novo) — **não construir agora**.
+3. **Reboot sem abertura do app**: WorkManager reexecuta, mas `reconcile()` só roda quando o processo sobe; entre reboot e primeira abertura há um hiato em que nenhuma devolução acontece (documentado, aceitável).

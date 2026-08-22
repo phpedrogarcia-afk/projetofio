@@ -6,32 +6,26 @@
 
 | Ordem | Packet | Tipo | Status |
 |---|---|---|---|
-| 1 | FIO-P19 (escolhas temporais verdadeiras) | decisão produto | **NOW — DECISION REQUIRED; P0 documentado** |
-| 2 | FIO-PQ-03 (demais D-1..D-5 propostas ao fundador) | doc | READY |
-| 3 | FIO-P06 (busca lexical em escala 1k-10k) | code | READY |
-| 4 | FIO-P07 (import hardening OOM) | code | READY |
-| 5 | FIO-P10 (migration 3→4 simulação) | code | READY |
-| 6 | FIO-P01/P02/P04/P05/P09 (device gates) | device | BLOCKED — aparelho/humano; context pack requerido antes de executar |
-| 7 | FIO-PILOT-01/02 (piloto) | human | WAITING fundador |
-| 8 | FIO-P03 (crypto review) | device/review | depois de P01 |
-| 9 | FIO-P12 (device gate semântica) | device | depois de D-3 + licença HF |
-| 10 | FIO-P08/P11/P14/P15/P16 | product | depois das decisões D-* |
+| 1 | FIO-PQ-03 (demais D-1..D-5 propostas ao fundador) | doc | **NOW** |
+| 2 | FIO-P06 (busca lexical em escala 1k-10k) | code | READY |
+| 3 | FIO-P07 (import hardening OOM) | code | READY |
+| 4 | FIO-P10 (migration 3→4 simulação) | code | DONE (integrada em FIO-P19) |
+| 5 | FIO-P01/P02/P04/P05/P09 (device gates) | device | BLOCKED — aparelho/humano; context pack requerido antes de executar |
+| 6 | FIO-PILOT-01/02 (piloto) | human | WAITING fundador |
+| 7 | FIO-P03 (crypto review) | device/review | depois de P01 |
+| 8 | FIO-P12 (device gate semântica) | device | depois de D-3 + licença HF |
+| 9 | FIO-P08/P11/P14/P15/P16 | product | depois das decisões D-* |
 
 ## Concluídos nesta fila
 
 | Packet | Tipo | Estado | Evidência |
 |---|---|---|---|
+| FIO-P19 (escolhas temporais verdadeiras — A1) | code/decision | DONE | ADR-052, Schema 4, 147 unitários + 31/32 instrumentados verdes |
 | FIO-PQ-01 (PROJECT-STATE atualizado) | doc | DONE | `packets/FIO-PQ-01.md`, `plans/PROJECT-STATE.md` |
 | FIO-PQ-02 (NEXT-WORK/HARDENING-QUEUE sincronizados) | doc | DONE | `packets/FIO-PQ-02.md`, `plans/NEXT-WORK.md`, `plans/HARDENING-QUEUE.md` |
 | FIO-PB-01 (build verificável + reinstalação autorizada) | device | DONE | `packets/FIO-PB-01.md`, 134 unitários verdes, instalação ADB preservando dados |
 | FIO-P17 (Guardar / Encontrar / Arquivo visíveis) | code/device | DONE | `packets/FIO-P17.md`, 134 unitários + 26 instrumentados verdes, AVD API 26 e Poco API 33 |
 | FIO-P18 (funções básicas visíveis + Ajustes claros) | code/UX/device | DONE (engineering) | 134 unitários + 28 instrumentados; AVD API 26; APK P18 instalado no Poco preservando dados |
-
-## Histórico (contexto)
-
-- M1 (2026-08-10..12): baseline Android — DONE.
-- M2 (2026-08-13): returns scheduling + privacy surfaces — DONE (engineering; validation pending device).
-- M3 (2026-08-14): import Markdown/Text com rollback — DONE.
 - M4 (2026-08-15..19): busca lexical + protótipo híbrido + D12 — DONE (134 testes).
 - M5 (2026-08-19): Atlas — DONE (esta missão; sem código de app).
 

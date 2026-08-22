@@ -160,6 +160,63 @@ class TimeReturnEngineTest {
         assertEquals(TimeReturnDecision.Silent(SilenceReason.BOOTSTRAP_WAIT), decision)
     }
 
+    @Test
+    fun requestedWindowActiveEntryIsPrioritizedOverOrganicPool() {
+        val enabled = AppSettings(returnConsentState = ReturnConsentState.ENABLED)
+        val organic = entry("organic", 100)
+        val requested = entry("requested", 40).copy(
+            requestedWindowStart = now.minusSeconds(86_400),
+            requestedWindowEnd = now.plusSeconds(6 * 86_400),
+        )
+        val decision = engine().evaluate(now, zone, enabled, listOf(organic, requested), emptyList())
+        assertTrue(decision is TimeReturnDecision.Selected)
+        assertEquals("requested", (decision as TimeReturnDecision.Selected).entryId)
+    }
+
+    @Test
+    fun requestedWindowInTheFutureIsNotSelectedBeforeWindowOpens() {
+        val enabled = AppSettings(returnConsentState = ReturnConsentState.ENABLED)
+        val futureRequested = entry("future", 40).copy(
+            requestedWindowStart = now.plusSeconds(10 * 86_400),
+            requestedWindowEnd = now.plusSeconds(17 * 86_400),
+        )
+        // With only the future requested entry, engine finds no eligible entry ready now
+        val decision = engine().evaluate(now, zone, enabled, listOf(futureRequested), emptyList())
+        assertEquals(TimeReturnDecision.Silent(SilenceReason.NO_ELIGIBLE_ENTRY), decision)
+    }
+
+    @Test
+    fun requestedWindowRespectsConsentAndCap() {
+        val paused = AppSettings(returnConsentState = ReturnConsentState.PAUSED, returnsPausedAt = now)
+        val requested = entry("requested", 40).copy(
+            requestedWindowStart = now.minusSeconds(86_400),
+            requestedWindowEnd = now.plusSeconds(6 * 86_400),
+        )
+        assertEquals(
+            TimeReturnDecision.Silent(SilenceReason.CONSENT_DISABLED),
+            engine().evaluate(now, zone, paused, listOf(requested), emptyList()),
+        )
+
+        val enabled = AppSettings(returnConsentState = ReturnConsentState.ENABLED)
+        val recentAttempt = attempt("other", ReturnState.DISMISSED, 2)
+        assertEquals(
+            TimeReturnDecision.Silent(SilenceReason.FREQUENCY_CAP),
+            engine().evaluate(now, zone, enabled, listOf(requested), listOf(recentAttempt)),
+        )
+    }
+
+    @Test
+    fun requestedWindowExpiredFallsBackToOrganicSelection() {
+        val enabled = AppSettings(returnConsentState = ReturnConsentState.ENABLED)
+        val expiredRequested = entry("expired", 40).copy(
+            requestedWindowStart = now.minusSeconds(14 * 86_400),
+            requestedWindowEnd = now.minusSeconds(7 * 86_400),
+        )
+        val decision = engine().evaluate(now, zone, enabled, listOf(expiredRequested), emptyList())
+        assertTrue(decision is TimeReturnDecision.Selected)
+        assertEquals("expired", (decision as TimeReturnDecision.Selected).entryId)
+    }
+
     private fun engine(value: Int = 0) = TimeReturnEngine(ReturnRandom { value })
 
     private fun entry(id: String, ageDays: Long) = entryAt(id, now.minusSeconds(ageDays * 86_400))

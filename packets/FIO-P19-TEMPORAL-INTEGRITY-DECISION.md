@@ -1,10 +1,11 @@
 # FIO-P19 — integridade das escolhas de devolução ao guardar
 
-**Status:** DECISION REQUIRED — nenhum código autorizado
-**Tipo:** decisão de produto + schema/engine/UI se aprovada
-**Context:** SMALL para decidir (5 arquivos); LARGE somente após aprovação A1/A2
-**Branch prevista:** `feature/fio-temporal-integrity-20260820`
-**Severidade atual:** P0 de confiança — a interface oferece escolhas que não são aplicadas
+**Status:** DONE (implementado via ADR-052)
+**Tipo:** decisão de produto + schema 4 + engine + UI
+**Context:** LARGE (implementação completa)
+**Branch executada:** `feature/fio-temporal-integrity-20260820`
+**Severidade:** P0 de confiança — RESOLVIDO
+
 
 ## READ FIRST
 

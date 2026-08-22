@@ -76,6 +76,43 @@ class FioServiceTest {
         assertEquals(now.plusSeconds(30L * 24L * 60L * 60L), deleted.purgeAfter)
     }
 
+    @Test
+    fun returnPolicySomedayMapsToEligibleWithoutWindow() = runBlocking {
+        val entry = service.saveEntry("someday entry", com.projetofio.app.domain.ReturnPolicy.Someday)
+        assertEquals(com.projetofio.app.domain.ReturnMode.ELIGIBLE, entry.returnMode)
+        assertNull(entry.requestedWindowStart)
+        assertNull(entry.requestedWindowEnd)
+    }
+
+    @Test
+    fun returnPolicyNeverMapsToNeverWithoutWindow() = runBlocking {
+        val entry = service.saveEntry("never entry", com.projetofio.app.domain.ReturnPolicy.Never)
+        assertEquals(com.projetofio.app.domain.ReturnMode.NEVER, entry.returnMode)
+        assertNull(entry.requestedWindowStart)
+        assertNull(entry.requestedWindowEnd)
+    }
+
+    @Test
+    fun returnPolicyInPeriodMapsToSevenDayWindowFromTargetOffset() = runBlocking {
+        val entry = service.saveEntry("in 30 days entry", com.projetofio.app.domain.ReturnPolicy.InPeriod(30))
+        assertEquals(com.projetofio.app.domain.ReturnMode.ELIGIBLE, entry.returnMode)
+        val expectedStart = now.plus(30, java.time.temporal.ChronoUnit.DAYS)
+        val expectedEnd = expectedStart.plus(7, java.time.temporal.ChronoUnit.DAYS)
+        assertEquals(expectedStart, entry.requestedWindowStart)
+        assertEquals(expectedEnd, entry.requestedWindowEnd)
+    }
+
+    @Test
+    fun returnPolicyOnDateMapsToSevenDayWindowFromLocalDateStartOfDay() = runBlocking {
+        val targetDate = java.time.LocalDate.of(2026, 9, 1)
+        val entry = service.saveEntry("on date entry", com.projetofio.app.domain.ReturnPolicy.OnDate(targetDate))
+        assertEquals(com.projetofio.app.domain.ReturnMode.ELIGIBLE, entry.returnMode)
+        val expectedStart = targetDate.atStartOfDay(ZoneId.of("America/Sao_Paulo")).toInstant()
+        val expectedEnd = expectedStart.plus(7, java.time.temporal.ChronoUnit.DAYS)
+        assertEquals(expectedStart, entry.requestedWindowStart)
+        assertEquals(expectedEnd, entry.requestedWindowEnd)
+    }
+
     private class MemoryRepository : FioRepository {
         val active = MutableStateFlow<List<Entry>>(emptyList())
         val deleted = MutableStateFlow<List<Entry>>(emptyList())

@@ -16,6 +16,7 @@ import com.projetofio.app.persistence.FioDatabase
 import com.projetofio.app.persistence.DatabasePreflight
 import com.projetofio.app.persistence.MIGRATION_1_2
 import com.projetofio.app.persistence.MIGRATION_2_3
+import com.projetofio.app.persistence.MIGRATION_3_4
 import com.projetofio.app.persistence.RoomFioRepository
 import com.projetofio.app.search.LocalSearchService
 import java.time.Clock
@@ -39,7 +40,7 @@ class FioGraph(application: Application) {
             FioDatabase::class.java,
             databaseName,
         ).setJournalMode(androidx.room.RoomDatabase.JournalMode.WRITE_AHEAD_LOGGING)
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
             .build()
     }
 

@@ -87,15 +87,31 @@ class TimeReturnEngine(
             return TimeReturnDecision.Silent(SilenceReason.NO_ELIGIBLE_ENTRY)
         }
 
-        val grouped = eligible.groupBy { ageBucket(ageDays(it, now, zone)) }
-        val buckets = grouped.keys.sortedBy { it.ordinal }
-        val bucket = buckets[safeIndex(buckets.size)]
-        val candidates = checkNotNull(grouped[bucket]).sortedBy { it.id }
-        val entry = candidates[safeIndex(candidates.size)]
+        // FIO-P19 A1: priority candidate — an entry whose requested window is currently active.
+        // Subject to all existing guards already passed above (consent, cap, pending).
+        val requestedCandidate = eligible
+            .filter { it.requestedWindowStart != null && it.requestedWindowEnd != null }
+            .filter { it.requestedWindowStart!! <= now && now < it.requestedWindowEnd!! }
+            .minByOrNull { it.requestedWindowStart!! } // oldest request wins ties
+
+        val entry = if (requestedCandidate != null) {
+            requestedCandidate
+        } else {
+            val grouped = eligible
+                .filter { it.requestedWindowStart == null || (it.requestedWindowEnd != null && now >= it.requestedWindowEnd) }
+                .groupBy { ageBucket(ageDays(it, now, zone)) }
+            if (grouped.isEmpty()) return TimeReturnDecision.Silent(SilenceReason.NO_ELIGIBLE_ENTRY)
+            val buckets = grouped.keys.sortedBy { it.ordinal }
+            val bucket = buckets[safeIndex(buckets.size)]
+            val candidates = checkNotNull(grouped[bucket]).sortedBy { it.id }
+            candidates[safeIndex(candidates.size)]
+        }
+
+
         val deliveryAt = chooseAllowedDelivery(now, zone, settings)
         return TimeReturnDecision.Selected(
             entryId = entry.id,
-            ageBucket = bucket,
+            ageBucket = ageBucket(ageDays(entry, now, zone)),
             deliveryAt = deliveryAt,
             windowEnd = deliveryAt.plus(24, ChronoUnit.HOURS),
         )

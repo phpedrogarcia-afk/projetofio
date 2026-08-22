@@ -29,8 +29,14 @@ data class EntryEntity(
     @ColumnInfo(name = "import_fingerprint_envelope", typeAffinity = ColumnInfo.BLOB) val importFingerprintEnvelope: ByteArray? = null,
     @ColumnInfo(name = "deleted_at") val deletedAt: Long?,
     @ColumnInfo(name = "purge_after") val purgeAfter: Long?,
+    // FIO-P19 A1: requested delivery window. NULL for organic (Someday) entries.
+    // Schema 4 adds these two columns via additive MIGRATION_3_4.
+    @ColumnInfo(name = "requested_window_start") val requestedWindowStart: Long? = null,
+    @ColumnInfo(name = "requested_window_end") val requestedWindowEnd: Long? = null,
     @ColumnInfo(name = "schema_version") val schemaVersion: Int,
 )
+
+
 
 @Entity(tableName = "drafts")
 data class DraftEntity(

@@ -7,6 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -44,9 +45,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalDensity
@@ -61,6 +65,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.annotation.DrawableRes
 import com.projetofio.app.domain.ReturnConsentState
+import com.projetofio.app.domain.ReturnPolicy
 import com.projetofio.app.R
 import com.projetofio.app.ui.theme.FioRadius
 import com.projetofio.app.ui.theme.FioSpace
@@ -71,14 +76,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
 
-// first-class candidate.
-// ---------------------------------------------------------------------------
-sealed class ReturnPolicy {
-    data object Someday : ReturnPolicy() // organic eligibility
-    data class InPeriod(val days: Int) : ReturnPolicy() // explicit request
-    data class OnDate(val date: LocalDate) : ReturnPolicy() // anchored request
-    data object Never : ReturnPolicy()
-}
+// ReturnPolicy lives in com.projetofio.app.domain.ReturnPolicy (FIO-P19 A1).
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun HomeScreen(
@@ -110,6 +108,49 @@ internal fun HomeScreen(
                 if (largeText) base.verticalScroll(rememberScrollState()) else base
             }
     Box(modifier = Modifier.fillMaxSize()) {
+        if (cosmic) {
+            Image(
+                painter = painterResource(R.drawable.cosmic_home_nebula),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .alpha(.20f),
+            )
+            Image(
+                painter = painterResource(R.drawable.cosmic_home_constellations),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(top = 6.dp, end = 2.dp)
+                    .width(210.dp)
+                    .height(175.dp)
+                    .alpha(.10f),
+            )
+            Image(
+                painter = painterResource(R.drawable.cosmic_home_astrolabe),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(start = 2.dp, bottom = 62.dp)
+                    .width(155.dp)
+                    .height(155.dp)
+                    .alpha(.10f),
+            )
+            Image(
+                painter = painterResource(R.drawable.cosmic_home_observatory),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(end = 2.dp, bottom = 58.dp)
+                    .width(168.dp)
+                    .height(168.dp)
+                    .alpha(.08f),
+            )
+        }
         CosmicOrnament(
             ornament = CosmicOrnamentType.COMPASS,
             modifier = Modifier
@@ -171,6 +212,7 @@ internal fun HomeScreen(
                 .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(FioRadius.md)),
             color = MaterialTheme.colorScheme.surface.copy(alpha = if (cosmic) 0.68f else 0.48f),
             shape = RoundedCornerShape(FioRadius.md),
+            shadowElevation = if (cosmic) 6.dp else 0.dp,
         ) {
             BasicTextField(
                 value = state.draftText,
@@ -270,12 +312,13 @@ internal fun HomeScreen(
         }
 
         // Primary action — the tallest, warmest touch target in the app.
+        // FIO-P19 A1: passes the chosen policy to the ViewModel so it reaches the service.
         val pressed by interactionSource.collectIsPressedAsState()
         Button(
             onClick = {
                 focusManager.clearFocus()
                 keyboardController?.hide()
-                viewModel.saveEntry()
+                viewModel.saveEntry(policy)
             },
             enabled = state.draftText.isNotBlank() && !state.saving,
             interactionSource = interactionSource,
@@ -327,40 +370,76 @@ internal fun HomeScreen(
         ModalBottomSheet(
             onDismissRequest = { timeSheet = false },
             shape = RoundedCornerShape(topStart = FioRadius.lg, topEnd = FioRadius.lg),
-            containerColor = if (cosmic) MaterialTheme.colorScheme.surface.copy(alpha = .88f) else MaterialTheme.colorScheme.surface,
+            containerColor = if (cosmic) Color.Transparent else MaterialTheme.colorScheme.surface,
             contentColor = MaterialTheme.colorScheme.onSurface,
         ) {
-            Column(
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = FioSpace.s4, vertical = FioSpace.s5)
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(FioSpace.s2),
+                    .background(
+                        if (cosmic) Brush.verticalGradient(listOf(
+                            MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = .94f),
+                            MaterialTheme.colorScheme.surface.copy(alpha = .90f),
+                        )) else Brush.verticalGradient(listOf(MaterialTheme.colorScheme.surface, MaterialTheme.colorScheme.surface)),
+                        RoundedCornerShape(topStart = FioRadius.lg, topEnd = FioRadius.lg),
+                    )
+                    .border(1.dp, if (cosmic) MaterialTheme.colorScheme.outline else Color.Transparent, RoundedCornerShape(topStart = FioRadius.lg, topEnd = FioRadius.lg)),
             ) {
-                Text("Quando isso pode voltar?", style = MaterialTheme.typography.titleMedium)
+                CosmicOrnament(
+                    ornament = CosmicOrnamentType.ASTROLABE,
+                    modifier = Modifier.align(Alignment.TopEnd).padding(top = 4.dp, end = 10.dp).width(126.dp).height(126.dp),
+                    opacity = .10f,
+                )
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = FioSpace.s4, vertical = FioSpace.s5).verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(FioSpace.s2),
+                ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(painterResource(R.drawable.ic_time_return), null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.height(20.dp).width(20.dp))
+                    Spacer(Modifier.width(FioSpace.s2))
+                    Text("Quando isso pode voltar?", style = MaterialTheme.typography.titleMedium)
+                }
                 Spacer(Modifier.height(FioSpace.s2))
                 TimeOption("Algum dia", R.drawable.ic_infinity, policy is ReturnPolicy.Someday) {
                     policy = ReturnPolicy.Someday; timeSheet = false
                 }
-                TimeOption("Daqui a 1 semana", R.drawable.ic_calendar_span, (policy as? ReturnPolicy.InPeriod)?.days == 7) {
-                    policy = ReturnPolicy.InPeriod(7); timeSheet = false
-                }
-                TimeOption("Daqui a 1 mês", R.drawable.ic_calendar_span, (policy as? ReturnPolicy.InPeriod)?.days == 30) {
-                    policy = ReturnPolicy.InPeriod(30); timeSheet = false
-                }
-                TimeOption("Daqui a 3 meses", R.drawable.ic_calendar_span, (policy as? ReturnPolicy.InPeriod)?.days == 90) {
-                    policy = ReturnPolicy.InPeriod(90); timeSheet = false
-                }
-                TimeOption("Daqui a 1 ano", R.drawable.ic_calendar_span, (policy as? ReturnPolicy.InPeriod)?.days == 365) {
-                    policy = ReturnPolicy.InPeriod(365); timeSheet = false
-                }
-                TimeOption("Escolher uma data", R.drawable.ic_calendar_date, policy is ReturnPolicy.OnDate) {
-                    timeSheet = false; dateSheet = true
-                }
+                // FIO-P19 A1: labels changed from "Daqui a" to "A partir de" to reflect the
+                // 7-day window semantics (opportunity, not exact delivery).
+                TimeOption(
+                    label = "A partir de 1 semana",
+                    sublabel = "Durante os 7 dias seguintes, esta nota pode voltar.",
+                    icon = R.drawable.ic_calendar_span,
+                    selected = (policy as? ReturnPolicy.InPeriod)?.days == 7,
+                ) { policy = ReturnPolicy.InPeriod(7); timeSheet = false }
+                TimeOption(
+                    label = "A partir de 1 mês",
+                    sublabel = "Durante os 7 dias seguintes, esta nota pode voltar.",
+                    icon = R.drawable.ic_calendar_span,
+                    selected = (policy as? ReturnPolicy.InPeriod)?.days == 30,
+                ) { policy = ReturnPolicy.InPeriod(30); timeSheet = false }
+                TimeOption(
+                    label = "A partir de 3 meses",
+                    sublabel = "Durante os 7 dias seguintes, esta nota pode voltar.",
+                    icon = R.drawable.ic_calendar_span,
+                    selected = (policy as? ReturnPolicy.InPeriod)?.days == 90,
+                ) { policy = ReturnPolicy.InPeriod(90); timeSheet = false }
+                TimeOption(
+                    label = "A partir de 1 ano",
+                    sublabel = "Durante os 7 dias seguintes, esta nota pode voltar.",
+                    icon = R.drawable.ic_calendar_span,
+                    selected = (policy as? ReturnPolicy.InPeriod)?.days == 365,
+                ) { policy = ReturnPolicy.InPeriod(365); timeSheet = false }
+                TimeOption(
+                    label = "Escolher uma data",
+                    sublabel = "Durante os 7 dias a partir da data, esta nota pode voltar.",
+                    icon = R.drawable.ic_calendar_date,
+                    selected = policy is ReturnPolicy.OnDate,
+                ) { timeSheet = false; dateSheet = true }
                 TimeOption("Nunca", R.drawable.ic_never, policy is ReturnPolicy.Never) {
                     policy = ReturnPolicy.Never; timeSheet = false
                 }
                 Spacer(Modifier.height(FioSpace.s2))
+                }
             }
         }
     }
@@ -436,6 +515,7 @@ private fun TimeOption(
     label: String,
     @DrawableRes icon: Int,
     selected: Boolean,
+    sublabel: String? = null,
     onClick: () -> Unit,
 ) {
     val cosmic = FioThemeContext.current.isCosmic
@@ -443,12 +523,16 @@ private fun TimeOption(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .heightIn(min = 48.dp)
+            .heightIn(min = 54.dp)
             .semantics { contentDescription = "Definir retorno: $label" },
         shape = RoundedCornerShape(FioRadius.md),
-        color = if (selected) MaterialTheme.colorScheme.primaryContainer
-        else MaterialTheme.colorScheme.surface,
-        border = if (cosmic && selected) BorderStroke(1.dp, MaterialTheme.colorScheme.outline) else null,
+        color = when {
+            cosmic && selected -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = .50f)
+            cosmic -> MaterialTheme.colorScheme.surface.copy(alpha = .42f)
+            selected -> MaterialTheme.colorScheme.primaryContainer
+            else -> MaterialTheme.colorScheme.surface
+        },
+        border = if (cosmic) BorderStroke(1.dp, if (selected) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.outlineVariant) else null,
     ) {
         Row(
             modifier = Modifier.padding(horizontal = FioSpace.s3, vertical = FioSpace.s2),
@@ -461,7 +545,17 @@ private fun TimeOption(
                 modifier = Modifier.height(20.dp).width(20.dp),
             )
             Spacer(Modifier.width(FioSpace.s3))
-            Text(label, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(label, style = MaterialTheme.typography.bodyLarge)
+                // FIO-P19 A1: window explanation shown only for scheduled options.
+                if (sublabel != null) {
+                    Text(
+                        sublabel,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.72f),
+                    )
+                }
+            }
             if (selected) {
                 Icon(
                     painter = painterResource(R.drawable.ic_check),
@@ -474,12 +568,13 @@ private fun TimeOption(
     }
 }
 
+// FIO-P19 A1: labels reflect delivery-window semantics ("A partir de") instead of exact dates.
 private fun returnPolicyLabel(days: Int): String = when (days) {
-    7 -> "Daqui a 1 semana"
-    30 -> "Daqui a 1 mês"
-    90 -> "Daqui a 3 meses"
-    365 -> "Daqui a 1 ano"
-    else -> "Daqui a $days dias"
+    7 -> "A partir de 1 semana"
+    30 -> "A partir de 1 mês"
+    90 -> "A partir de 3 meses"
+    365 -> "A partir de 1 ano"
+    else -> "A partir de $days dias"
 }
 
 /**

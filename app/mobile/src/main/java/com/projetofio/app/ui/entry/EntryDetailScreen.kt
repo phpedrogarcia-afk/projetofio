@@ -1,7 +1,6 @@
 package com.projetofio.app.ui
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,7 +13,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
@@ -31,12 +29,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.liveRegion
-import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.projetofio.app.domain.Entry
-import com.projetofio.app.ui.theme.FioRadius
 import com.projetofio.app.ui.theme.FioSpace
 import com.projetofio.app.ui.theme.fioScreenContainerColor
 import com.projetofio.app.ui.theme.FioThemeContext
@@ -55,8 +50,6 @@ internal fun NoteScreen(
     onDelete: (() -> Unit)? = null,
 ) {
     BackHandler(onBack = onBack)
-    var returning by remember { mutableStateOf(false) }
-    var returned by remember { mutableStateOf(false) }
     val cosmic = FioThemeContext.current.isCosmic
     Surface(
         modifier = Modifier.fillMaxSize().padding(contentPadding),
@@ -115,32 +108,9 @@ internal fun NoteScreen(
                 }
             }
             Spacer(Modifier.height(FioSpace.s6))
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(FioRadius.md))
-                    .clickable {
-                        if (returned) {
-                            onReedit(entry.content)
-                            onBack()
-                        } else {
-                            returning = true
-                        }
-                    }
-                    .heightIn(min = 48.dp)
-                    .padding(horizontal = FioSpace.s3, vertical = FioSpace.s2),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = if (returned) "Reescrever esta nota?" else "Devolver para agora", // G2: factual — a antiga interpretativa foi neutralizada
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.weight(1f).semantics {
-                        contentDescription = if (returned) "Reescrever esta nota agora" else "Devolver esta nota agora"
-                    },
-                )
-                Text("›", color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
+            // FIO-P19 A1: "Devolver para agora" removed — it was local-only state (remember)
+            // with no domain operation. Will be restored in a future mission with a real
+            // RememberLater domain contract (docs/07-RETURNS-ENGINE.md § Remember later — V1).
             if (onDelete != null) {
                 Spacer(Modifier.height(FioSpace.s4))
                 TextButton(
@@ -150,34 +120,8 @@ internal fun NoteScreen(
                     Text("Excluir", color = MaterialTheme.colorScheme.error)
                 }
             }
-            if (returned) {
-                Text(
-                    // G2 fix: factual, sem interpretar o que a volta significa.
-                    text = "Esta nota voltou. Reescrever se quiser — ou apenas deixe seguir.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
-                )
-            }
             Spacer(Modifier.height(FioSpace.s5))
         }
-    }
-    if (returning) {
-        AlertDialog(
-            onDismissRequest = { returning = false },
-            title = { Text("Devolver agora?") },
-            text = {
-                Text(
-                    "O Fio devolve o que está pronto. Você pode trazê-la de volta agora — ela volta como uma carta, na íntegra, com a data de quando foi escrita.",
-                )
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = { returning = false; returned = true },
-                ) { Text("Devolver") }
-            },
-            dismissButton = { TextButton(onClick = { returning = false }) { Text("Cancelar") } },
-        )
     }
 }
 

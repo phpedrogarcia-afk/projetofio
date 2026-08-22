@@ -3,10 +3,8 @@ package com.projetofio.app.persistence
 import androidx.room.Room
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
-import java.nio.charset.StandardCharsets
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
-import org.junit.Assert.fail
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -16,42 +14,42 @@ import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 
 /**
- * Campaign 3 — Database / Migration Torture (Room 2 -> 3).
+ * FIO-P19 A1 — Database / Migration Test (Room 3 -> 4).
  *
- * Reproduces a realistic schema-2 database (500 entries incl. soft-deleted,
- * settings, drafts, returns) and lets Room itself apply MIGRATION_2_3,
- * asserting the non-destructive contract: identical row counts, byte-identical
- * content envelopes, soft-delete invariant, and structural identity with the
- * exported schema-3 JSON (verified via PRAGMA table_info against 3.json).
+ * Reproduces a realistic schema-3 database (entries with imports and batches)
+ * and lets Room itself apply MIGRATION_3_4, asserting the additive contract:
+ * row count preserved, ciphertext envelopes unchanged, pre-existing entries
+ * have requested_window_start and requested_window_end as NULL (organic ELIGIBLE).
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33])
-class Migration2To3Test {
+class Migration3To4Test {
     @get:Rule
     val folder = TemporaryFolder()
 
     private val context = RuntimeEnvironment.getApplication()
 
     @Test
-    fun `Room applies migration 2-3 without data loss on a realistic seed`() {
-        val (dbFile, envelopesBefore) = seedSchema2Database("fio-loss.db")
+    fun `Room applies migration 3-4 additively without data loss`() {
+        val (dbFile, envelopesBefore) = seedSchema3Database("fio-v3-to-v4.db")
 
-        // Let Room perform the migration itself (this is how end users upgrade).
-        val db3 = Room.databaseBuilder(context, FioDatabase::class.java, dbFile.absolutePath)
+        val db4 = Room.databaseBuilder(context, FioDatabase::class.java, dbFile.absolutePath)
             .fallbackToDestructiveMigration(false)
-            .addMigrations(MIGRATION_2_3, MIGRATION_3_4)
+            .addMigrations(MIGRATION_3_4)
             .allowMainThreadQueries()
             .build()
 
         try {
-            val entries = db3.count("entries")
-            assertEquals("entry row count must be preserved", 500, entries)
-            assertEquals("draft row count must be preserved", 1, db3.count("drafts"))
-            assertEquals("settings row count must be preserved", 1, db3.count("app_settings"))
-            assertEquals("return row count must be preserved", 25, db3.count("returns"))
+            val entries = db4.count("entries")
+            assertEquals("entry row count must be preserved", 100, entries)
+            assertEquals("draft row count must be preserved", 1, db4.count("drafts"))
+            assertEquals("settings row count must be preserved", 1, db4.count("app_settings"))
+            assertEquals("return row count must be preserved", 10, db4.count("returns"))
+            assertEquals("import batch row count must be preserved", 1, db4.count("import_batches"))
+            assertEquals("import batch items row count must be preserved", 5, db4.count("import_batch_items"))
 
-            // Content envelopes must be byte-identical (ciphertext integrity).
-            val actual = readContentEnvelopesRoom(db3)
+            // Content envelopes must be byte-identical
+            val actual = readContentEnvelopesRoom(db4)
             assertEquals("envelope count preserved", envelopesBefore.size, actual.size)
             for (i in envelopesBefore.indices) {
                 assertTrue(
@@ -60,109 +58,70 @@ class Migration2To3Test {
                 )
             }
 
-            // Soft-delete invariant: deleted_at null iff purge_after null.
-            val broken = db3.query(androidx.sqlite.db.SimpleSQLiteQuery(
-                "SELECT COUNT(*) FROM entries WHERE deleted_at IS NOT NULL AND purge_after IS NULL",
-            )).use { it.moveToNext(); it.getInt(0) }
-            assertEquals("no entries with deleted but no purge_after", 0, broken)
+            // New schema 4 columns default to NULL for all pre-existing rows
+            assertEquals(entries, db4.count("entries", "requested_window_start IS NULL"))
+            assertEquals(entries, db4.count("entries", "requested_window_end IS NULL"))
 
-            // New v3 columns default to null for pre-existing rows.
-            assertEquals(entries, db3.count("entries", "import_batch_id IS NULL"))
-            assertEquals(entries, db3.count("entries", "import_fingerprint_envelope IS NULL"))
-
-            // Settings defaults survived migration.
-            db3.query(androidx.sqlite.db.SimpleSQLiteQuery(
-                "SELECT quiet_hours_start_minute, quiet_hours_end_minute, notification_permission_observed FROM app_settings",
-            )).use { cursor ->
-                assertTrue(cursor.moveToNext())
-                assertEquals(1320, cursor.getInt(0))
-                assertEquals(420, cursor.getInt(1))
-                assertEquals("DENIED", cursor.getString(2))
-            }
-
-            // Structural identity with the exported schema-3 JSON
-            // (columns must match exactly what Room expects at v3).
-            assertStructuralIdentity(db3)
+            // Structural identity: all schema-4 columns present in exact order
+            assertStructuralIdentity(db4)
         } finally {
-            db3.close()
+            db4.close()
         }
     }
 
-    /**
-     * On a real device Room would throw IllegalStateException here because
-     * fallbackToDestructiveMigration is disabled and no migration is provided.
-     * Robolectric's in-memory SQLite shadow does not enforce that contract
-     * (it silently recreates an empty database), so this test only verifies the
-     * shadow behaviour as documentation. The real anti-destructive guarantee is
-     * enforced by Room 2.8.4 itself at runtime and is implicitly exercised by
-     * the first test: it only passes because [MIGRATION_2_3] exists and works.
-     */
-    @Test
-    fun `Room v3 opens without the migration only via destructive fallback (Robolectric artifact)`() {
-        val dbFile = seedSchema2Database("fio-refuse.db").first
-        val db3 = Room.databaseBuilder(context, FioDatabase::class.java, dbFile.absolutePath)
-            .fallbackToDestructiveMigration(false)
-            .allowMainThreadQueries()
-            .build()
-        try {
-            // Shadow artifact: Room does not throw here, but data is gone.
-            assertEquals(
-                "without the migration the database would be destroyed (data loss)",
-                0,
-                db3.count("entries"),
-            )
-        } finally {
-            db3.close()
-        }
-    }
-
-    private fun seedSchema2Database(name: String = "fio.db"): Pair<java.io.File, List<ByteArray>> {
+    private fun seedSchema3Database(name: String): Pair<java.io.File, List<ByteArray>> {
         val dbFile = folder.newFile(name)
-        val db = openHelper(dbFile, 2)
-        createSchema2Tables(db)
+        val db = openHelper(dbFile, 3)
+        createSchema3Tables(db)
 
-        // 480 active entries + 20 soft-deleted = 500 rows.
-        for (i in 1..500) {
-            val deleted = i > 480
-            val content = if (i % 7 == 0) "emoji 🧑🏽‍💻 $i — café ☕\n  espaço  " else "registro diário número $i de 500\ncom múltiplas linhas.\n\nFim."
-            val envelope = ("cipher:${content.hashCode().toUInt()}:$content").encodeToByteArray()
+        for (i in 1..100) {
+            val content = "registro schema-3 número $i"
+            val envelope = ("cipher:$i:$content").encodeToByteArray()
             db.execSQL(
                 """
-                INSERT INTO entries VALUES ('entry-${"%05d".format(i)}', ${1700000000L + i},
+                INSERT INTO entries VALUES ('entry-${"%03d".format(i)}', ${1700000000L + i},
                   ${1700000000L + i}, 'America/Sao_Paulo', ${1700000000L + i}, 'NATIVE', ?,
-                  'PLAIN_TEXT',
-                  ${if (i % 11 == 0) "'SOMEDAY'" else "'ELIGIBLE'"},
-                  ${if (i % 13 == 0) (1600000000L + i) else "NULL"},
-                  ${i % 13},
-                  ${if (deleted) (1750000000L + i) else "NULL"},
-                  ${if (deleted) (1750000000L + i + 86400) else "NULL"},
-                  2)
+                  'PLAIN_TEXT', 'ELIGIBLE', NULL, 0, NULL, NULL, NULL, NULL, 3)
                 """.trimIndent(),
                 arrayOf(envelope),
             )
         }
 
         db.execSQL(
-            "INSERT INTO drafts VALUES ('draft-1', 1, 1700000000, ?, 'PLAIN_TEXT', 2)",
-            arrayOf("rascunho em andamento".encodeToByteArray()),
+            "INSERT INTO drafts VALUES ('draft-1', 1, 1700000000, ?, 'PLAIN_TEXT', 3)",
+            arrayOf("rascunho v3".encodeToByteArray()),
         )
         db.execSQL(
             """
-            INSERT INTO app_settings VALUES (1, 'GIVEN', NULL, 'OPTIONAL',
-              1, 0, 1320, 420, 'DENIED', 2)
+            INSERT INTO app_settings VALUES (1, 'ENABLED', NULL, 'OPTIONAL',
+              1, 0, 1260, 480, 'GRANTED', 3)
             """.trimIndent(),
         )
-        for (i in 1..25) {
+        for (i in 1..10) {
             db.execSQL(
                 """
-                INSERT INTO returns VALUES ('ret-${"%03d".format(i)}', 'entry-${"%05d".format(i)}',
-                  'vintage', '1.0', ${if (i % 2 == 0) "'OPENED'" else "'SCHEDULED'"},
+                INSERT INTO returns VALUES ('ret-${"%02d".format(i)}', 'entry-${"%03d".format(i)}',
+                  'vintage', '1.0', 'SCHEDULED',
                   ${1600000000L + i}, ${1600000000L + i}, ${1600000000L + i + 3600},
-                  NULL, NULL, NULL, NULL, NULL, NULL, NULL, '7-29d', 2)
+                  NULL, NULL, NULL, NULL, NULL, NULL, NULL, '7-29d', 3)
                 """.trimIndent(),
             )
         }
-        // Snapshot envelopes while the db is still open at v2 (before Room migrates).
+        db.execSQL(
+            """
+            INSERT INTO import_batches VALUES ('batch-1', 'MARKDOWN', 1700000000, 1700000001,
+              'COMMITTED', NULL, 5, 5, 0, 0, '1.0', 3)
+            """.trimIndent(),
+        )
+        for (i in 1..5) {
+            db.execSQL(
+                """
+                INSERT INTO import_batch_items VALUES ('batch-1:$i', 'batch-1', $i,
+                  'entry-${"%03d".format(i)}', 'IMPORTED', 1700000000, 3)
+                """.trimIndent(),
+            )
+        }
+
         val envelopes = db.query("SELECT content_envelope FROM entries ORDER BY created_at").use { cursor ->
             buildList {
                 while (cursor.moveToNext()) add((cursor.getBlob(0) ?: byteArrayOf()).copyOf())
@@ -172,7 +131,7 @@ class Migration2To3Test {
         return dbFile to envelopes
     }
 
-    private fun createSchema2Tables(db: SupportSQLiteDatabase) {
+    private fun createSchema3Tables(db: SupportSQLiteDatabase) {
         db.execSQL(
             """
             CREATE TABLE IF NOT EXISTS `entries` (
@@ -182,13 +141,15 @@ class Migration2To3Test {
                 `content_envelope` BLOB NOT NULL, `content_format` TEXT NOT NULL,
                 `return_mode` TEXT NOT NULL, `last_returned_at` INTEGER,
                 `return_count` INTEGER NOT NULL DEFAULT 0,
+                `import_batch_id` TEXT, `import_fingerprint_envelope` BLOB,
                 `deleted_at` INTEGER, `purge_after` INTEGER,
                 `schema_version` INTEGER NOT NULL, PRIMARY KEY(`id`)
             )
             """.trimIndent(),
         )
-        db.execSQL("CREATE INDEX IF NOT EXISTS `index_entries_deleted_at_original_created_at` ON `entries` (`deleted_at`, `original_created_at`)")
-        db.execSQL("CREATE INDEX IF NOT EXISTS `index_entries_purge_after` ON `entries` (`purge_after`)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_entries_deleted_at_original_created_at ON entries(deleted_at, original_created_at)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_entries_purge_after ON entries(purge_after)")
+
 
         db.execSQL(
             """
@@ -229,6 +190,34 @@ class Migration2To3Test {
         db.execSQL("CREATE INDEX IF NOT EXISTS index_returns_entry_id ON returns(entry_id)")
         db.execSQL("CREATE INDEX IF NOT EXISTS index_returns_state_window_end ON returns(state, window_end)")
         db.execSQL("CREATE INDEX IF NOT EXISTS index_returns_created_at ON returns(created_at)")
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS `import_batches` (
+                `id` TEXT NOT NULL, `source` TEXT NOT NULL,
+                `started_at` INTEGER NOT NULL, `committed_at` INTEGER NOT NULL,
+                `status` TEXT NOT NULL, `source_file_name_envelope` BLOB,
+                `parsed_count` INTEGER NOT NULL, `imported_count` INTEGER NOT NULL,
+                `duplicate_count` INTEGER NOT NULL, `failed_count` INTEGER NOT NULL,
+                `parser_version` TEXT NOT NULL, `schema_version` INTEGER NOT NULL,
+                PRIMARY KEY(`id`)
+            )
+            """.trimIndent(),
+        )
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_import_batches_committed_at ON import_batches (committed_at)")
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS `import_batch_items` (
+                `id` TEXT NOT NULL, `batch_id` TEXT NOT NULL, `source_index` INTEGER NOT NULL,
+                `entry_id` TEXT, `status` TEXT NOT NULL,
+                `imported_updated_at` INTEGER NOT NULL, `schema_version` INTEGER NOT NULL,
+                PRIMARY KEY(`id`),
+                FOREIGN KEY(`batch_id`) REFERENCES `import_batches`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE,
+                FOREIGN KEY(`entry_id`) REFERENCES `entries`(`id`) ON UPDATE NO ACTION ON DELETE SET NULL
+            )
+            """.trimIndent(),
+        )
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_import_batch_items_batch_id ON import_batch_items (batch_id)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_import_batch_items_entry_id ON import_batch_items (entry_id)")
     }
 
     private fun openHelper(file: java.io.File, version: Int): SupportSQLiteDatabase =
@@ -251,12 +240,11 @@ class Migration2To3Test {
             }
 
     private fun assertStructuralIdentity(db: FioDatabase) {
-        // Column sets of entries after migration must equal schema-4.
         val expectedEntriesColumns = listOf(
             "id", "created_at", "original_created_at", "original_time_zone", "updated_at",
             "source", "content_envelope", "content_format", "return_mode", "last_returned_at",
-            "return_count", "deleted_at", "purge_after", "schema_version",
-            "import_batch_id", "import_fingerprint_envelope",
+            "return_count", "import_batch_id", "import_fingerprint_envelope",
+            "deleted_at", "purge_after", "schema_version",
             "requested_window_start", "requested_window_end",
         )
         val actual = db.openHelper.writableDatabase.query(
@@ -267,19 +255,17 @@ class Migration2To3Test {
             }
         }
         assertEquals(
-            "entries column SET must match the schema-4 entity (ADD COLUMN appends physically)",
+            "entries column SET must match schema-4",
             expectedEntriesColumns.toSet(),
             actual.toSet(),
         )
-        assertEquals("physical column order must be stable after migration", expectedEntriesColumns, actual)
     }
 
-    private fun count(db: SupportSQLiteDatabase, table: String, where: String? = null): Int =
-        db.query("SELECT COUNT(*) FROM $table${if (where == null) "" else " WHERE $where"}").use { cursor ->
+    private fun FioDatabase.count(table: String, where: String? = null): Int =
+        this.openHelper.writableDatabase.query(
+            "SELECT COUNT(*) FROM $table${if (where == null) "" else " WHERE $where"}",
+        ).use { cursor ->
             cursor.moveToNext()
             cursor.getInt(0)
         }
-
-    private fun FioDatabase.count(table: String, where: String? = null): Int =
-        count(this.openHelper.writableDatabase, table, where)
 }

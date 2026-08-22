@@ -1,9 +1,26 @@
 package com.projetofio.app.domain
 
 import java.time.Instant
+import java.time.LocalDate
 
-const val CURRENT_RECORD_SCHEMA_VERSION = 3
+const val CURRENT_RECORD_SCHEMA_VERSION = 4
 const val RECENTLY_DELETED_RETENTION_DAYS = 30L
+
+/**
+ * The user's explicit return intent expressed at save time (FIO-P19 A1).
+ * Lives in the domain so the engine and service can reason about it without
+ * depending on UI classes.
+ */
+sealed class ReturnPolicy {
+    /** Organic eligibility — the engine picks the moment. */
+    data object Someday : ReturnPolicy()
+    /** Requested window starting N days from now (7-day delivery window). */
+    data class InPeriod(val days: Int) : ReturnPolicy()
+    /** Requested window anchored to a specific calendar date (7-day delivery window). */
+    data class OnDate(val date: LocalDate) : ReturnPolicy()
+    /** Never return this entry. */
+    data object Never : ReturnPolicy()
+}
 
 enum class ContentFormat { PLAIN_TEXT }
 
@@ -54,6 +71,12 @@ data class Entry(
     val importFingerprint: String? = null,
     val deletedAt: Instant? = null,
     val purgeAfter: Instant? = null,
+    // FIO-P19 A1: requested delivery window. Both are null for organic entries.
+    // When set, the engine treats this entry as a priority candidate within the window.
+    // If the window expires without a safe delivery, both fields are cleared and the
+    // entry returns to the organic ELIGIBLE pool — nothing is delivered by force.
+    val requestedWindowStart: Instant? = null,
+    val requestedWindowEnd: Instant? = null,
     val schemaVersion: Int = CURRENT_RECORD_SCHEMA_VERSION,
 ) {
     init {
@@ -62,8 +85,17 @@ data class Entry(
         require((deletedAt == null) == (purgeAfter == null))
         require(returnCount >= 0)
         require((source == EntrySource.NATIVE) == (importBatchId == null && importFingerprint == null))
+        require((requestedWindowStart == null) == (requestedWindowEnd == null)) {
+            "requestedWindowStart and requestedWindowEnd must both be null or both be set"
+        }
+        if (requestedWindowStart != null && requestedWindowEnd != null) {
+            require(requestedWindowStart < requestedWindowEnd) {
+                "requestedWindowStart must be before requestedWindowEnd"
+            }
+        }
     }
 }
+
 
 data class ImportBatch(
     val id: String,

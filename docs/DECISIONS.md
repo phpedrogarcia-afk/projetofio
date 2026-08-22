@@ -875,3 +875,29 @@ Do not rewrite an Accepted ADR to hide its history. Add a superseding entry.
   o conjunto fechado de temas, a seleção e a persistência local.
 - Supersedes: a limitação de persistência da FIO-PV-03; preserva os demais
   invariantes da arquitetura de temas.
+
+## ADR-052 — Integridade das escolhas temporais com janela de 7 dias e Schema 4 (FIO-P19 A1)
+
+- Date: 2026-08-20
+- Status: Accepted
+- Decision: As escolhas temporais expressas na escrita (`ReturnPolicy.InPeriod`,
+  `OnDate`, `Never` e `Someday`) são honradas e persistidas ponta a ponta.
+  `EntryEntity` recebe as colunas aditivas `requested_window_start` e `requested_window_end`
+  via migração Room 3 -> 4 (`MIGRATION_3_4`), com versão do schema avançando para 4.
+  Escolhas de período ou data geram uma janela de oportunidade de 7 dias
+  (`requestedWindowStart` até `requestedWindowStart + 7d`), durante a qual o motor
+  de devoluções trata a entrada como candidata prioritária sobre o sorteio orgânico,
+  sem garantia forçada de entrega e respeitando todos os guardas (consentimento, cap,
+  quiet hours, pending check). Se a janela expirar sem oportunidade segura, a entrada
+  retorna ao pool orgânico elegível. A opção "Devolver para agora" na tela de detalhe
+  é removida por não possuir operação de domínio real. Os rótulos da UI são ajustados
+  de "Daqui a X" para "A partir de X" com texto explicativo sobre a janela.
+- Reason: Eliminar a quebra de contrato em que opções temporais eram mantidas apenas em
+  estado Compose local e descartadas silenciosamente no momento de salvar.
+- Consequence: A cadeia UI -> ViewModel -> Service -> Repository -> Database -> Engine
+  passa a preservar e respeitar a intenção temporal do usuário. Migração 3 -> 4 é
+  aditiva (registros existentes recebem NULL e continuam elegíveis no pool orgânico).
+  Nenhuma alteração em busca, criptografia, exportação, backup ou rede.
+- Supersedes: Substitui o estado puramente visual de `ADR-043` pela implementação de
+  domínio e persistência canônica.
+
