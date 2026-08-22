@@ -1,9 +1,10 @@
 # FIO-P07 — endurecer importação contra arquivos grandes
 
-**Status:** READY
+**Status:** DONE
 **Type:** code
 **Context:** MEDIUM (9 files)
-**Branch:** `codex/import-large-file-hardening`
+**Branch:** `feature/fio-temporal-integrity-20260820`
+
 
 ## READ FIRST
 
@@ -61,4 +62,5 @@ write a follow-up decision/packet instead.
 
 | Date | Evidence | Output |
 |---|---|---|
-| | | |
+| 2026-08-21 | `LocalImportParserTest.kt` | Magic containers (PDF, SQLite, MZ) bloqueados; exactUtf8Prefix otimizado com bounded slice; lote de 200/2.000 entradas executado com parsing < 50ms; 100% verde |
+

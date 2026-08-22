@@ -1,9 +1,10 @@
 # FIO-PQ-03 — apresentar decisões abertas D-1..D-5
 
-**Status:** READY
+**Status:** DONE
 **Type:** doc/decision
 **Context:** SMALL (4 files)
-**Branch:** `codex/open-decisions-packet`
+**Branch:** `feature/fio-temporal-integrity-20260820`
+
 
 ## READ FIRST
 
@@ -53,4 +54,5 @@ founder.
 
 | Date | Evidence | Output |
 |---|---|---|
-| | | |
+| 2026-08-21 | `docs/proposals/OPEN-DECISIONS-PROPOSALS.md` | Documento estruturado com D-1 a D-5 cobrindo contexto, opções, trade-offs e recomendações claras para o fundador |
+

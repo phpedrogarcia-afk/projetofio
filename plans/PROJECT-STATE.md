@@ -19,7 +19,7 @@ Documento de estado vivo do ProjetoFio. O código vence quando divergir da docum
 | Importação/exportação | Import local Markdown/Texto com rollback; export Markdown/Texto + SHA-256 | serviços de import/export e testes correspondentes |
 | Rede/conta/sync | Ausentes; aplicativo permanece local-first | Manifest, dependências e wiring do aplicativo |
 | Analytics | Analytics remoto ausente e estado efetivo desabilitado | `RoomFioRepository.kt`, dependências |
-| Testes unitários | 147 testes verdes, 0 falhas, 0 erros e 0 ignorados | relatórios XML de `testDebugUnitTest` |
+| Testes unitários | 152 testes verdes, 0 falhas, 0 erros e 0 ignorados | relatórios XML de `testDebugUnitTest` |
 | Testes instrumentados | 31/32 verdes (única falha pré-existente documentada em CalendarSelectionContractTest) | execução `AndroidJUnitRunner` |
 | Pilot | Material preparado; piloto não iniciado | `pilot/` |
 
@@ -33,6 +33,10 @@ Documento de estado vivo do ProjetoFio. O código vence quando divergir da docum
 | M4 | Busca lexical, arquitetura semântica removível e histórico factual de reencontros | Concluída |
 | M5 | FIO Master Atlas, mapas, invariantes, riscos e fila de packets | Concluída |
 | FIO-P19 | Integridade das escolhas temporais (A1: janela de 7 dias + schema 4) | Concluída (ADR-052) |
+| FIO-P06 | Validação de escala da busca lexical (1k/10k entradas) | Concluída |
+| FIO-P07 | Hardening de importação (OOM / magic signatures / limits) | Concluída |
+| FIO-PQ-03 | Propostas de decisões D-1 a D-5 estruturadas | Concluída |
+
 
 ## Git e transferência
 

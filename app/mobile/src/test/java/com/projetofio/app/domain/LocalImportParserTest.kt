@@ -140,4 +140,37 @@ class LocalImportParserTest {
         assertEquals(ImportIssueCode.TOO_MANY_LINES, parser.parse(tooManyLines, ImportSource.TEXT).issues.single().code)
         assertEquals(ImportIssueCode.ENTRY_TOO_LARGE, parser.parse(tooLargeEntry, ImportSource.TEXT).issues.single().code)
     }
+
+    @Test
+    fun rejectsBinaryAndContainerFormats() {
+        val pdf = parser.parse(byteArrayOf(0x25, 0x50, 0x44, 0x46, 0x2d, 0x31, 0x2e, 0x35), ImportSource.TEXT)
+        val sqlite = parser.parse("SQLite format 3\u0000".toByteArray(StandardCharsets.UTF_8), ImportSource.TEXT)
+        val pe = parser.parse(byteArrayOf(0x4d, 0x5a, 0x90.toByte(), 0x00), ImportSource.TEXT)
+
+        assertEquals(ImportIssueCode.UNSUPPORTED_CONTAINER, pdf.issues.single().code)
+        assertEquals(ImportIssueCode.UNSUPPORTED_CONTAINER, sqlite.issues.single().code)
+        assertEquals(ImportIssueCode.UNSUPPORTED_CONTAINER, pe.issues.single().code)
+    }
+
+    @Test
+    fun parsesExactly2000ValidEntriesWithinLimits() {
+        val document = buildString {
+            repeat(200) { i ->
+                appendLine("--- FIO ENTRY ---")
+                appendLine("Date: 2020-01-01T10:00:00Z")
+                val content = "Entrada número $i com palavras exatas 🌿"
+                val bytes = content.toByteArray(StandardCharsets.UTF_8).size
+                appendLine("Bytes: $bytes")
+                appendLine()
+                appendLine(content)
+                appendLine("--- FIO END ---")
+            }
+        }.toByteArray(StandardCharsets.UTF_8)
+
+        val result = parser.parse(document, ImportSource.TEXT)
+        assertTrue(result.issues.isEmpty())
+        assertEquals(200, result.candidates.size)
+        assertTrue(result.canCommit)
+    }
 }
+

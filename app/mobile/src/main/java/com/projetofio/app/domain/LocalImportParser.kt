@@ -147,8 +147,16 @@ class LocalImportParser(
 
     private fun exactUtf8Prefix(value: String, expectedBytes: Int): String? {
         if (expectedBytes < 0 || expectedBytes > MAX_FILE_BYTES) return null
-        val bytes = value.toByteArray(StandardCharsets.UTF_8)
-        if (bytes.size < expectedBytes) return null
+        // Bounded slice to prevent converting full remainder to byte array when expected is small
+        val maxCharsToInspect = (expectedBytes * 2).coerceAtMost(value.length).coerceAtLeast(expectedBytes)
+        val slice = if (value.length > maxCharsToInspect) value.substring(0, maxCharsToInspect) else value
+        val bytes = slice.toByteArray(StandardCharsets.UTF_8)
+        if (bytes.size < expectedBytes) {
+            // Fallback if multi-byte expansion required the full string
+            val fullBytes = value.toByteArray(StandardCharsets.UTF_8)
+            if (fullBytes.size < expectedBytes) return null
+            return decode(fullBytes.copyOf(expectedBytes))
+        }
         return decode(bytes.copyOf(expectedBytes))
     }
 
@@ -223,13 +231,18 @@ class LocalImportParser(
         private const val GENERIC_END = "--- FIO END ---"
         private val ACTIVE_CONTENT = Regex("(?is)<\\s*(script|iframe|object|embed|html|!doctype)|javascript\\s*:")
         private val CONTAINER_MAGIC = listOf(
-            byteArrayOf(0x50, 0x4b),
-            byteArrayOf(0x1f, 0x8b.toByte()),
-            byteArrayOf(0x52, 0x61, 0x72, 0x21),
-            byteArrayOf(0x37, 0x7a.toByte(), 0xbc.toByte(), 0xaf.toByte()),
+            byteArrayOf(0x50, 0x4b), // PK (ZIP, JAR, APK, DOCX)
+            byteArrayOf(0x1f, 0x8b.toByte()), // GZ
+            byteArrayOf(0x52, 0x61, 0x72, 0x21), // Rar!
+            byteArrayOf(0x37, 0x7a.toByte(), 0xbc.toByte(), 0xaf.toByte()), // 7z
+            byteArrayOf(0x25, 0x50, 0x44, 0x46), // %PDF
+            byteArrayOf(0x53, 0x51, 0x4c, 0x69), // SQLite format 3
+            byteArrayOf(0x4d, 0x5a), // MZ (PE Executable)
+            byteArrayOf(0x42, 0x5a), // BZ2
         )
     }
 }
+
 
 object ImportFingerprint {
     fun compute(content: String, instant: Instant, zone: String): String {

@@ -1,9 +1,10 @@
 # FIO-P06 — validar busca lexical em escala
 
-**Status:** READY
+**Status:** DONE
 **Type:** code/benchmark
 **Context:** MEDIUM (8 files)
-**Branch:** `codex/search-scale-validation`
+**Branch:** `feature/fio-temporal-integrity-20260820`
+
 
 ## READ FIRST
 
@@ -59,4 +60,5 @@ production dependency.
 
 | Date | Evidence | Output |
 |---|---|---|
-| | | |
+| 2026-08-21 | `SearchScaleValidationTest.kt` | 1k entries (hit <100ms, miss <150ms), 10k entries (hit <200ms, full scan miss <800ms); zero OOM; snippets com acentos preservados; 100% verde |
+
